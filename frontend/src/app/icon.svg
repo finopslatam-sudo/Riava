@@ -1,0 +1,31 @@
+<svg width="220" height="160" viewBox="0 0 220 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="riavaIconCloud" x1="18" y1="84" x2="186" y2="20" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#11BFE8"/>
+      <stop offset="1" stop-color="#0A4A74"/>
+    </linearGradient>
+  </defs>
+  <path
+    d="M54 111C33 111 18 95 18 74C18 53 34 36 55 35C62 17 80 6 101 6C123 6 141 18 148 36C168 37 184 53 184 73C184 94 168 111 147 111H54Z"
+    stroke="url(#riavaIconCloud)"
+    stroke-width="18"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M71 135L145 56"
+    stroke="#0A4A74"
+    stroke-width="21"
+    stroke-linecap="round"
+  />
+  <path
+    d="M104 125L141 159"
+    stroke="#0A4A74"
+    stroke-width="14"
+    stroke-linecap="round"
+  />
+  <path
+    d="M83 62L104 78L80 81L70 64L83 62Z"
+    fill="#14C8EC"
+  />
+</svg>
