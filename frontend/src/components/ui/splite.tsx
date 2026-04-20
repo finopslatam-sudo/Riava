@@ -13,13 +13,7 @@ interface SplineSceneProps {
 
 export function SplineScene({ scene, className, onLoad }: SplineSceneProps) {
   return (
-    <Suspense
-      fallback={
-        <div className="flex h-full w-full items-center justify-center">
-          <span className="loader" />
-        </div>
-      }
-    >
+    <Suspense fallback={null}>
       <Spline scene={scene} className={className} onLoad={onLoad} />
     </Suspense>
   )
