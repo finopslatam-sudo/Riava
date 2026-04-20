@@ -25,7 +25,7 @@ export function Services() {
   const sectionRef = useRef<HTMLElement>(null)
   const cardsRef = useRef<Map<number, HTMLDivElement>>(new Map())
   const mmRef = useRef<Map<number, HTMLDivElement>>(new Map())
-  const rafRef = useRef<number>()
+  const rafRef = useRef<number | null>(null)
   const activeRef = useRef(0)
 
   const st = useRef({
@@ -147,7 +147,7 @@ export function Services() {
       window.removeEventListener("resize", resize)
       if (rafRef.current) cancelAnimationFrame(rafRef.current)
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (
