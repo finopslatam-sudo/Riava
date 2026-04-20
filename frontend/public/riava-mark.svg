@@ -13,12 +13,12 @@
     fill="url(#cloudGrad)"/>
   <defs>
     <clipPath id="topZone">
-      <rect x="78" y="30" width="24" height="29"/>
+      <rect x="76" y="22" width="28" height="36"/>
     </clipPath>
   </defs>
   <g clip-path="url(#cloudClip)">
-    <circle cx="114" cy="58" r="27" fill="none" stroke="#1ad4f0" stroke-width="10" stroke-opacity="0.95"/>
-    <circle cx="66" cy="58" r="27" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="10"/>
-    <circle cx="114" cy="58" r="27" clip-path="url(#topZone)" fill="none" stroke="#1ad4f0" stroke-width="10" stroke-opacity="0.95"/>
+    <circle cx="110" cy="58" r="28" fill="none" stroke="#1ad4f0" stroke-width="10" stroke-opacity="0.95"/>
+    <circle cx="70" cy="58" r="28" fill="none" stroke="rgba(255,255,255,0.92)" stroke-width="10"/>
+    <circle cx="110" cy="58" r="28" clip-path="url(#topZone)" fill="none" stroke="#1ad4f0" stroke-width="10" stroke-opacity="0.95"/>
   </g>
 </svg>
