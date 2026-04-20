@@ -17,6 +17,7 @@ export const SERVICES = [
     cta: { label: "Ir a FinOpsLatam", href: "https://www.finopslatam.com/" },
     highlight: true,
     tags: ["AWS", "GCP", "Azure", "Control de costos"],
+    image: "/services/finops.png",
   },
   {
     id: "booking",
@@ -27,6 +28,7 @@ export const SERVICES = [
     cta: { label: "Ir a ClienteFiel", href: "https://clientefiel.riava.cl/" },
     highlight: false,
     tags: ["Automatización", "CRM", "Retención"],
+    image: "/services/reserva_inteligente.png",
   },
   {
     id: "websites",
@@ -37,6 +39,7 @@ export const SERVICES = [
     cta: null,
     highlight: false,
     tags: ["Sitios web", "Conversión", "SEO"],
+    image: "/services/pagina_web.png",
   },
   {
     id: "saas",
@@ -47,6 +50,7 @@ export const SERVICES = [
     cta: null,
     highlight: false,
     tags: ["Next.js", "Node.js", "Microservicios"],
+    image: "/services/desarrollo_saas.png",
   },
   {
     id: "automation",
@@ -57,6 +61,7 @@ export const SERVICES = [
     cta: null,
     highlight: false,
     tags: ["RPA", "Flujos", "IA"],
+    image: "/services/automatizacion.png",
   },
   {
     id: "custom",
@@ -67,6 +72,7 @@ export const SERVICES = [
     cta: null,
     highlight: false,
     tags: ["A medida", "Integración", "API"],
+    image: "/services/software_medida.png",
   },
 ]
 
