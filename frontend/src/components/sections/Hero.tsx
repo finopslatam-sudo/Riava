@@ -7,7 +7,6 @@ import {
 } from "framer-motion"
 import type { Application, SPEObject } from "@splinetool/runtime"
 
-import { RiavaLogo } from "@/components/ui/RiavaLogo"
 import { SplineScene } from "@/components/ui/splite"
 import { TronGridBackground } from "@/components/ui/TronGridBackground"
 
@@ -285,8 +284,8 @@ export function Hero() {
                 }
                 className="relative h-[380px] sm:h-[500px] lg:h-[640px]"
               >
-                <div className="pointer-events-none absolute left-1/2 top-[58%] z-10 w-14 -translate-x-1/2 -translate-y-1/2 opacity-95 drop-shadow-[0_0_22px_rgba(0,229,255,0.4)] sm:w-16 lg:top-[57%] lg:w-20">
-                  <RiavaLogo variant="mark" className="w-full" alt="Logo RIAVA en el pecho del robot" />
+                <div className="pointer-events-none absolute left-1/2 top-[58%] z-10 w-14 -translate-x-1/2 -translate-y-1/2 opacity-95 drop-shadow-[0_0_22px_rgba(255,255,255,0.5)] sm:w-16 lg:top-[57%] lg:w-20">
+                  <img src="/riava-chest.png" alt="Logo RIAVA en el pecho del robot" className="w-full h-auto" />
                 </div>
                 <SplineScene
                   scene={ROBOT_SCENE}
