@@ -172,6 +172,19 @@ body {
   to   { background-position: 0 80px; }
 }
 
+@keyframes scroll-left {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.testimonials-scroll {
+  animation: scroll-left 32s linear infinite;
+}
+
+.testimonials-scroll:hover {
+  animation-play-state: paused;
+}
+
 .tron-horizon-line {
   position: absolute;
   left: 0;
