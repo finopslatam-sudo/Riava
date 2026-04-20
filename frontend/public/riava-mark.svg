@@ -1,31 +1,24 @@
-<svg width="220" height="160" viewBox="0 0 220 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 140" width="180" height="140">
   <defs>
-    <linearGradient id="riavaCloud" x1="18" y1="84" x2="186" y2="20" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#11BFE8"/>
-      <stop offset="1" stop-color="#0A4A74"/>
+    <linearGradient id="cloudGrad" x1="0" y1="0" x2="180" y2="140" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#193f72"/>
+      <stop offset="55%" stop-color="#1b68a8"/>
+      <stop offset="100%" stop-color="#0db4cc"/>
     </linearGradient>
+    <clipPath id="cloudClip">
+      <path d="M 22 118 Q 4 118 4 96 Q 4 75 24 68 Q 16 46 36 37 Q 44 12 72 17 Q 86 2 112 14 Q 134 4 148 24 Q 168 18 170 42 Q 180 46 178 68 Q 176 90 156 92 L 22 118 Z"/>
+    </clipPath>
   </defs>
-  <path
-    d="M54 111C33 111 18 95 18 74C18 53 34 36 55 35C62 17 80 6 101 6C123 6 141 18 148 36C168 37 184 53 184 73C184 94 168 111 147 111H54Z"
-    stroke="url(#riavaCloud)"
-    stroke-width="18"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  />
-  <path
-    d="M71 135L145 56"
-    stroke="#0A4A74"
-    stroke-width="21"
-    stroke-linecap="round"
-  />
-  <path
-    d="M104 125L141 159"
-    stroke="#0A4A74"
-    stroke-width="14"
-    stroke-linecap="round"
-  />
-  <path
-    d="M83 62L104 78L80 81L70 64L83 62Z"
-    fill="#14C8EC"
-  />
+  <path d="M 22 118 Q 4 118 4 96 Q 4 75 24 68 Q 16 46 36 37 Q 44 12 72 17 Q 86 2 112 14 Q 134 4 148 24 Q 168 18 170 42 Q 180 46 178 68 Q 176 90 156 92 L 22 118 Z"
+    fill="url(#cloudGrad)"/>
+  <defs>
+    <clipPath id="topZone">
+      <rect x="78" y="30" width="24" height="29"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#cloudClip)">
+    <circle cx="114" cy="58" r="27" fill="none" stroke="#1ad4f0" stroke-width="10" stroke-opacity="0.95"/>
+    <circle cx="66" cy="58" r="27" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="10"/>
+    <circle cx="114" cy="58" r="27" clip-path="url(#topZone)" fill="none" stroke="#1ad4f0" stroke-width="10" stroke-opacity="0.95"/>
+  </g>
 </svg>

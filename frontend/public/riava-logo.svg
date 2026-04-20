@@ -1,35 +1,31 @@
 <svg width="568" height="176" viewBox="0 0 568 176" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="riavaCloudFull" x1="18" y1="84" x2="186" y2="20" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#11BFE8"/>
-      <stop offset="1" stop-color="#0A4A74"/>
+    <linearGradient id="cloudGradFull" x1="0" y1="18" x2="180" y2="158" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#193f72"/>
+      <stop offset="55%" stop-color="#1b68a8"/>
+      <stop offset="100%" stop-color="#0db4cc"/>
     </linearGradient>
+    <clipPath id="cloudClipFull">
+      <path transform="translate(0,18)" d="M 22 118 Q 4 118 4 96 Q 4 75 24 68 Q 16 46 36 37 Q 44 12 72 17 Q 86 2 112 14 Q 134 4 148 24 Q 168 18 170 42 Q 180 46 178 68 Q 176 90 156 92 L 22 118 Z"/>
+    </clipPath>
   </defs>
-  <g>
-    <path
-      d="M54 111C33 111 18 95 18 74C18 53 34 36 55 35C62 17 80 6 101 6C123 6 141 18 148 36C168 37 184 53 184 73C184 94 168 111 147 111H54Z"
-      stroke="url(#riavaCloudFull)"
-      stroke-width="18"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-    />
-    <path
-      d="M71 135L145 56"
-      stroke="#0A4A74"
-      stroke-width="21"
-      stroke-linecap="round"
-    />
-    <path
-      d="M104 125L141 159"
-      stroke="#0A4A74"
-      stroke-width="14"
-      stroke-linecap="round"
-    />
-    <path
-      d="M83 62L104 78L80 81L70 64L83 62Z"
-      fill="#14C8EC"
-    />
+
+  <!-- Cloud mark (centered vertically in 176px canvas: offset y=18) -->
+  <path transform="translate(0,18)"
+    d="M 22 118 Q 4 118 4 96 Q 4 75 24 68 Q 16 46 36 37 Q 44 12 72 17 Q 86 2 112 14 Q 134 4 148 24 Q 168 18 170 42 Q 180 46 178 68 Q 176 90 156 92 L 22 118 Z"
+    fill="url(#cloudGradFull)"/>
+  <g clip-path="url(#cloudClipFull)">
+    <path transform="translate(0,18)"
+      d="M 91 67 C 88 50, 74 38, 60 44 C 47 50, 44 66, 50 76 C 56 86, 70 86, 80 80 C 86 76, 90 71, 91 67 Z"
+      fill="none" stroke="rgba(255,255,255,0.88)" stroke-width="10" stroke-linejoin="round" stroke-linecap="round"/>
+    <path transform="translate(0,18)"
+      d="M 91 67 C 94 84, 108 96, 122 90 C 135 84, 138 68, 132 58 C 126 48, 112 48, 102 54 C 96 58, 92 63, 91 67 Z"
+      fill="none" stroke="#1ad4f0" stroke-width="10" stroke-linejoin="round" stroke-linecap="round"/>
+    <circle cx="122" cy="70" r="7" fill="#1ad4f0" opacity="0.9"/>
+    <circle cx="91" cy="85" r="4" fill="white" opacity="0.7"/>
   </g>
+
+  <!-- Text -->
   <text
     x="218"
     y="88"
@@ -38,9 +34,7 @@
     font-size="76"
     font-weight="700"
     letter-spacing="1.8"
-  >
-    RIAVA
-  </text>
+  >RIAVA</text>
   <text
     x="222"
     y="132"
@@ -49,7 +43,5 @@
     font-size="26"
     font-weight="500"
     letter-spacing="9"
-  >
-    SYSTEM SPA
-  </text>
+  >SYSTEM SPA</text>
 </svg>
