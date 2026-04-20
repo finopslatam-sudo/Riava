@@ -51,7 +51,7 @@ export function Impact() {
             </span>
             <h2 className="text-4xl sm:text-5xl md:text-6xl font-black text-white tracking-tight mb-4">
               Resultados reales para{" "}
-              <span className="text-tron">negocios reales</span>
+              <span className="text-white">negocios reales</span>
             </h2>
             <p className="text-[#3d7080] max-w-xl mx-auto text-lg font-light">
               Impacto medible desde el primer día.

@@ -174,7 +174,7 @@ export function Hero() {
             >
               Reduce costos, automatiza y
               <br />
-              <span className="text-tron glow-tron">haz crecer tu negocio</span>
+              <span className="text-white">haz crecer tu negocio</span>
             </motion.h1>
 
             <motion.p

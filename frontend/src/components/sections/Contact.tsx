@@ -41,7 +41,7 @@ export function Contact() {
               </span>
               <h2 className="text-4xl sm:text-5xl font-black text-white tracking-tight mb-6">
                 Inicia tu proyecto{" "}
-                <span className="text-tron">con nosotros</span>
+                <span className="text-white">con nosotros</span>
               </h2>
               <p className="text-[#64748b] text-lg leading-relaxed mb-10 font-light">
                 Cuéntanos tu desafío. Respondemos en menos de 24 horas con una propuesta a medida.

@@ -30,7 +30,7 @@ export function Services() {
             </span>
             <h2 className="text-4xl sm:text-5xl md:text-6xl font-black text-white tracking-tight mb-5">
               Soluciones pensadas para{" "}
-              <span className="text-tron">vender, optimizar y escalar</span>
+              <span className="text-white">vender, optimizar y escalar</span>
             </h2>
             <p className="text-[#3d7080] max-w-xl mx-auto text-lg font-light">
               Servicios claros, orientados a resultados y diseñados para generar impacto desde el primer mes.

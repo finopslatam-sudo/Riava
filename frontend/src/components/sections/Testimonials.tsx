@@ -61,7 +61,7 @@ export function Testimonials() {
             </span>
             <h2 className="text-4xl sm:text-5xl md:text-6xl font-black text-white tracking-tight">
               Equipos que confían en{" "}
-              <span className="text-tron">resultados reales</span>
+              <span className="text-white">resultados reales</span>
             </h2>
           </div>
         </FadeIn>
