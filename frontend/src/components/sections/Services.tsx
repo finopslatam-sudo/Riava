@@ -232,7 +232,7 @@ export function Services() {
               <div className="tron-scanlines absolute inset-0 pointer-events-none" />
 
               {/* Text content */}
-              <div className="absolute inset-0 flex items-center px-8 sm:px-16 lg:pr-[290px] z-10">
+              <div className="absolute inset-0 flex items-center px-8 sm:px-16 lg:pr-[82.5] z-10">
                 <div className="max-w-xl w-full">
                   <div className="w-10 h-px mb-8" style={{ background: a.color }} />
 
@@ -315,14 +315,14 @@ export function Services() {
 
       {/* ── Right minimap ── */}
       <div
-        className="absolute right-0 top-0 bottom-0 w-[280px] hidden lg:flex border-l border-[#00e5ff]/6 overflow-hidden z-20"
+        className="absolute right-0 top-0 bottom-0 w-[320px] hidden lg:flex border-l border-[#00e5ff]/6 overflow-hidden z-20"
         style={{
           maskImage: "linear-gradient(to bottom, transparent 0%, black 18%, black 82%, transparent 100%)",
           WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 18%, black 82%, transparent 100%)",
         }}
       >
         {/* Thumbnail column */}
-        <div className="relative w-[120px] flex-shrink-0 overflow-hidden border-r border-[#00e5ff]/6">
+        <div className="relative w-[180px] flex-shrink-0 overflow-hidden border-r border-[#00e5ff]/6">
           {SERVICES.map((service, i) => {
             const a = ACCENT[i % ACCENT.length]
             return (
