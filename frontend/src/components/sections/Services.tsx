@@ -332,7 +332,7 @@ export function Services() {
               {/* Close button */}
               <button
                 onClick={() => { setZoomServiceId(null); setIsPaused(false) }}
-                className="fixed top-6 right-6 z-[60] flex items-center gap-2 px-4 py-2 text-xs font-mono rounded-full border transition-all hover:brightness-125"
+                className="fixed top-6 right-6 z-60 flex items-center gap-2 px-4 py-2 text-xs font-mono rounded-full border transition-all hover:brightness-125"
                 style={{ borderColor: `${color}40`, color, background: "rgba(0,10,15,0.85)", backdropFilter: "blur(8px)" }}
               >
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -343,7 +343,7 @@ export function Services() {
 
               {/* Service name overlay */}
               <div
-                className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[60] flex items-center gap-3 px-5 py-2.5 rounded-full"
+                className="fixed bottom-8 left-1/2 -translate-x-1/2 z-60 flex items-center gap-3 px-5 py-2.5 rounded-full"
                 style={{ background: "rgba(0,10,15,0.8)", border: `1px solid ${color}30`, backdropFilter: "blur(8px)" }}
               >
                 <span className="text-xl">{service.icon}</span>
