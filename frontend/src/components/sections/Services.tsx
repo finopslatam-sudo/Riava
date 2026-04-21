@@ -1,9 +1,10 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { SERVICES } from "@/lib/constants"
 import { cn } from "@/lib/utils"
+import { ZoomParallax } from "@/components/ui/ZoomParallax"
 
 const AUTO_PLAY_INTERVAL = 3500
 const ITEM_HEIGHT = 68
@@ -25,6 +26,8 @@ const wrap = (min: number, max: number, v: number) => {
 export function Services() {
   const [step, setStep] = useState(0)
   const [isPaused, setIsPaused] = useState(false)
+  const [zoomServiceId, setZoomServiceId] = useState<string | null>(null)
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
 
   const total = SERVICES.length
   const currentIndex = ((step % total) + total) % total
@@ -236,21 +239,33 @@ export function Services() {
                             ))}
                           </div>
 
-                          {/* CTA */}
-                          {service.cta && (
-                            <a
-                              href={service.cta.href}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-2 mt-4 text-xs font-mono group pointer-events-auto"
-                              style={{ color }}
+                          {/* CTA + Zoom trigger */}
+                          <div className="flex items-center gap-4 mt-4 pointer-events-auto">
+                            {service.cta && (
+                              <a
+                                href={service.cta.href}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-2 text-xs font-mono group"
+                                style={{ color }}
+                              >
+                                {service.cta.label}
+                                <svg className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                                </svg>
+                              </a>
+                            )}
+                            <button
+                              onClick={() => { setZoomServiceId(service.id); setIsPaused(true) }}
+                              className="inline-flex items-center gap-1.5 text-xs font-mono border rounded-full px-3 py-1 transition-all hover:brightness-125"
+                              style={{ borderColor: `${color}40`, color, background: `${color}10` }}
                             >
-                              {service.cta.label}
-                              <svg className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
                               </svg>
-                            </a>
-                          )}
+                              Explorar
+                            </button>
+                          </div>
                         </motion.div>
                       )}
                     </AnimatePresence>
@@ -287,6 +302,58 @@ export function Services() {
       </div>
 
       <div className="divider-tron absolute bottom-0 left-0 right-0" />
+
+      {/* ── Zoom overlay ── */}
+      <AnimatePresence>
+        {zoomServiceId && (() => {
+          const service = SERVICES.find(s => s.id === zoomServiceId)!
+          const color = ACCENT[SERVICES.findIndex(s => s.id === zoomServiceId) % ACCENT.length]
+          // Fill all 7 tile slots with the same image for layered depth
+          const images = Array(7).fill(service.image) as string[]
+
+          return (
+            <motion.div
+              key="zoom-overlay"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.35 }}
+              className="fixed inset-0 z-50 bg-[#000a0f]"
+            >
+              {/* Scrollable inner — ZoomParallax tracks this */}
+              <div
+                ref={scrollContainerRef}
+                className="h-full overflow-y-auto"
+                style={{ scrollbarWidth: "none" }}
+              >
+                <ZoomParallax images={images} scrollContainer={scrollContainerRef} />
+              </div>
+
+              {/* Close button */}
+              <button
+                onClick={() => { setZoomServiceId(null); setIsPaused(false) }}
+                className="fixed top-6 right-6 z-[60] flex items-center gap-2 px-4 py-2 text-xs font-mono rounded-full border transition-all hover:brightness-125"
+                style={{ borderColor: `${color}40`, color, background: "rgba(0,10,15,0.85)", backdropFilter: "blur(8px)" }}
+              >
+                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                Cerrar
+              </button>
+
+              {/* Service name overlay */}
+              <div
+                className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[60] flex items-center gap-3 px-5 py-2.5 rounded-full"
+                style={{ background: "rgba(0,10,15,0.8)", border: `1px solid ${color}30`, backdropFilter: "blur(8px)" }}
+              >
+                <span className="text-xl">{service.icon}</span>
+                <span className="text-xs font-mono tracking-widest uppercase" style={{ color }}>{service.title}</span>
+                <span className="text-[10px] font-mono text-[#1a3040]">SCROLL ↓</span>
+              </div>
+            </motion.div>
+          )
+        })()}
+      </AnimatePresence>
     </section>
   )
 }
