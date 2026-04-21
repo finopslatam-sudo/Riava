@@ -13,9 +13,8 @@ const ACCENT = [
   { color: "#00ff88", rgb: "0,255,136" },
 ]
 
-const MM_H = 250     // minimap item height (matches reference)
 const SNAP_MS = 500
-const LERP_F = 0.05  // matches reference LERP_FACTOR
+const LERP_F = 0.05
 
 function lerp(a: number, b: number, t: number) {
   return a + (b - a) * t
@@ -40,16 +39,9 @@ export function Services() {
   const [active, setActive] = useState(0)
   const sectionRef = useRef<HTMLElement>(null)
 
-  // Main slides
   const bgRef = useRef<Map<number, HTMLDivElement>>(new Map())
   const bgImgRef = useRef<Map<number, HTMLImageElement>>(new Map())
-
-  // Minimap thumbnail images
-  const mmImgRef = useRef<Map<number, HTMLDivElement>>(new Map())
-  const mmImgElRef = useRef<Map<number, HTMLImageElement>>(new Map())
-
-  // Minimap info text
-  const mmInfoRef = useRef<Map<number, HTMLDivElement>>(new Map())
+  const cardImgRef = useRef<Map<number, HTMLImageElement>>(new Map())
 
   const rafRef = useRef<number | null>(null)
   const activeRef = useRef(0)
@@ -82,13 +74,11 @@ export function Services() {
     const s = st.current
     const now = Date.now()
 
-    // Auto-snap after idle
     if (!s.snapping && !s.dragging && now - s.lastScroll > 100) {
       const idx = Math.max(0, Math.min(SERVICES.length - 1, Math.round(-s.tgt / s.sectionH)))
       if (Math.abs(s.tgt - (-idx * s.sectionH)) > 1) snapTo(idx)
     }
 
-    // Snap easing (cubic out)
     if (s.snapping) {
       const p = Math.min((now - s.snapT) / SNAP_MS, 1)
       s.tgt = lerp(s.snapFrom, s.snapTo, 1 - Math.pow(1 - p, 3))
@@ -97,24 +87,10 @@ export function Services() {
 
     if (!s.dragging) s.cur = lerp(s.cur, s.tgt, LERP_F)
 
-    const mmOffset = s.sectionH / 2 - MM_H / 2
-    const mmY = (s.cur * MM_H) / s.sectionH
-
-    // Main slides + parallax
     bgRef.current.forEach((el, i) => {
       el.style.transform = `translateY(${i * s.sectionH + s.cur}px)`
       applyParallax(bgImgRef.current.get(i) ?? null, s.cur, i, s.sectionH)
-    })
-
-    // Minimap thumbnail items + parallax
-    mmImgRef.current.forEach((el, i) => {
-      el.style.transform = `translateY(${mmOffset + i * MM_H + mmY}px)`
-      applyParallax(mmImgElRef.current.get(i) ?? null, mmY, i, MM_H)
-    })
-
-    // Minimap info items
-    mmInfoRef.current.forEach((el, i) => {
-      el.style.transform = `translateY(${mmOffset + i * MM_H + mmY}px)`
+      applyParallax(cardImgRef.current.get(i) ?? null, s.cur, i, s.sectionH)
     })
 
     const newActive = Math.max(0, Math.min(SERVICES.length - 1, Math.round(-s.cur / s.sectionH)))
@@ -136,7 +112,6 @@ export function Services() {
     const wheel = (e: WheelEvent) => {
       if (!section.contains(e.target as Node)) return
       const s = st.current
-      // Passthrough at boundaries
       if (e.deltaY < 0 && s.tgt >= 0) return
       if (e.deltaY > 0 && s.tgt <= maxScroll()) return
       e.preventDefault()
@@ -205,7 +180,7 @@ export function Services() {
                 else bgRef.current.delete(i)
               }}
             >
-              {/* Parallax image */}
+              {/* Background parallax image */}
               <div className="absolute inset-0 overflow-hidden">
                 <img
                   src={service.image}
@@ -220,80 +195,142 @@ export function Services() {
               </div>
 
               {/* Dark overlay */}
-              <div className="absolute inset-0" style={{ background: "rgba(0,10,15,0.76)" }} />
+              <div className="absolute inset-0" style={{ background: "rgba(0,10,15,0.78)" }} />
 
-              {/* Tron color glow */}
+              {/* Tron radial glow */}
               <div
                 className="absolute inset-0 pointer-events-none"
-                style={{ background: `radial-gradient(ellipse at 28% 55%, rgba(${a.rgb},0.13) 0%, transparent 55%)` }}
+                style={{ background: `radial-gradient(ellipse at 50% 50%, rgba(${a.rgb},0.09) 0%, transparent 65%)` }}
               />
 
               {/* Scanlines */}
               <div className="tron-scanlines absolute inset-0 pointer-events-none" />
 
-              {/* Text content */}
-              <div className="absolute inset-0 flex items-center px-8 sm:px-16 lg:pr-[82.5] z-10">
-                <div className="max-w-xl w-full">
-                  <div className="w-10 h-px mb-8" style={{ background: a.color }} />
-
-                  <div className="text-5xl mb-5">{service.icon}</div>
-
-                  {service.highlight && (
-                    <span
-                      className="inline-block px-2 py-0.5 text-xs font-mono rounded border tracking-widest mb-4"
-                      style={{
-                        borderColor: `rgba(${a.rgb},0.4)`,
-                        color: a.color,
-                        background: `rgba(${a.rgb},0.08)`,
-                      }}
-                    >
-                      DESTACADO
+              {/* ── Centered card ── */}
+              <div className="absolute inset-0 flex items-center justify-center z-10 px-6 sm:px-12">
+                <div
+                  className="w-full max-w-5xl"
+                  style={{
+                    border: `1px solid rgba(${a.rgb},0.14)`,
+                    background: "rgba(0,10,15,0.52)",
+                    backdropFilter: "blur(8px)",
+                  }}
+                >
+                  {/* Top bar */}
+                  <div
+                    className="flex items-center justify-between px-6 py-3"
+                    style={{ borderBottom: `1px solid rgba(${a.rgb},0.08)` }}
+                  >
+                    <span className="font-mono text-xs" style={{ color: a.color }}>
+                      {String(i + 1).padStart(2, "0")} / {String(SERVICES.length).padStart(2, "0")}
                     </span>
-                  )}
 
-                  <h3 className="text-4xl sm:text-5xl font-black text-white tracking-tight mb-5 leading-tight">
-                    {service.title}
-                  </h3>
-
-                  <p className="text-[#7ab8c8] text-lg leading-relaxed font-light mb-8 max-w-lg">
-                    {service.description}
-                  </p>
-
-                  <div className="flex flex-wrap gap-2 mb-8">
-                    {service.tags.map((tag) => (
+                    {service.highlight && (
                       <span
-                        key={tag}
-                        className="px-3 py-1 text-xs font-mono text-[#3d7080] border border-[#00e5ff]/10 rounded-full bg-[#000a0f]/50"
+                        className="text-[10px] font-mono px-2 py-0.5 rounded border tracking-widest"
+                        style={{
+                          borderColor: `rgba(${a.rgb},0.35)`,
+                          color: a.color,
+                          background: `rgba(${a.rgb},0.07)`,
+                        }}
                       >
-                        {tag}
+                        DESTACADO
                       </span>
-                    ))}
+                    )}
+
+                    <span className="text-[#1a3040] font-mono text-[10px] tracking-widest hidden sm:block">
+                      RIAVA SYSTEM SPA
+                    </span>
                   </div>
 
-                  {service.cta ? (
-                    <a
-                      href={service.cta.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-sm font-mono group"
-                      style={{ color: a.color }}
+                  {/* Main body: left | image | right */}
+                  <div className="flex items-stretch" style={{ minHeight: "300px" }}>
+
+                    {/* Left — title & description */}
+                    <div
+                      className="flex-1 flex flex-col justify-between p-6"
+                      style={{ borderRight: `1px solid rgba(${a.rgb},0.08)` }}
                     >
-                      {service.cta.label}
-                      <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                      </svg>
-                    </a>
-                  ) : (
-                    <a
-                      href="#contact"
-                      className="inline-flex items-center gap-2 text-sm font-mono text-[#3d7080] hover:text-[#00e5ff] transition-colors group"
+                      <div className="text-3xl mb-4">{service.icon}</div>
+                      <div>
+                        <h3 className="text-2xl sm:text-3xl font-black text-white leading-tight mb-3">
+                          {service.title}
+                        </h3>
+                        <p className="text-[#3d7080] text-xs leading-relaxed hidden sm:block max-w-xs">
+                          {service.description}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Center — image */}
+                    <div
+                      className="w-48 sm:w-72 shrink-0 overflow-hidden relative"
+                      style={{ borderRight: `1px solid rgba(${a.rgb},0.08)` }}
                     >
-                      Solicitar información
-                      <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                      </svg>
-                    </a>
-                  )}
+                      <img
+                        src={service.image}
+                        alt={service.title}
+                        className="absolute inset-0 w-full h-full object-cover"
+                        style={{ transformOrigin: "center center" }}
+                        ref={(el) => {
+                          if (el) cardImgRef.current.set(i, el)
+                          else cardImgRef.current.delete(i)
+                        }}
+                      />
+                      {/* Bottom accent gradient */}
+                      <div
+                        className="absolute inset-0 pointer-events-none"
+                        style={{
+                          background: `linear-gradient(to top, rgba(${a.rgb},0.25) 0%, transparent 55%)`,
+                        }}
+                      />
+                    </div>
+
+                    {/* Right — tags & CTA */}
+                    <div className="flex-1 flex flex-col justify-between p-6">
+                      <div className="flex flex-wrap gap-1.5">
+                        {service.tags.map((tag) => (
+                          <span
+                            key={tag}
+                            className="px-2 py-0.5 text-[10px] font-mono rounded-full border"
+                            style={{
+                              borderColor: `rgba(${a.rgb},0.15)`,
+                              color: "#3d7080",
+                            }}
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+
+                      <div>
+                        {service.cta ? (
+                          <a
+                            href={service.cta.href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 text-sm font-mono group"
+                            style={{ color: a.color }}
+                          >
+                            {service.cta.label}
+                            <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                            </svg>
+                          </a>
+                        ) : (
+                          <a
+                            href="#contact"
+                            className="inline-flex items-center gap-2 text-sm font-mono text-[#3d7080] hover:text-[#00e5ff] transition-colors group"
+                          >
+                            Solicitar información
+                            <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                            </svg>
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -301,133 +338,17 @@ export function Services() {
         })}
       </div>
 
-      {/* ── Header ── */}
+      {/* ── Header badge ── */}
       <div className="absolute top-8 left-8 sm:left-16 z-20 flex items-center gap-4">
         <FadeIn>
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full badge-tron text-xs font-mono tracking-widest uppercase">
             Servicios
           </span>
         </FadeIn>
-        <span className="text-[#1a3040] font-mono text-xs tracking-widest">
-          {String(active + 1).padStart(2, "0")} / {String(SERVICES.length).padStart(2, "0")}
-        </span>
       </div>
 
-      {/* ── Right minimap ── */}
-      <div
-        className="absolute right-0 top-0 bottom-0 w-[320px] hidden lg:flex border-l border-[#00e5ff]/6 overflow-hidden z-20"
-        style={{
-          maskImage: "linear-gradient(to bottom, transparent 0%, black 18%, black 82%, transparent 100%)",
-          WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 18%, black 82%, transparent 100%)",
-        }}
-      >
-        {/* Thumbnail column */}
-        <div className="relative w-[180px] flex-shrink-0 overflow-hidden border-r border-[#00e5ff]/6">
-          {SERVICES.map((service, i) => {
-            const a = ACCENT[i % ACCENT.length]
-            return (
-              <div
-                key={service.id}
-                className="absolute top-0 left-0 w-full overflow-hidden cursor-pointer"
-                style={{ height: `${MM_H}px` }}
-                ref={(el) => {
-                  if (el) mmImgRef.current.set(i, el)
-                  else mmImgRef.current.delete(i)
-                }}
-                onClick={() => snapTo(i)}
-              >
-                <img
-                  src={service.image}
-                  alt={service.title}
-                  className="absolute inset-0 w-full h-full object-cover"
-                  style={{ transformOrigin: "center center" }}
-                  ref={(el) => {
-                    if (el) mmImgElRef.current.set(i, el)
-                    else mmImgElRef.current.delete(i)
-                  }}
-                />
-                {/* Dimming overlay — less dim when active */}
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    background: "rgba(0,10,15,0.55)",
-                    opacity: active === i ? 0 : 1,
-                    transition: "opacity 0.4s ease",
-                  }}
-                />
-                {/* Accent highlight */}
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    background: `rgba(${a.rgb},0.18)`,
-                    opacity: active === i ? 1 : 0,
-                    transition: "opacity 0.4s ease",
-                  }}
-                />
-                {/* Left border accent */}
-                <div
-                  className="absolute left-0 top-0 bottom-0 w-0.5"
-                  style={{
-                    background: a.color,
-                    opacity: active === i ? 0.9 : 0,
-                    transition: "opacity 0.4s ease",
-                  }}
-                />
-              </div>
-            )
-          })}
-        </div>
-
-        {/* Info column */}
-        <div className="relative flex-1 overflow-hidden">
-          {SERVICES.map((service, i) => {
-            const a = ACCENT[i % ACCENT.length]
-            return (
-              <div
-                key={service.id}
-                className="absolute top-0 left-0 w-full flex flex-col justify-center px-5 cursor-pointer select-none"
-                style={{ height: `${MM_H}px` }}
-                ref={(el) => {
-                  if (el) mmInfoRef.current.set(i, el)
-                  else mmInfoRef.current.delete(i)
-                }}
-                onClick={() => snapTo(i)}
-              >
-                <p
-                  className="text-[10px] font-mono mb-1.5"
-                  style={{ color: active === i ? a.color : "#1a3040", transition: "color 0.3s" }}
-                >
-                  {String(i + 1).padStart(2, "0")}
-                </p>
-                <p
-                  className="text-xs font-semibold leading-snug mb-2"
-                  style={{ color: active === i ? "#e0f7ff" : "#3d7080", transition: "color 0.3s" }}
-                >
-                  {service.title}
-                </p>
-                <p
-                  className="text-[10px] font-mono leading-relaxed"
-                  style={{ color: active === i ? "#3d7080" : "#1a3040", transition: "color 0.3s" }}
-                >
-                  {service.tags.join(" · ")}
-                </p>
-                <div
-                  className="absolute right-0 top-1/2 -translate-y-1/2 w-px"
-                  style={{
-                    height: active === i ? "50px" : "0px",
-                    background: a.color,
-                    opacity: 0.5,
-                    transition: "height 0.4s ease",
-                  }}
-                />
-              </div>
-            )
-          })}
-        </div>
-      </div>
-
-      {/* ── Mobile dots ── */}
-      <div className="absolute bottom-10 right-6 flex flex-col gap-2 lg:hidden z-10">
+      {/* ── Navigation dots ── */}
+      <div className="absolute bottom-10 right-8 flex flex-col gap-2 z-10">
         {SERVICES.map((_, i) => (
           <button
             key={i}
