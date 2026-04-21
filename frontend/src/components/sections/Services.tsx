@@ -189,7 +189,8 @@ export function Services() {
                 else cardsRef.current.delete(i)
               }}
             >
-              <div className="max-w-2xl w-full">
+              {/* Text */}
+              <div className="flex-1 max-w-xl w-full">
                 {/* Accent line */}
                 <div className="w-10 h-px mb-8" style={{ background: a.color }} />
 
@@ -251,6 +252,42 @@ export function Services() {
                     </svg>
                   </a>
                 )}
+              </div>
+
+              {/* Image */}
+              <div className="hidden lg:flex flex-1 items-center justify-center pl-10 pr-4">
+                <div
+                  className="relative w-full rounded-2xl overflow-hidden"
+                  style={{
+                    maxHeight: "62vh",
+                    border: `1px solid rgba(${a.rgb}, 0.18)`,
+                    boxShadow: `0 0 60px rgba(${a.rgb}, 0.08), 0 8px 48px rgba(0,0,0,0.65)`,
+                  }}
+                >
+                  <img
+                    src={service.image}
+                    alt={service.title}
+                    className="w-full object-cover"
+                    style={{ maxHeight: "62vh", display: "block" }}
+                  />
+                  {/* Tron color overlay */}
+                  <div
+                    className="absolute inset-0 pointer-events-none"
+                    style={{
+                      background: `linear-gradient(135deg, rgba(0,10,15,0.25) 0%, rgba(${a.rgb},0.06) 100%)`,
+                    }}
+                  />
+                  {/* Bottom fade */}
+                  <div
+                    className="absolute bottom-0 left-0 right-0 h-1/4 pointer-events-none"
+                    style={{ background: "linear-gradient(to top, rgba(0,10,15,0.7), transparent)" }}
+                  />
+                  {/* Top accent line */}
+                  <div
+                    className="absolute top-0 left-0 right-0 h-px pointer-events-none"
+                    style={{ background: `linear-gradient(90deg, transparent, rgba(${a.rgb},0.6), transparent)` }}
+                  />
+                </div>
               </div>
             </div>
           )
