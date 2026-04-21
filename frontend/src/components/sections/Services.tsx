@@ -1,320 +1,292 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useCallback } from "react"
+import { motion, AnimatePresence } from "framer-motion"
 import { SERVICES } from "@/lib/constants"
-import { FadeIn } from "@/components/animations/FadeIn"
+import { cn } from "@/lib/utils"
+
+const AUTO_PLAY_INTERVAL = 3500
+const ITEM_HEIGHT = 68
 
 const ACCENT = [
-  { color: "#00e5ff", rgb: "0,229,255" },
-  { color: "#f000ff", rgb: "240,0,255" },
-  { color: "#00ff88", rgb: "0,255,136" },
-  { color: "#00e5ff", rgb: "0,229,255" },
-  { color: "#f000ff", rgb: "240,0,255" },
-  { color: "#00ff88", rgb: "0,255,136" },
+  "#00e5ff",
+  "#f000ff",
+  "#00ff88",
+  "#00e5ff",
+  "#f000ff",
+  "#00ff88",
 ]
 
-// Logical connections between services
-const RELATED: Record<string, string[]> = {
-  finops:     ["saas", "automation"],
-  booking:    ["websites", "automation"],
-  websites:   ["saas", "custom"],
-  saas:       ["finops", "custom"],
-  automation: ["finops", "booking"],
-  custom:     ["saas", "websites"],
+const wrap = (min: number, max: number, v: number) => {
+  const rangeSize = max - min
+  return ((((v - min) % rangeSize) + rangeSize) % rangeSize) + min
 }
 
 export function Services() {
-  const [expandedId, setExpandedId] = useState<string | null>(null)
-  const [angle, setAngle] = useState(0)
-  const [autoRotate, setAutoRotate] = useState(true)
-  const [pulseIds, setPulseIds] = useState<Set<string>>(new Set())
-  const containerRef = useRef<HTMLDivElement>(null)
+  const [step, setStep] = useState(0)
+  const [isPaused, setIsPaused] = useState(false)
+
+  const total = SERVICES.length
+  const currentIndex = ((step % total) + total) % total
+
+  const nextStep = useCallback(() => setStep(p => p + 1), [])
+
+  const handleChipClick = (index: number) => {
+    const diff = (index - currentIndex + total) % total
+    if (diff > 0) setStep(s => s + diff)
+  }
 
   useEffect(() => {
-    if (!autoRotate) return
-    const t = setInterval(() => {
-      setAngle(p => Number(((p + 0.3) % 360).toFixed(3)))
-    }, 50)
+    if (isPaused) return
+    const t = setInterval(nextStep, AUTO_PLAY_INTERVAL)
     return () => clearInterval(t)
-  }, [autoRotate])
+  }, [nextStep, isPaused])
 
-  function calcPos(index: number, total: number) {
-    const deg = ((index / total) * 360 + angle) % 360
-    const rad = (deg * Math.PI) / 180
-    const r = 200
-    return {
-      x: r * Math.cos(rad),
-      y: r * Math.sin(rad),
-      zIndex: Math.round(100 + 50 * Math.cos(rad)),
-      opacity: Math.max(0.4, Math.min(1, 0.4 + 0.6 * ((1 + Math.sin(rad)) / 2))),
-    }
+  const getCardStatus = (index: number) => {
+    const len = total
+    let d = index - currentIndex
+    if (d > len / 2) d -= len
+    if (d < -len / 2) d += len
+    if (d === 0) return "active"
+    if (d === -1) return "prev"
+    if (d === 1) return "next"
+    return "hidden"
   }
 
-  function toggle(id: string) {
-    if (expandedId === id) {
-      setExpandedId(null)
-      setAutoRotate(true)
-      setPulseIds(new Set())
-    } else {
-      setExpandedId(id)
-      setAutoRotate(false)
-      setPulseIds(new Set(RELATED[id] ?? []))
-    }
-  }
-
-  function handleBgClick(e: React.MouseEvent) {
-    if (e.target === containerRef.current) {
-      setExpandedId(null)
-      setAutoRotate(true)
-      setPulseIds(new Set())
-    }
-  }
+  const accent = ACCENT[currentIndex % ACCENT.length]
 
   return (
-    <section
-      id="services"
-      className="relative h-screen overflow-hidden bg-[#000a0f]"
-    >
-      <div className="divider-tron absolute top-0 left-0 right-0 z-30" />
+    <section id="services" className="relative w-full py-12 md:py-16 bg-[#000a0f]">
+      <div className="divider-tron absolute top-0 left-0 right-0" />
 
-      {/* Background glow + scanlines */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div
-          className="absolute inset-0"
-          style={{ background: "radial-gradient(ellipse at 50% 50%, rgba(0,229,255,0.05) 0%, transparent 65%)" }}
-        />
-        <div className="tron-scanlines absolute inset-0" />
-      </div>
+      <div className="w-full max-w-7xl mx-auto px-4 md:px-8">
 
-      {/* Header */}
-      <div className="absolute top-8 left-8 sm:left-16 z-20 flex items-center gap-4">
-        <FadeIn>
+        {/* Section label */}
+        <div className="flex items-center gap-3 mb-8 px-2">
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full badge-tron text-xs font-mono tracking-widest uppercase">
             Servicios
           </span>
-        </FadeIn>
-        <span className="text-[#1a3040] font-mono text-xs tracking-widest hidden sm:block">
-          {expandedId
-            ? SERVICES.find(s => s.id === expandedId)?.title
-            : "Selecciona un servicio"}
-        </span>
-      </div>
-
-      {/* Orbital stage */}
-      <div
-        ref={containerRef}
-        className="absolute inset-0 flex items-center justify-center"
-        onClick={handleBgClick}
-      >
-        {/* Orbit rings */}
-        <div className="absolute w-[400px] h-[400px] rounded-full border border-[#00e5ff]/8 pointer-events-none" />
-        <div className="absolute w-[430px] h-[430px] rounded-full border border-[#00e5ff]/4 pointer-events-none" />
-
-        {/* Center orb */}
-        <div
-          className="absolute w-16 h-16 rounded-full z-10 flex items-center justify-center pointer-events-none"
-          style={{
-            background: "radial-gradient(circle, rgba(0,229,255,0.18) 0%, rgba(0,10,15,0.95) 70%)",
-            border: "1px solid rgba(0,229,255,0.28)",
-            boxShadow: "0 0 32px rgba(0,229,255,0.15)",
-          }}
-        >
-          <div className="absolute w-20 h-20 rounded-full border border-[#00e5ff]/12 animate-ping opacity-50" />
-          <div className="absolute w-26 h-26 rounded-full border border-[#00e5ff]/6 animate-ping opacity-25" style={{ animationDelay: "0.6s" }} />
-          <span className="text-[#00e5ff] font-mono text-[9px] tracking-[0.2em]">RIAVA</span>
+          <div className="h-px flex-1 max-w-16" style={{ background: `linear-gradient(to right, ${accent}, transparent)` }} />
         </div>
 
-        {/* Service nodes */}
-        {SERVICES.map((service, i) => {
-          const pos = calcPos(i, SERVICES.length)
-          const a = ACCENT[i % ACCENT.length]
-          const isExpanded = expandedId === service.id
-          const isPulsing = pulseIds.has(service.id)
-          const isRelated = !!(expandedId && RELATED[expandedId]?.includes(service.id))
+        {/* Main card */}
+        <div
+          className="relative overflow-hidden rounded-4xl lg:rounded-5xl flex flex-col lg:flex-row min-h-150 lg:aspect-video"
+          style={{ border: `1px solid rgba(0,229,255,0.1)` }}
+        >
 
-          return (
+          {/* ── Left panel — service list ── */}
+          <div
+            className="w-full lg:w-[38%] min-h-80 lg:h-full relative z-30 flex flex-col items-start justify-center overflow-hidden px-8 md:px-14 lg:pl-14"
+            style={{ background: `linear-gradient(135deg, #000a0f 0%, #00141e 100%)` }}
+          >
+            {/* Top + bottom fade */}
             <div
-              key={service.id}
-              className="absolute transition-all duration-700 cursor-pointer select-none"
-              style={{
-                transform: `translate(${pos.x}px, ${pos.y}px)`,
-                zIndex: isExpanded ? 200 : pos.zIndex,
-                opacity: isExpanded ? 1 : pos.opacity,
-              }}
-              onClick={e => { e.stopPropagation(); toggle(service.id) }}
-            >
-              {/* Aura glow */}
-              <div
-                className={`absolute rounded-full ${isPulsing ? "animate-pulse" : ""}`}
-                style={{
-                  background: `radial-gradient(circle, rgba(${a.rgb},0.18) 0%, transparent 70%)`,
-                  width: "64px",
-                  height: "64px",
-                  left: "-12px",
-                  top: "-12px",
-                  pointerEvents: "none",
-                }}
-              />
+              className="absolute inset-x-0 top-0 h-16 z-40 pointer-events-none"
+              style={{ background: "linear-gradient(to bottom, #000a0f, transparent)" }}
+            />
+            <div
+              className="absolute inset-x-0 bottom-0 h-16 z-40 pointer-events-none"
+              style={{ background: "linear-gradient(to top, #000a0f, transparent)" }}
+            />
 
-              {/* Node */}
-              <div
-                className="w-10 h-10 rounded-full flex items-center justify-center text-lg transition-all duration-300"
-                style={{
-                  transform: isExpanded ? "scale(1.5)" : "scale(1)",
-                  background: isExpanded
-                    ? `rgba(${a.rgb},0.12)`
-                    : "rgba(0,10,15,0.85)",
-                  border: `2px solid ${isExpanded || isRelated ? a.color : "rgba(0,229,255,0.18)"}`,
-                  boxShadow: isExpanded
-                    ? `0 0 24px rgba(${a.rgb},0.45), inset 0 0 12px rgba(${a.rgb},0.08)`
-                    : isRelated
-                    ? `0 0 12px rgba(${a.rgb},0.3)`
-                    : "none",
-                }}
-              >
-                {service.icon}
-              </div>
+            {/* Tron glow behind list */}
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{ background: `radial-gradient(ellipse at 20% 50%, rgba(0,229,255,0.06) 0%, transparent 60%)` }}
+            />
+            <div className="tron-scanlines absolute inset-0 pointer-events-none" />
 
-              {/* Label */}
-              <div
-                className="absolute top-12 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] font-mono tracking-wider transition-all duration-300"
-                style={{
-                  color: isExpanded ? a.color : isRelated ? `rgba(${a.rgb},0.7)` : "rgba(255,255,255,0.4)",
-                  transform: isExpanded ? "translateX(-50%) scale(1.1)" : "translateX(-50%)",
-                }}
-              >
-                {service.title.split(" ").slice(0, 2).join(" ")}
-              </div>
+            {/* Scrolling chips */}
+            <div className="relative w-full h-full flex items-center justify-center lg:justify-start z-20">
+              {SERVICES.map((service, index) => {
+                const isActive = index === currentIndex
+                const distance = index - currentIndex
+                const wd = wrap(-(total / 2), total / 2, distance)
+                const color = ACCENT[index % ACCENT.length]
 
-              {/* Expanded card */}
-              {isExpanded && (
-                <div
-                  className="absolute top-[4.5rem] left-1/2 -translate-x-1/2 w-64"
-                  style={{
-                    background: "rgba(0,8,14,0.94)",
-                    border: `1px solid rgba(${a.rgb},0.22)`,
-                    backdropFilter: "blur(14px)",
-                    boxShadow: `0 0 48px rgba(${a.rgb},0.1), 0 24px 48px rgba(0,0,0,0.6)`,
-                  }}
-                >
-                  {/* Top accent */}
-                  <div className="absolute -top-px left-0 right-0 h-px" style={{ background: a.color }} />
-                  {/* Connector */}
-                  <div className="absolute -top-[18px] left-1/2 -translate-x-1/2 w-px h-[18px]" style={{ background: `rgba(${a.rgb},0.35)` }} />
-
-                  <div className="p-4">
-                    {/* Card header */}
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="font-mono text-[10px]" style={{ color: a.color }}>
-                        {String(i + 1).padStart(2, "0")} / {String(SERVICES.length).padStart(2, "0")}
-                      </span>
-                      {service.highlight && (
-                        <span
-                          className="text-[9px] font-mono px-1.5 py-0.5 rounded border tracking-widest"
-                          style={{
-                            borderColor: `rgba(${a.rgb},0.3)`,
-                            color: a.color,
-                            background: `rgba(${a.rgb},0.07)`,
-                          }}
-                        >
-                          DESTACADO
-                        </span>
+                return (
+                  <motion.div
+                    key={service.id}
+                    style={{ height: ITEM_HEIGHT, width: "fit-content" }}
+                    animate={{
+                      y: wd * ITEM_HEIGHT,
+                      opacity: 1 - Math.abs(wd) * 0.28,
+                    }}
+                    transition={{ type: "spring", stiffness: 90, damping: 22, mass: 1 }}
+                    className="absolute flex items-center justify-start"
+                  >
+                    <button
+                      onClick={() => handleChipClick(index)}
+                      onMouseEnter={() => setIsPaused(true)}
+                      onMouseLeave={() => setIsPaused(false)}
+                      className={cn(
+                        "relative flex items-center gap-3 px-5 py-3 rounded-full transition-all duration-500 text-left border font-mono text-sm tracking-widest uppercase",
+                        isActive
+                          ? "text-[#000a0f]"
+                          : "bg-transparent text-white/40 hover:text-white/70"
                       )}
-                    </div>
-
-                    <h3 className="text-sm font-bold text-white mb-2 leading-snug">
-                      {service.title}
-                    </h3>
-                    <p className="text-[11px] text-[#3d7080] leading-relaxed mb-3">
-                      {service.description}
-                    </p>
-
-                    {/* Tags */}
-                    <div className="flex flex-wrap gap-1 mb-3">
-                      {service.tags.map(tag => (
-                        <span
-                          key={tag}
-                          className="px-1.5 py-0.5 text-[9px] font-mono rounded border"
-                          style={{ borderColor: `rgba(${a.rgb},0.14)`, color: "#3d7080" }}
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-
-                    {/* CTA */}
-                    {service.cta ? (
-                      <a
-                        href={service.cta.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 text-[11px] font-mono group"
-                        style={{ color: a.color }}
-                        onClick={e => e.stopPropagation()}
-                      >
-                        {service.cta.label}
-                        <svg className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                        </svg>
-                      </a>
-                    ) : (
-                      <a
-                        href="#contact"
-                        className="inline-flex items-center gap-1.5 text-[11px] font-mono text-[#3d7080] hover:text-[#00e5ff] transition-colors group"
-                        onClick={e => e.stopPropagation()}
-                      >
-                        Solicitar información
-                        <svg className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                        </svg>
-                      </a>
-                    )}
-
-                    {/* Related services */}
-                    {(RELATED[service.id]?.length ?? 0) > 0 && (
-                      <div
-                        className="mt-3 pt-3"
-                        style={{ borderTop: `1px solid rgba(${a.rgb},0.1)` }}
-                      >
-                        <p className="text-[9px] font-mono text-[#1a3040] mb-2 tracking-widest uppercase">
-                          Relacionados
-                        </p>
-                        <div className="flex flex-wrap gap-1">
-                          {RELATED[service.id].map(relId => {
-                            const rel = SERVICES.find(s => s.id === relId)
-                            if (!rel) return null
-                            return (
-                              <button
-                                key={relId}
-                                className="flex items-center gap-1 px-2 py-0.5 text-[9px] font-mono border rounded transition-colors hover:border-[#00e5ff]/30 hover:text-[#7ab8c8]"
-                                style={{ borderColor: "rgba(0,229,255,0.12)", color: "#3d7080" }}
-                                onClick={e => { e.stopPropagation(); toggle(relId) }}
-                              >
-                                {rel.icon} {rel.title.split(" ")[0]}
-                              </button>
-                            )
-                          })}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
+                      style={isActive ? {
+                        background: color,
+                        borderColor: color,
+                        boxShadow: `0 0 24px rgba(0,229,255,0.35)`,
+                      } : {
+                        borderColor: "rgba(0,229,255,0.12)",
+                      }}
+                    >
+                      <span className="text-base leading-none">{service.icon}</span>
+                      <span className="whitespace-nowrap text-xs">{service.title}</span>
+                    </button>
+                  </motion.div>
+                )
+              })}
             </div>
-          )
-        })}
+          </div>
+
+          {/* ── Right panel — image cards ── */}
+          <div
+            className="flex-1 min-h-105 lg:h-full relative flex items-center justify-center py-12 md:py-16 lg:py-12 px-6 md:px-10 overflow-hidden"
+            style={{ background: "#000e17", borderLeft: "1px solid rgba(0,229,255,0.06)" }}
+          >
+            {/* Background glow that follows active accent */}
+            <div
+              className="absolute inset-0 pointer-events-none transition-all duration-700"
+              style={{ background: `radial-gradient(ellipse at 50% 50%, rgba(0,229,255,0.04) 0%, transparent 65%)` }}
+            />
+
+            <div className="relative w-full max-w-95 aspect-4/5 flex items-center justify-center">
+              {SERVICES.map((service, index) => {
+                const status = getCardStatus(index)
+                const isActive = status === "active"
+                const isPrev = status === "prev"
+                const isNext = status === "next"
+                const color = ACCENT[index % ACCENT.length]
+
+                return (
+                  <motion.div
+                    key={service.id}
+                    initial={false}
+                    animate={{
+                      x: isActive ? 0 : isPrev ? -90 : isNext ? 90 : 0,
+                      scale: isActive ? 1 : isPrev || isNext ? 0.86 : 0.7,
+                      opacity: isActive ? 1 : isPrev || isNext ? 0.35 : 0,
+                      rotate: isPrev ? -3 : isNext ? 3 : 0,
+                      zIndex: isActive ? 20 : isPrev || isNext ? 10 : 0,
+                    }}
+                    transition={{ type: "spring", stiffness: 260, damping: 25, mass: 0.8 }}
+                    className="absolute inset-0 rounded-[1.8rem] overflow-hidden origin-center"
+                    style={{
+                      border: `2px solid ${isActive ? color : "rgba(0,229,255,0.08)"}`,
+                      boxShadow: isActive ? `0 0 40px rgba(0,229,255,0.15)` : "none",
+                      pointerEvents: isActive ? "auto" : "none",
+                    }}
+                  >
+                    {/* Service image */}
+                    <img
+                      src={service.image}
+                      alt={service.title}
+                      className={cn(
+                        "w-full h-full object-cover transition-all duration-700",
+                        isActive ? "grayscale-0 brightness-100" : "grayscale brightness-50"
+                      )}
+                    />
+
+                    {/* Dark overlay */}
+                    <div className="absolute inset-0" style={{ background: "rgba(0,10,15,0.45)" }} />
+
+                    {/* Tron scanlines */}
+                    <div className="tron-scanlines absolute inset-0 pointer-events-none" />
+
+                    {/* Bottom info — only active */}
+                    <AnimatePresence>
+                      {isActive && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 10 }}
+                          className="absolute inset-x-0 bottom-0 p-8 pt-24 pointer-events-none"
+                          style={{ background: "linear-gradient(to top, rgba(0,10,15,0.95) 0%, rgba(0,10,15,0.6) 50%, transparent 100%)" }}
+                        >
+                          {/* Pill label */}
+                          <div
+                            className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-mono tracking-widest uppercase mb-3"
+                            style={{
+                              background: "rgba(0,10,15,0.8)",
+                              border: `1px solid ${color}`,
+                              color: color,
+                            }}
+                          >
+                            {String(index + 1).padStart(2, "0")} · {service.title}
+                          </div>
+
+                          <p className="text-white font-light text-lg md:text-xl leading-snug tracking-tight mb-4">
+                            {service.description}
+                          </p>
+
+                          {/* Tags */}
+                          <div className="flex flex-wrap gap-1.5">
+                            {service.tags.map(tag => (
+                              <span
+                                key={tag}
+                                className="px-2 py-0.5 text-[10px] font-mono rounded-full border"
+                                style={{ borderColor: `${color}30`, color: "#3d7080" }}
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+
+                          {/* CTA */}
+                          {service.cta && (
+                            <a
+                              href={service.cta.href}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 mt-4 text-xs font-mono group pointer-events-auto"
+                              style={{ color }}
+                            >
+                              {service.cta.label}
+                              <svg className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                              </svg>
+                            </a>
+                          )}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
+                    {/* Top live indicator — active only */}
+                    <div className={cn("absolute top-6 left-6 flex items-center gap-2 transition-opacity duration-300", isActive ? "opacity-100" : "opacity-0")}>
+                      <div className="w-1.5 h-1.5 rounded-full" style={{ background: color, boxShadow: `0 0 8px ${color}` }} />
+                      <span className="text-white/60 text-[9px] font-mono tracking-[0.25em] uppercase">
+                        {service.highlight ? "DESTACADO" : "RIAVA"}
+                      </span>
+                    </div>
+                  </motion.div>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Progress dots */}
+        <div className="flex items-center justify-center gap-2 mt-6">
+          {SERVICES.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => handleChipClick(i)}
+              className="rounded-full transition-all duration-300"
+              style={{
+                width: i === currentIndex ? "24px" : "4px",
+                height: "4px",
+                background: i === currentIndex ? accent : "rgba(0,229,255,0.15)",
+              }}
+            />
+          ))}
+        </div>
       </div>
 
-      {/* Hint text */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex items-center gap-3">
-        <div className="h-px w-8 bg-gradient-to-r from-transparent to-[#00e5ff]/30" />
-        <span className="text-[#1a3040] font-mono text-[10px] tracking-widest">
-          {expandedId ? "CLICK FUERA PARA CERRAR" : "CLICK EN UN NODO PARA VER DETALLE"}
-        </span>
-        <div className="h-px w-8 bg-gradient-to-l from-transparent to-[#00e5ff]/30" />
-      </div>
-
-      <div className="divider-tron absolute bottom-0 left-0 right-0 z-30" />
+      <div className="divider-tron absolute bottom-0 left-0 right-0" />
     </section>
   )
 }
