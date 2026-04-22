@@ -149,7 +149,7 @@ export function Hero() {
 
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_72%_34%,rgba(0,229,255,0.18),transparent_22%),radial-gradient(circle_at_78%_22%,rgba(240,0,255,0.12),transparent_18%)]" />
 
-      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-7xl items-center px-4 pb-20 pt-28 sm:px-6 lg:px-8">
+      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-7xl items-center px-4 pb-20 pt-52 sm:px-6 lg:px-8">
         <div className="grid w-full items-center gap-10 lg:grid-cols-[0.92fr_1.08fr] lg:gap-4">
           <div className="order-2 lg:order-1">
             <motion.div
