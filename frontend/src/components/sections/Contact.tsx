@@ -17,9 +17,18 @@ export function Contact() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setStatus("sending")
-    await new Promise((r) => setTimeout(r, 1200))
-    setStatus("success")
-    setForm({ name: "", email: "", message: "" })
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      })
+      if (!res.ok) throw new Error()
+      setStatus("success")
+      setForm({ name: "", email: "", message: "" })
+    } catch {
+      setStatus("error")
+    }
   }
 
   return (
@@ -149,6 +158,12 @@ export function Contact() {
                       className="w-full px-4 py-3 rounded-lg bg-[#060612] border border-white/8 text-white placeholder-[#1e2a3a] focus:outline-none focus:border-[#00e5ff]/40 transition-all duration-200 text-sm resize-none"
                     />
                   </div>
+
+                  {status === "error" && (
+                    <p className="text-red-400 text-xs font-mono text-center">
+                      Error al enviar. Intenta nuevamente o escríbenos a contacto@riava.cl
+                    </p>
+                  )}
 
                   <button
                     type="submit"
