@@ -11,7 +11,7 @@ export function RiavaLogo({
   className,
   alt,
 }: RiavaLogoProps) {
-  const src = variant === "full" ? "/riava-dark.png" : "/riava-mark.svg"
+  const src = variant === "full" ? "/riava.png" : "/riava-mark.svg"
   const fallbackAlt = variant === "full" ? "RIAVA System SPA" : "RIAVA"
 
   return (
