@@ -27,9 +27,9 @@ export function Navbar() {
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between py-2">
+        <div className="flex items-center justify-between py-4">
           <a href="#" className="group">
-            <RiavaLogo className="h-44 sm:h-48 w-auto" />
+            <RiavaLogo className="h-auto w-40 sm:w-52" />
           </a>
 
           {/* Desktop nav */}
