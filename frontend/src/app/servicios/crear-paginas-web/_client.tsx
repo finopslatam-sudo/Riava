@@ -218,7 +218,7 @@ export function CrearPaginasWebClient() {
                   <div className={s.collageUrlBar}>riava.cl</div>
                 </div>
                 <div className={s.collageVideoContainer}>
-                  <video muted loop playsInline preload="none">
+                  <video muted loop playsInline autoPlay preload="auto">
                     <source src={item.src} type="video/mp4" />
                   </video>
                   {item.hasUi && (
