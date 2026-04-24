@@ -104,7 +104,7 @@ export function CrearPaginasWebClient() {
             </p>
             <div className={s.heroActions}>
               <a href="#contacto" className={s.btnPrimary}>Cotizar ahora</a>
-              <a href="#portafolio" className={s.btnSecondary}>Ver proyectos</a>
+              <a href="#galeria" className={s.btnSecondary}>Ver proyectos</a>
             </div>
           </motion.div>
 
@@ -187,7 +187,7 @@ export function CrearPaginasWebClient() {
       </section>
 
       {/* ── VIDEO COLLAGE ─────────────────────── */}
-      <section className={s.collageSection}>
+      <section className={s.collageSection} id="galeria">
         <div className={s.collageHeader}>
           <span className={s.collageGalleryTag}>Galería de proyectos</span>
         </div>
