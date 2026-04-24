@@ -18,7 +18,7 @@ export function RiavaLogo({
     <img
       src={src}
       alt={alt ?? fallbackAlt}
-      className={cn("block h-auto w-auto", className)}
+      className={cn("block h-auto w-auto mix-blend-screen", className)}
     />
   )
 }
