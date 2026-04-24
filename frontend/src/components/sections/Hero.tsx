@@ -284,10 +284,7 @@ export function Hero() {
                 }
                 className="relative h-[380px] sm:h-[500px] lg:h-[640px]"
               >
-                <div className="pointer-events-none absolute left-1/2 top-[58%] z-10 w-14 -translate-x-1/2 -translate-y-1/2 opacity-95 drop-shadow-[0_0_22px_rgba(255,255,255,0.5)] sm:w-16 lg:top-[57%] lg:w-20">
-                  <img src="/riava2.png" alt="Logo RIAVA en el pecho del robot" className="w-full h-auto" />
-                </div>
-                <SplineScene
+<SplineScene
                   scene={ROBOT_SCENE}
                   onLoad={handleSplineLoad}
                   className="h-full w-full scale-[1.16] bg-transparent lg:scale-[1.24]"
