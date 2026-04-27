@@ -74,6 +74,17 @@ export const SERVICES = [
     tags: ["A medida", "Integración", "API"],
     image: "/services/software_medida.png",
   },
+  {
+    id: "media-ia",
+    title: "Imágenes y videos publicitarios con IA",
+    description:
+      "Creamos imágenes y videos publicitarios animados con inteligencia artificial para empresas, servicios y productos. Contenido visual de alta calidad, personalizado y listo para campañas digitales.",
+    icon: "🎬",
+    cta: null,
+    highlight: false,
+    tags: ["IA Generativa", "Video", "Publicidad", "Animación"],
+    image: "/services/media_ia.png",
+  },
 ]
 
 export const TESTIMONIALS = [
