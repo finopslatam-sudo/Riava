@@ -12,6 +12,7 @@ const SERVICE_LINKS = [
   { label: "Desarrollo SaaS", href: "/servicios/desarrollo-saas", icon: "🚀" },
   { label: "Software a medida", href: "/servicios/software-a-medida", icon: "⚙️" },
   { label: "FinOps Cloud AWS", href: "/servicios/finops-cloud-aws", icon: "💰" },
+  { label: "Contenido IA", href: "/servicios/contenido-ia", icon: "🎬" },
 ]
 
 export function Navbar() {
