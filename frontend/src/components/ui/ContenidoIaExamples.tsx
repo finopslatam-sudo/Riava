@@ -2,54 +2,69 @@
 
 import { motion } from "framer-motion"
 
+const PLATFORMS = [
+  { name: "Instagram", icon: "📸" },
+  { name: "TikTok", icon: "🎵" },
+  { name: "Facebook Ads", icon: "📢" },
+  { name: "YouTube", icon: "▶️" },
+  { name: "Pinterest", icon: "📌" },
+  { name: "LinkedIn", icon: "💼" },
+]
+
 const EXAMPLES = [
   {
-    img: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=1200&auto=format&fit=crop",
-    label: "Producto · Imagen",
-    category: "Zapatillas",
+    img: "https://images.unsplash.com/photo-1518611012118-696072aa579a?q=80&w=1200&auto=format&fit=crop",
+    concept: "Zapatillas levitando en la Luna",
+    desc: "El producto flota sobre la superficie lunar con la Tierra de fondo — imposible de fotografiar, posible con IA.",
+    category: "Calzado · Producto",
     type: "image",
+    accent: "#f000ff",
+    wide: true,
   },
   {
-    img: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=1200&auto=format&fit=crop",
-    label: "Gastronomía · Video",
-    category: "Restaurante",
-    type: "video",
-  },
-  {
-    img: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?q=80&w=1200&auto=format&fit=crop",
-    label: "Belleza · Imagen",
-    category: "Cosmética",
+    img: "https://images.unsplash.com/photo-1614730321146-b6fa6a46bcb4?q=80&w=1200&auto=format&fit=crop",
+    concept: "Luna y espacio de fondo",
+    desc: "Ambientes espaciales fotorrealistas como escenario publicitario.",
+    category: "Escenografía · IA",
     type: "image",
+    accent: "#8b5cf6",
+    wide: false,
   },
   {
-    img: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=1200&auto=format&fit=crop",
-    label: "Lujo · Video",
-    category: "Relojes",
+    img: "https://images.unsplash.com/photo-1587300003388-59208cc962cb?q=80&w=1200&auto=format&fit=crop",
+    concept: "Perro con moño corriendo entre las nubes",
+    desc: "Mascota con accesorios corriendo en un cielo de ensueño — ternura con impacto visual garantizado.",
+    category: "Mascotas · Lifestyle",
     type: "video",
+    accent: "#00e5ff",
+    wide: false,
   },
   {
-    img: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1200&auto=format&fit=crop",
-    label: "Moda · Imagen",
-    category: "Retail",
+    img: "https://images.unsplash.com/photo-1503236823255-94609f598e71?q=80&w=1200&auto=format&fit=crop",
+    concept: "Maquillaje explosivo con frutas y algodones",
+    desc: "Una explosión de color, texturas y elementos visuales que hace que el scroll se detenga al instante.",
+    category: "Belleza · Cosmética",
+    type: "video",
+    accent: "#f000ff",
+    wide: true,
+  },
+  {
+    img: "https://images.unsplash.com/photo-1490474418585-ba9bad8fd0ea?q=80&w=1200&auto=format&fit=crop",
+    concept: "Frutas y colores saturados",
+    desc: "Paletas de color ultra vivas que potencian el mensaje de tu marca en cualquier plataforma.",
+    category: "Alimentos · Lifestyle",
     type: "image",
+    accent: "#00ff88",
+    wide: false,
   },
   {
-    img: "https://images.unsplash.com/photo-1526045612212-70caf35c14df?q=80&w=1200&auto=format&fit=crop",
-    label: "Alimentos · Video",
-    category: "Food styling",
-    type: "video",
-  },
-  {
-    img: "https://images.unsplash.com/photo-1560769629-975ec94e6a86?q=80&w=1200&auto=format&fit=crop",
-    label: "Lifestyle · Imagen",
-    category: "Calzado",
+    img: "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?q=80&w=1200&auto=format&fit=crop",
+    concept: "Arte generativo de marca",
+    desc: "Identidad visual AI-first: cada pieza es única, coherente con tu marca y diseñada para convertir.",
+    category: "Branding · Digital",
     type: "image",
-  },
-  {
-    img: "https://images.unsplash.com/photo-1611162617263-4ec3d744e816?q=80&w=1200&auto=format&fit=crop",
-    label: "Digital · Video",
-    category: "Redes sociales",
-    type: "video",
+    accent: "#8b5cf6",
+    wide: false,
   },
 ]
 
@@ -57,58 +72,146 @@ const fadeUp = { hidden: { opacity: 0, y: 24 }, visible: { opacity: 1, y: 0 } }
 
 export function ContenidoIaExamples() {
   return (
-    <section style={{ background: "#000a0f", padding: "80px 0 96px" }}>
+    <section style={{ background: "#000a0f", padding: "80px 0 100px" }}>
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px" }}>
+
+        {/* ── Mensaje principal de plataformas ── */}
         <motion.div
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
           variants={fadeUp}
           transition={{ duration: 0.6 }}
-          style={{ textAlign: "center", marginBottom: 48 }}
+          style={{
+            textAlign: "center",
+            marginBottom: 64,
+            padding: "48px 32px",
+            borderRadius: 24,
+            border: "1px solid rgba(240,0,255,0.18)",
+            background: "linear-gradient(135deg, rgba(240,0,255,0.05) 0%, rgba(139,92,246,0.06) 100%)",
+            position: "relative",
+            overflow: "hidden",
+          }}
         >
+          {/* glow blob */}
+          <div style={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: 500,
+            height: 300,
+            borderRadius: "50%",
+            background: "radial-gradient(ellipse, rgba(240,0,255,0.1) 0%, transparent 70%)",
+            pointerEvents: "none",
+          }} />
+
           <span style={{
             display: "inline-block",
-            padding: "6px 16px",
+            padding: "6px 18px",
             borderRadius: 999,
-            border: "1px solid rgba(240,0,255,0.35)",
+            border: "1px solid rgba(240,0,255,0.4)",
             color: "#f000ff",
-            background: "rgba(240,0,255,0.08)",
+            background: "rgba(240,0,255,0.1)",
             fontSize: 11,
             fontFamily: "monospace",
-            letterSpacing: "0.15em",
+            letterSpacing: "0.18em",
             textTransform: "uppercase",
-            marginBottom: 20,
+            marginBottom: 24,
           }}>
-            Ejemplos de contenido generado con IA
+            Publicidad digital con IA
           </span>
+
           <h2 style={{
             color: "#fff",
-            fontSize: "clamp(1.6rem, 3vw, 2.4rem)",
-            fontWeight: 700,
-            margin: "0 0 16px",
-            letterSpacing: "-0.02em",
+            fontSize: "clamp(1.7rem, 3.5vw, 2.6rem)",
+            fontWeight: 800,
+            margin: "0 0 20px",
+            letterSpacing: "-0.025em",
+            lineHeight: 1.15,
           }}>
-            Imágenes y videos que{" "}
+            Creamos imágenes y videos comerciales{" "}
             <span style={{
               background: "linear-gradient(90deg, #f000ff, #8b5cf6)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
               backgroundClip: "text",
             }}>
-              detienen el scroll
+              que venden
             </span>
           </h2>
-          <p style={{ color: "#64748b", fontSize: "1rem", maxWidth: 520, margin: "0 auto" }}>
-            Contenido publicitario de alto impacto creado con IA, listo para Instagram, TikTok, Facebook Ads y más.
+
+          <p style={{
+            color: "#94a3b8",
+            fontSize: "1.1rem",
+            maxWidth: 600,
+            margin: "0 auto 36px",
+            lineHeight: 1.65,
+          }}>
+            Contenido publicitario de alto impacto generado con inteligencia artificial —
+            escenas imposibles de fotografiar, creatividades llamativas y videos animados
+            diseñados para convertir en redes sociales.
+          </p>
+
+          {/* Plataformas */}
+          <div style={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 10,
+            justifyContent: "center",
+          }}>
+            {PLATFORMS.map((p) => (
+              <span
+                key={p.name}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 7,
+                  padding: "8px 18px",
+                  borderRadius: 999,
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  background: "rgba(255,255,255,0.04)",
+                  color: "#cbd5e1",
+                  fontSize: 13,
+                  fontWeight: 500,
+                }}
+              >
+                <span style={{ fontSize: 15 }}>{p.icon}</span>
+                {p.name}
+              </span>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* ── Título sección ejemplos ── */}
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeUp}
+          transition={{ duration: 0.6 }}
+          style={{ textAlign: "center", marginBottom: 40 }}
+        >
+          <h3 style={{
+            color: "#fff",
+            fontSize: "clamp(1.3rem, 2.5vw, 1.9rem)",
+            fontWeight: 700,
+            margin: "0 0 10px",
+            letterSpacing: "-0.02em",
+          }}>
+            Ejemplos del tipo de contenido que creamos
+          </h3>
+          <p style={{ color: "#64748b", fontSize: "0.95rem" }}>
+            Cada imagen y video es único, personalizado y diseñado para tu marca y audiencia
           </p>
         </motion.div>
 
-        {/* Grid de ejemplos */}
+        {/* ── Grid de ejemplos ── */}
         <div style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
-          gap: 16,
+          gridTemplateColumns: "repeat(3, 1fr)",
+          gridAutoRows: "280px",
+          gap: 14,
         }}>
           {EXAMPLES.map((ex, i) => (
             <motion.div
@@ -117,118 +220,126 @@ export function ContenidoIaExamples() {
               whileInView="visible"
               viewport={{ once: true }}
               variants={fadeUp}
-              transition={{ duration: 0.5, delay: i * 0.07 }}
+              transition={{ duration: 0.5, delay: i * 0.08 }}
               style={{
                 position: "relative",
-                borderRadius: 16,
+                borderRadius: 18,
                 overflow: "hidden",
-                aspectRatio: i % 3 === 0 ? "4/5" : "1/1",
-                border: "1px solid rgba(240,0,255,0.12)",
+                border: `1px solid ${ex.accent}25`,
+                gridColumn: ex.wide ? "span 2" : "span 1",
                 cursor: "pointer",
               }}
-              whileHover={{ scale: 1.02, borderColor: "rgba(240,0,255,0.45)" }}
+              whileHover={{ scale: 1.015 }}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={ex.img}
-                alt={ex.category}
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                  display: "block",
-                  transition: "transform 0.4s ease",
-                }}
+                alt={ex.concept}
+                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
               />
 
-              {/* Overlay gradient */}
+              {/* Overlay */}
               <div style={{
                 position: "absolute",
                 inset: 0,
-                background: "linear-gradient(to top, rgba(0,5,12,0.92) 0%, rgba(0,5,12,0.3) 45%, transparent 100%)",
+                background: "linear-gradient(to top, rgba(0,5,12,0.95) 0%, rgba(0,5,12,0.4) 50%, rgba(0,5,12,0.15) 100%)",
               }} />
 
-              {/* Icono video/imagen arriba derecha */}
+              {/* Badge tipo arriba derecha */}
               <div style={{
                 position: "absolute",
-                top: 12,
-                right: 12,
-                padding: "4px 10px",
-                borderRadius: 999,
-                background: ex.type === "video" ? "rgba(240,0,255,0.2)" : "rgba(0,229,255,0.15)",
-                border: `1px solid ${ex.type === "video" ? "rgba(240,0,255,0.5)" : "rgba(0,229,255,0.4)"}`,
-                fontSize: 10,
-                fontFamily: "monospace",
-                color: ex.type === "video" ? "#f000ff" : "#00e5ff",
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
+                top: 14,
+                right: 14,
                 display: "flex",
                 alignItems: "center",
                 gap: 5,
+                padding: "4px 12px",
+                borderRadius: 999,
+                background: `${ex.accent}22`,
+                border: `1px solid ${ex.accent}55`,
+                fontSize: 10,
+                fontFamily: "monospace",
+                color: ex.accent,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
               }}>
                 {ex.type === "video" ? (
                   <>
-                    <svg width="9" height="9" viewBox="0 0 12 12" fill="currentColor">
+                    <svg width="8" height="8" viewBox="0 0 12 12" fill="currentColor">
                       <path d="M3 2l7 4-7 4V2z" />
                     </svg>
                     Video
                   </>
                 ) : (
                   <>
-                    <svg width="9" height="9" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <svg width="9" height="9" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.8">
                       <rect x="1" y="1" width="10" height="10" rx="1.5" />
-                      <circle cx="4" cy="4" r="1" />
-                      <path d="M1 8l3-3 2 2 2-2.5 3 3.5" />
+                      <circle cx="4" cy="4" r="1" fill="currentColor" stroke="none" />
+                      <path d="M1 8l3-3 2 2 2-2.5 3 3.5" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                     Imagen
                   </>
                 )}
               </div>
 
-              {/* Play button para videos */}
+              {/* Play button en videos */}
               {ex.type === "video" && (
                 <div style={{
                   position: "absolute",
                   top: "50%",
                   left: "50%",
                   transform: "translate(-50%, -50%)",
-                  width: 52,
-                  height: 52,
+                  width: 56,
+                  height: 56,
                   borderRadius: "50%",
-                  background: "rgba(240,0,255,0.25)",
-                  border: "2px solid rgba(240,0,255,0.6)",
+                  background: `${ex.accent}28`,
+                  border: `2px solid ${ex.accent}80`,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  backdropFilter: "blur(6px)",
+                  backdropFilter: "blur(8px)",
                 }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="#f000ff">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill={ex.accent}>
                     <path d="M8 5v14l11-7z" />
                   </svg>
                 </div>
               )}
 
               {/* Info abajo */}
-              <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "16px 16px 14px" }}>
+              <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "20px 20px 18px" }}>
                 <div style={{
                   fontSize: 10,
                   fontFamily: "monospace",
-                  color: "#f000ff",
+                  color: ex.accent,
                   letterSpacing: "0.12em",
                   textTransform: "uppercase",
-                  marginBottom: 4,
+                  marginBottom: 6,
                 }}>
-                  {ex.label}
-                </div>
-                <div style={{ color: "#e2e8f0", fontSize: 14, fontWeight: 600 }}>
                   {ex.category}
+                </div>
+                <div style={{
+                  color: "#f1f5f9",
+                  fontSize: ex.wide ? 17 : 15,
+                  fontWeight: 700,
+                  marginBottom: 6,
+                  letterSpacing: "-0.01em",
+                }}>
+                  {ex.concept}
+                </div>
+                <div style={{
+                  color: "#94a3b8",
+                  fontSize: 12.5,
+                  lineHeight: 1.5,
+                  display: ex.wide ? "block" : "none",
+                }}>
+                  {ex.desc}
                 </div>
               </div>
             </motion.div>
           ))}
         </div>
 
-        {/* CTA debajo de los ejemplos */}
+        {/* ── Nota al pie ── */}
         <motion.p
           initial="hidden"
           whileInView="visible"
@@ -237,15 +348,16 @@ export function ContenidoIaExamples() {
           transition={{ duration: 0.6, delay: 0.3 }}
           style={{
             textAlign: "center",
-            color: "#475569",
-            fontSize: "0.85rem",
-            marginTop: 32,
+            color: "#334155",
+            fontSize: "0.82rem",
+            marginTop: 28,
             fontFamily: "monospace",
             letterSpacing: "0.05em",
           }}
         >
-          ✦ Los ejemplos son referenciales — tu contenido se crea 100% personalizado para tu marca ✦
+          ✦ Las imágenes de referencia son de Unsplash — tu contenido se genera 100% personalizado con IA para tu marca ✦
         </motion.p>
+
       </div>
     </section>
   )
