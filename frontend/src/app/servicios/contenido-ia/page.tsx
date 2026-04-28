@@ -19,10 +19,7 @@ const data: ServiceLandingProps = {
   heroImage: "/services/media_ia.png",
   heroVideo: "/videos/paginas-web/principal.mp4",
   accentColor: "#f000ff",
-  stats: [
-    { value: "4K", label: "Resolución", position: "topLeft" },
-    { value: "48h", label: "Entrega", position: "bottomRight" },
-  ],
+  stats: [],
   features: [
     { icon: "🎬", title: "Videos publicitarios animados", desc: "Spots de 15 a 60 segundos con movimiento, música y texto optimizados para Instagram Reels, TikTok y Facebook Ads." },
     { icon: "🖼️", title: "Imágenes que detienen el scroll", desc: "Fotografías de producto, ambientes y escenas fotorrealistas diseñadas para impactar en el feed de tus clientes." },
