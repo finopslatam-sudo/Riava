@@ -109,12 +109,14 @@ export function ServiceLanding({
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={heroImage} alt={badge} className={s.heroImg} />
               )}
-              <div className={s.imageOverlay} />
-              <div className={s.scanlines} />
-              <div
-                className={s.imageGlow}
-                style={{ background: `radial-gradient(ellipse at 50% 50%, ${accentColor}22 0%, transparent 70%)` }}
-              />
+              {!heroVideo && <div className={s.imageOverlay} />}
+              {!heroVideo && <div className={s.scanlines} />}
+              {!heroVideo && (
+                <div
+                  className={s.imageGlow}
+                  style={{ background: `radial-gradient(ellipse at 50% 50%, ${accentColor}22 0%, transparent 70%)` }}
+                />
+              )}
               {stats.map((stat, i) => (
                 <motion.div
                   key={stat.label}
