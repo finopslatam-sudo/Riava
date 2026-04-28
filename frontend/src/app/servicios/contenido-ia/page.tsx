@@ -17,6 +17,7 @@ const data: ServiceLandingProps = {
   subtitle:
     "Creamos contenido visual de alto impacto para tus redes sociales con inteligencia artificial. Imágenes llamativas, videos publicitarios animados y creatividades que capturan la atención y convierten, a una fracción del costo de una producción tradicional.",
   heroImage: "/services/media_ia.png",
+  heroVideo: "/videos/paginas-web/principal.mp4",
   accentColor: "#f000ff",
   stats: [
     { value: "4K", label: "Resolución", position: "topLeft" },

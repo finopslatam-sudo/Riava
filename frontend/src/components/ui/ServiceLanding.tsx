@@ -33,6 +33,7 @@ export interface ServiceLandingProps {
   titleAfter?: string
   subtitle: string
   heroImage: string
+  heroVideo?: string
   accentColor: string
   stats: FloatingStat[]
   features: Feature[]
@@ -55,7 +56,7 @@ const gradientText: React.CSSProperties = {
 
 export function ServiceLanding({
   badge, titleBefore, titleHighlight, titleAfter,
-  subtitle, heroImage, accentColor,
+  subtitle, heroImage, heroVideo, accentColor,
   stats, features, steps, showcase,
   ctaTitle, ctaHighlight, ctaDesc,
   ctaHref = "mailto:contacto@riava.cl",
@@ -95,8 +96,19 @@ export function ServiceLanding({
             transition={{ duration: 0.9, delay: 0.3 }}
           >
             <div className={s.imageFrame} style={{ borderColor: `${accentColor}35` }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={heroImage} alt={badge} className={s.heroImg} />
+              {heroVideo ? (
+                <video
+                  src={heroVideo}
+                  className={s.heroImg}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                />
+              ) : (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={heroImage} alt={badge} className={s.heroImg} />
+              )}
               <div className={s.imageOverlay} />
               <div className={s.scanlines} />
               <div
