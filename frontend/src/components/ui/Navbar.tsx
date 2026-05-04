@@ -119,7 +119,31 @@ export function Navbar() {
           </nav>
 
           {/* CTA */}
-          <div className="hidden md:flex items-center">
+          <div className="hidden md:flex items-center gap-3">
+            <a
+              href="/login"
+              className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200"
+              style={{
+                color: '#00e5ff',
+                border: '1px solid rgba(0,229,255,0.25)',
+                background: 'rgba(0,229,255,0.06)',
+              }}
+              onMouseEnter={e => {
+                (e.currentTarget as HTMLAnchorElement).style.background = 'rgba(0,229,255,0.12)'
+                ;(e.currentTarget as HTMLAnchorElement).style.borderColor = 'rgba(0,229,255,0.5)'
+              }}
+              onMouseLeave={e => {
+                (e.currentTarget as HTMLAnchorElement).style.background = 'rgba(0,229,255,0.06)'
+                ;(e.currentTarget as HTMLAnchorElement).style.borderColor = 'rgba(0,229,255,0.25)'
+              }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+                <polyline points="10 17 15 12 10 7" />
+                <line x1="15" y1="12" x2="3" y2="12" />
+              </svg>
+              Iniciar sesión
+            </a>
             <a
               href="#contact"
               className="btn-tron px-5 py-2.5 text-sm font-semibold text-white rounded-lg"
@@ -206,6 +230,23 @@ export function Navbar() {
                   </a>
                 )
               )}
+              <a
+                href="/login"
+                onClick={() => setMenuOpen(false)}
+                className="flex items-center justify-center gap-2 mt-2 px-4 py-3 text-sm font-medium text-center rounded-lg transition-all"
+                style={{
+                  color: '#00e5ff',
+                  border: '1px solid rgba(0,229,255,0.25)',
+                  background: 'rgba(0,229,255,0.06)',
+                }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+                  <polyline points="10 17 15 12 10 7" />
+                  <line x1="15" y1="12" x2="3" y2="12" />
+                </svg>
+                Iniciar sesión
+              </a>
               <a
                 href="#contact"
                 onClick={() => setMenuOpen(false)}
