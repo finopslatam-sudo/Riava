@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useCallback, useRef } from 'react'
-import { RiavaLogo } from '@/components/ui/RiavaLogo'
 
 type Item = {
   id: string
@@ -80,17 +79,45 @@ export default function CotizacionesPage() {
     <>
       {/* Print styles */}
       <style>{`
+        @page {
+          size: A4 portrait;
+          margin: 12mm 14mm;
+        }
         @media print {
-          body { background: #fff !important; color: #000 !important; }
+          html, body {
+            width: 210mm;
+            height: auto !important;
+            background: #fff !important;
+            color: #000 !important;
+            font-size: 11px !important;
+          }
+          /* Hide all layout chrome */
+          aside, header, nav { display: none !important; }
           .no-print { display: none !important; }
-          .print-area { box-shadow: none !important; border: none !important; background: #fff !important; color: #000 !important; }
+          /* Main wrapping divs */
+          body > div, .flex.min-h-screen, .flex-1.flex.flex-col, .no-print-wrapper { display: block !important; background: transparent !important; padding: 0 !important; margin: 0 !important; }
+          /* Print area */
+          .print-area {
+            box-shadow: none !important;
+            border: none !important;
+            background: #fff !important;
+            color: #000 !important;
+            border-radius: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
+          }
           .print-area * { color: #000 !important; border-color: #ccc !important; background: transparent !important; }
-          .print-area table th { background: #f0f0f0 !important; }
-          .print-total-row { background: #f5f5f5 !important; }
+          .print-area .print-section { padding: 6mm 0 !important; border-bottom: 1px solid #ddd !important; }
+          .print-area .print-section:last-child { border-bottom: none !important; }
+          .print-total-box { background: #f5f5f5 !important; border: 1px solid #ccc !important; }
+          /* Prevent page breaks inside items */
+          .print-row { page-break-inside: avoid; }
         }
       `}</style>
 
-      <div className="p-4 lg:p-8 min-h-full">
+      <div className="no-print-wrapper p-4 lg:p-8 min-h-full">
         {/* Header */}
         <div className="no-print flex items-center justify-between mb-8">
           <div>
@@ -153,7 +180,11 @@ export default function CotizacionesPage() {
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-6">
               {/* Logo & company */}
               <div>
-                <RiavaLogo variant="full" className="h-12 w-auto mb-3" />
+                <img
+                  src="/nuevologo-transparent.png"
+                  alt="RIAVA System SPA"
+                  style={{ height: 44, width: 'auto', display: 'block', marginBottom: 10 }}
+                />
                 <p className="text-xs" style={{ color: 'rgba(0,229,255,0.5)' }}>RIAVA System SpA</p>
                 <p className="text-xs" style={{ color: 'rgba(0,229,255,0.5)' }}>contacto@riava.cl</p>
                 <p className="text-xs" style={{ color: 'rgba(0,229,255,0.5)' }}>www.riava.cl</p>
