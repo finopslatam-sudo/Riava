@@ -44,6 +44,7 @@ export default function CotizacionesPage() {
 
   // Discounts & taxes
   const [discountPct, setDiscountPct] = useState(0)
+  const [discountAmt, setDiscountAmt] = useState(0)
   const [applyIva, setApplyIva] = useState(false)
 
   // Notes
@@ -58,7 +59,20 @@ export default function CotizacionesPage() {
   }
 
   const subtotal = items.reduce((acc, i) => acc + i.qty * i.unitPrice, 0)
-  const discountAmount = subtotal * (discountPct / 100)
+
+  const handleDiscountPct = (val: number) => {
+    const clamped = Math.min(100, Math.max(0, val))
+    setDiscountPct(clamped)
+    setDiscountAmt(Math.round(subtotal * clamped / 100))
+  }
+
+  const handleDiscountAmt = (val: number) => {
+    const clamped = Math.max(0, val)
+    setDiscountAmt(clamped)
+    setDiscountPct(subtotal > 0 ? Math.min(100, parseFloat(((clamped / subtotal) * 100).toFixed(2))) : 0)
+  }
+
+  const discountAmount = discountAmt
   const afterDiscount = subtotal - discountAmount
   const ivaAmount = applyIva ? afterDiscount * 0.19 : 0
   const total = afterDiscount + ivaAmount
@@ -133,7 +147,7 @@ export default function CotizacionesPage() {
               onClick={() => {
                 setItems([newItem()])
                 setClientName(''); setClientCompany(''); setClientEmail(''); setClientPhone('')
-                setDiscountPct(0); setApplyIva(false); setNotes('')
+                setDiscountPct(0); setDiscountAmt(0); setApplyIva(false); setNotes('')
               }}
               className="px-4 py-2 rounded-lg text-sm font-medium transition-all"
               style={{
@@ -181,7 +195,7 @@ export default function CotizacionesPage() {
               {/* Logo & company */}
               <div>
                 <img
-                  src="/nuevologo-transparent.png"
+                  src="/logocolor.png"
                   alt="RIAVA System SPA"
                   style={{ height: 44, width: 'auto', display: 'block', marginBottom: 10 }}
                 />
@@ -378,19 +392,32 @@ export default function CotizacionesPage() {
                 {/* Discount */}
                 <div>
                   <label className="text-xs mb-1.5 block" style={{ color: 'rgba(0,229,255,0.4)' }}>
-                    Descuento (%)
+                    Descuento
                   </label>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 mb-2">
                     <input
                       type="number"
                       min={0}
                       max={100}
+                      step={0.01}
                       value={discountPct}
-                      onChange={e => setDiscountPct(Math.min(100, Math.max(0, Number(e.target.value))))}
+                      onChange={e => handleDiscountPct(Number(e.target.value))}
                       className={`${inputCls} text-right`}
-                      style={{ ...inputStyle, width: 100 }}
+                      style={{ ...inputStyle, width: 90 }}
                     />
-                    <span className="text-sm" style={{ color: 'rgba(0,229,255,0.5)' }}>%</span>
+                    <span className="text-sm font-medium" style={{ color: 'rgba(0,229,255,0.6)' }}>%</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      min={0}
+                      step={1}
+                      value={discountAmt}
+                      onChange={e => handleDiscountAmt(Number(e.target.value))}
+                      className={`${inputCls} text-right`}
+                      style={{ ...inputStyle, width: 90 }}
+                    />
+                    <span className="text-sm font-medium" style={{ color: 'rgba(0,229,255,0.6)' }}>CLP</span>
                   </div>
                 </div>
 
