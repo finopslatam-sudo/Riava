@@ -95,7 +95,7 @@ export default function CotizacionesPage() {
       <style>{`
         @page {
           size: A4 portrait;
-          margin: 12mm 14mm;
+          margin: 0;
         }
         @media print {
           html, body {
@@ -104,6 +104,8 @@ export default function CotizacionesPage() {
             background: #fff !important;
             color: #000 !important;
             font-size: 11px !important;
+            padding: 12mm 14mm !important;
+            box-sizing: border-box !important;
           }
           /* Hide all layout chrome */
           aside, header, nav { display: none !important; }
@@ -128,6 +130,8 @@ export default function CotizacionesPage() {
           .print-total-box { background: #f5f5f5 !important; border: 1px solid #ccc !important; }
           /* Prevent page breaks inside items */
           .print-row { page-break-inside: avoid; }
+          /* Push totals to the right */
+          .print-totals-right { margin-left: auto !important; }
         }
       `}</style>
 
@@ -455,7 +459,7 @@ export default function CotizacionesPage() {
               </div>
 
               {/* Totals */}
-              <div className="min-w-64">
+              <div className="min-w-64 print-totals-right">
                 <h3 className="text-xs font-semibold tracking-widest uppercase mb-4" style={{ color: 'rgba(0,229,255,0.5)' }}>
                   Resumen
                 </h3>
