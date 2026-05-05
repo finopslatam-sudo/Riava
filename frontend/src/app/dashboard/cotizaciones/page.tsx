@@ -74,6 +74,18 @@ export default function CotizacionesPage() {
   const [emailTo, setEmailTo] = useState('')
   const [emailSubject, setEmailSubject] = useState('')
   const [emailBody, setEmailBody] = useState('')
+  const [emailSending, setEmailSending] = useState(false)
+  const [emailStatus, setEmailStatus] = useState<'idle' | 'success' | 'error'>('idle')
+
+  // Use-templates modal + template editing
+  const [showUseTemplatesModal, setShowUseTemplatesModal] = useState(false)
+  const [editingTemplate, setEditingTemplate] = useState<Template | null>(null)
+  const [editTplName, setEditTplName] = useState('')
+  const [editTplItems, setEditTplItems] = useState<Item[]>([])
+  const [editTplDiscountPct, setEditTplDiscountPct] = useState(0)
+  const [editTplApplyIva, setEditTplApplyIva] = useState(false)
+  const [editTplNotes, setEditTplNotes] = useState('')
+  const [editTplValidDays, setEditTplValidDays] = useState(30)
 
   const printRef = useRef<HTMLDivElement>(null)
 
@@ -172,9 +184,76 @@ export default function CotizacionesPage() {
     setShowEmailModal(true)
   }
 
-  const sendEmail = () => {
-    const mailto = `mailto:${emailTo}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`
-    window.open(mailto, '_blank')
+  const sendEmail = async () => {
+    setEmailSending(true)
+    setEmailStatus('idle')
+    try {
+      const res = await fetch('/api/cotizacion/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: emailTo,
+          subject: emailSubject,
+          body: emailBody,
+          quoteData: {
+            quoteNum, date, clientName, clientCompany, clientEmail, clientPhone,
+            items, subtotal, discountAmount, discountPct,
+            afterDiscount,
+            ivaAmount: afterDiscount * 0.19,
+            total: afterDiscount * 1.19,
+            notes, validDays,
+          },
+        }),
+      })
+      if (res.ok) {
+        setEmailStatus('success')
+        setTimeout(() => { setShowEmailModal(false); setEmailStatus('idle') }, 2500)
+      } else {
+        setEmailStatus('error')
+      }
+    } catch {
+      setEmailStatus('error')
+    } finally {
+      setEmailSending(false)
+    }
+  }
+
+  // ── Template editing helpers ──
+  const addEditItem = () => setEditTplItems(prev => [...prev, newItem()])
+  const removeEditItem = (id: string) => setEditTplItems(prev => prev.filter(i => i.id !== id))
+  const updateEditItem = (id: string, field: keyof Omit<Item, 'id'>, value: string | number) =>
+    setEditTplItems(prev => prev.map(i => i.id === id ? { ...i, [field]: value } : i))
+
+  const startEditTemplate = (t: Template) => {
+    setEditingTemplate(t)
+    setEditTplName(t.name)
+    setEditTplItems(t.items.map(i => ({ ...i, id: `item-${itemCounter++}` })))
+    setEditTplDiscountPct(t.discountPct)
+    setEditTplApplyIva(t.applyIva)
+    setEditTplNotes(t.notes)
+    setEditTplValidDays(t.validDays)
+  }
+
+  const saveEditedTemplate = () => {
+    if (!editingTemplate) return
+    const tplSubtotal = editTplItems.reduce((a, i) => a + i.qty * i.unitPrice, 0)
+    const updated = savedTemplates.map(t =>
+      t.id === editingTemplate.id
+        ? {
+            ...t,
+            name: editTplName.trim() || t.name,
+            items: editTplItems,
+            discountPct: editTplDiscountPct,
+            discountAmt: Math.round(tplSubtotal * editTplDiscountPct / 100),
+            applyIva: editTplApplyIva,
+            notes: editTplNotes,
+            validDays: editTplValidDays,
+          }
+        : t
+    )
+    setSavedTemplates(updated)
+    localStorage.setItem('riava_quote_templates', JSON.stringify(updated))
+    setEditingTemplate(null)
   }
 
   const inputCls = `w-full rounded-lg px-3 py-2 text-sm outline-none transition-all`
@@ -189,6 +268,7 @@ export default function CotizacionesPage() {
     <>
       {/* Print styles */}
       <style>{`
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @page {
           size: A4 portrait;
           margin: 0;
@@ -265,6 +345,22 @@ export default function CotizacionesPage() {
               }}
             >
               Nueva cotización
+            </button>
+            <button
+              onClick={() => { setEditingTemplate(null); setShowUseTemplatesModal(true) }}
+              className="px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-all"
+              style={{
+                background: 'rgba(124,58,237,0.06)',
+                border: '1px solid rgba(124,58,237,0.2)',
+                color: 'rgba(167,139,250,0.85)',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.12)'; e.currentTarget.style.color = '#a78bfa' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.06)'; e.currentTarget.style.color = 'rgba(167,139,250,0.85)' }}
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+              </svg>
+              Usar plantillas
             </button>
             <button
               onClick={() => setShowTemplateModal(true)}
@@ -810,51 +906,274 @@ export default function CotizacionesPage() {
                 </div>
               </div>
 
-              {/* Saved templates list */}
-              {savedTemplates.length > 0 && (
-                <div>
-                  <p className="text-xs font-semibold tracking-widest uppercase mb-2" style={{ color: 'rgba(0,229,255,0.5)' }}>Plantillas guardadas</p>
-                  <div className="flex flex-col gap-2 max-h-56 overflow-y-auto pr-1">
-                    {savedTemplates.map(t => (
-                      <div
-                        key={t.id}
-                        className="flex items-center justify-between px-4 py-3 rounded-xl"
-                        style={{ background: 'rgba(0,20,30,0.6)', border: '1px solid rgba(0,229,255,0.1)' }}
-                      >
-                        <div>
-                          <p className="text-sm font-medium" style={{ color: '#e0f7ff' }}>{t.name}</p>
-                          <p className="text-xs mt-0.5" style={{ color: 'rgba(0,229,255,0.4)' }}>
-                            {t.items.length} ítem{t.items.length !== 1 ? 's' : ''} · IVA {t.applyIva ? 'incluido' : 'no incluido'}
-                          </p>
-                        </div>
-                        <div className="flex gap-2">
+              <p className="text-xs mt-1" style={{ color: 'rgba(224,247,255,0.3)' }}>
+                Guarda los ítems, descuentos y notas actuales para reutilizarlos luego desde <strong style={{ color: 'rgba(167,139,250,0.7)' }}>Usar plantillas</strong>.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Usar Plantillas Modal ── */}
+      {showUseTemplatesModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: 'rgba(0,0,0,0.75)' }}
+          onClick={e => { if (e.target === e.currentTarget) { setShowUseTemplatesModal(false); setEditingTemplate(null) } }}
+        >
+          <div
+            className="w-full max-w-2xl rounded-2xl overflow-hidden"
+            style={{
+              background: 'rgba(0,8,16,0.98)',
+              border: '1px solid rgba(124,58,237,0.25)',
+              boxShadow: '0 0 60px rgba(124,58,237,0.15)',
+              maxHeight: '90vh',
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 flex-shrink-0" style={{ borderBottom: '1px solid rgba(124,58,237,0.15)' }}>
+              <div className="flex items-center gap-3">
+                {editingTemplate && (
+                  <button
+                    onClick={() => setEditingTemplate(null)}
+                    className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg transition-all"
+                    style={{ color: 'rgba(167,139,250,0.6)', border: '1px solid rgba(124,58,237,0.2)' }}
+                    onMouseEnter={e => { e.currentTarget.style.color = '#a78bfa' }}
+                    onMouseLeave={e => { e.currentTarget.style.color = 'rgba(167,139,250,0.6)' }}
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+                    Volver
+                  </button>
+                )}
+                <h2 className="text-base font-semibold" style={{ color: '#a78bfa' }}>
+                  {editingTemplate ? `Editar: ${editingTemplate.name}` : 'Mis plantillas'}
+                </h2>
+              </div>
+              <button onClick={() => { setShowUseTemplatesModal(false); setEditingTemplate(null) }} style={{ color: 'rgba(224,247,255,0.4)' }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+
+            <div className="overflow-y-auto flex-1">
+              {/* ── LIST VIEW ── */}
+              {!editingTemplate && (
+                <div className="p-6 flex flex-col gap-3">
+                  {savedTemplates.length === 0 && (
+                    <div className="text-center py-12">
+                      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="rgba(124,58,237,0.3)" strokeWidth="1.5" className="mx-auto mb-3">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                      </svg>
+                      <p className="text-sm" style={{ color: 'rgba(224,247,255,0.25)' }}>Aún no tienes plantillas guardadas</p>
+                      <p className="text-xs mt-1" style={{ color: 'rgba(224,247,255,0.15)' }}>Crea una desde el botón Guardar plantilla</p>
+                    </div>
+                  )}
+                  {savedTemplates.map(t => (
+                    <div
+                      key={t.id}
+                      className="flex items-center justify-between px-4 py-3 rounded-xl"
+                      style={{ background: 'rgba(0,20,30,0.6)', border: '1px solid rgba(124,58,237,0.12)' }}
+                    >
+                      <div className="min-w-0 flex-1 pr-4">
+                        <p className="text-sm font-semibold truncate" style={{ color: '#e0f7ff' }}>{t.name}</p>
+                        <p className="text-xs mt-0.5" style={{ color: 'rgba(167,139,250,0.5)' }}>
+                          {t.items.filter(i => i.description).length} ítem{t.items.filter(i => i.description).length !== 1 ? 's' : ''}
+                          {' · '}IVA {t.applyIva ? 'incluido' : 'no incluido'}
+                          {t.discountPct > 0 ? ` · ${t.discountPct}% descuento` : ''}
+                        </p>
+                      </div>
+                      <div className="flex gap-2 flex-shrink-0">
+                        <button
+                          onClick={() => { loadTemplate(t); setShowUseTemplatesModal(false) }}
+                          className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+                          style={{ background: 'rgba(0,229,255,0.08)', border: '1px solid rgba(0,229,255,0.2)', color: '#00e5ff' }}
+                          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,229,255,0.14)' }}
+                          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(0,229,255,0.08)' }}
+                        >
+                          Cargar
+                        </button>
+                        <button
+                          onClick={() => startEditTemplate(t)}
+                          className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+                          style={{ background: 'rgba(124,58,237,0.08)', border: '1px solid rgba(124,58,237,0.2)', color: '#a78bfa' }}
+                          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.15)' }}
+                          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.08)' }}
+                        >
+                          Editar
+                        </button>
+                        <button
+                          onClick={() => deleteTemplate(t.id)}
+                          className="px-2 py-1.5 rounded-lg text-xs transition-all"
+                          style={{ color: 'rgba(240,0,255,0.5)', border: '1px solid rgba(240,0,255,0.1)' }}
+                          onMouseEnter={e => { e.currentTarget.style.color = '#f000ff'; e.currentTarget.style.background = 'rgba(240,0,255,0.08)' }}
+                          onMouseLeave={e => { e.currentTarget.style.color = 'rgba(240,0,255,0.5)'; e.currentTarget.style.background = 'transparent' }}
+                        >
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* ── EDIT VIEW ── */}
+              {editingTemplate && (
+                <div className="p-6 flex flex-col gap-5">
+                  {/* Template name */}
+                  <div>
+                    <label className="text-xs mb-1.5 block font-semibold tracking-widest uppercase" style={{ color: 'rgba(167,139,250,0.6)' }}>Nombre de la plantilla</label>
+                    <input
+                      value={editTplName}
+                      onChange={e => setEditTplName(e.target.value)}
+                      placeholder="Nombre de la plantilla..."
+                      className="w-full rounded-lg px-3 py-2 text-sm outline-none"
+                      style={{ background: 'rgba(0,20,30,0.8)', border: '1px solid rgba(124,58,237,0.25)', color: '#e0f7ff', caretColor: '#a78bfa' }}
+                    />
+                  </div>
+
+                  {/* Items */}
+                  <div>
+                    <label className="text-xs mb-2 block font-semibold tracking-widest uppercase" style={{ color: 'rgba(167,139,250,0.6)' }}>Ítems</label>
+                    {/* Table header */}
+                    <div
+                      className="grid text-xs font-semibold tracking-wide uppercase mb-1.5 px-3 py-2 rounded-lg"
+                      style={{ gridTemplateColumns: '1fr 64px 110px 36px', background: 'rgba(124,58,237,0.08)', color: 'rgba(167,139,250,0.6)' }}
+                    >
+                      <span>Descripción</span>
+                      <span className="text-center">Cant.</span>
+                      <span className="text-right">Precio unit.</span>
+                      <span />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      {editTplItems.map((item, idx) => (
+                        <div
+                          key={item.id}
+                          className="grid items-center gap-2 px-3 py-2 rounded-lg"
+                          style={{ gridTemplateColumns: '1fr 64px 110px 36px', background: idx % 2 === 0 ? 'rgba(0,20,30,0.4)' : 'transparent', border: '1px solid rgba(124,58,237,0.08)' }}
+                        >
+                          <input
+                            value={item.description}
+                            onChange={e => updateEditItem(item.id, 'description', e.target.value)}
+                            placeholder="Descripción..."
+                            className="w-full bg-transparent text-sm outline-none"
+                            style={{ color: '#e0f7ff', caretColor: '#a78bfa' }}
+                          />
+                          <input
+                            type="number" min={1} value={item.qty}
+                            onChange={e => updateEditItem(item.id, 'qty', Number(e.target.value))}
+                            className="w-full bg-transparent text-sm outline-none text-center"
+                            style={{ color: '#e0f7ff', caretColor: '#a78bfa' }}
+                          />
+                          <input
+                            type="number" min={0} value={item.unitPrice}
+                            onChange={e => updateEditItem(item.id, 'unitPrice', Number(e.target.value))}
+                            className="w-full bg-transparent text-sm outline-none text-right"
+                            style={{ color: '#e0f7ff', caretColor: '#a78bfa' }}
+                          />
                           <button
-                            onClick={() => loadTemplate(t)}
-                            className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
-                            style={{ background: 'rgba(0,229,255,0.08)', border: '1px solid rgba(0,229,255,0.2)', color: '#00e5ff' }}
-                          >
-                            Cargar
-                          </button>
-                          <button
-                            onClick={() => deleteTemplate(t.id)}
-                            className="px-2 py-1.5 rounded-lg text-xs transition-all"
-                            style={{ color: 'rgba(240,0,255,0.5)', border: '1px solid rgba(240,0,255,0.1)' }}
-                            onMouseEnter={e => { e.currentTarget.style.color = '#f000ff'; e.currentTarget.style.background = 'rgba(240,0,255,0.08)' }}
-                            onMouseLeave={e => { e.currentTarget.style.color = 'rgba(240,0,255,0.5)'; e.currentTarget.style.background = 'transparent' }}
+                            onClick={() => removeEditItem(item.id)}
+                            disabled={editTplItems.length === 1}
+                            className="flex items-center justify-center w-7 h-7 rounded-lg transition-all"
+                            style={{ color: editTplItems.length === 1 ? 'rgba(240,0,255,0.2)' : 'rgba(240,0,255,0.5)' }}
+                            onMouseEnter={e => { if (editTplItems.length > 1) e.currentTarget.style.color = '#f000ff' }}
+                            onMouseLeave={e => { e.currentTarget.style.color = editTplItems.length === 1 ? 'rgba(240,0,255,0.2)' : 'rgba(240,0,255,0.5)' }}
                           >
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
                           </button>
                         </div>
+                      ))}
+                    </div>
+                    <button
+                      onClick={addEditItem}
+                      className="mt-2 flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all"
+                      style={{ background: 'rgba(124,58,237,0.05)', border: '1px dashed rgba(124,58,237,0.2)', color: 'rgba(167,139,250,0.6)' }}
+                      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.1)'; e.currentTarget.style.color = '#a78bfa' }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.05)'; e.currentTarget.style.color = 'rgba(167,139,250,0.6)' }}
+                    >
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                      Agregar ítem
+                    </button>
+                  </div>
+
+                  {/* Discount + IVA + ValidDays */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-xs mb-1.5 block font-semibold tracking-widest uppercase" style={{ color: 'rgba(167,139,250,0.6)' }}>Descuento (%)</label>
+                      <input
+                        type="number" min={0} max={100} step={0.01} value={editTplDiscountPct}
+                        onChange={e => setEditTplDiscountPct(Math.min(100, Math.max(0, Number(e.target.value))))}
+                        className="w-full rounded-lg px-3 py-2 text-sm outline-none text-right"
+                        style={{ background: 'rgba(0,20,30,0.8)', border: '1px solid rgba(124,58,237,0.2)', color: '#e0f7ff', caretColor: '#a78bfa' }}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs mb-1.5 block font-semibold tracking-widest uppercase" style={{ color: 'rgba(167,139,250,0.6)' }}>Validez (días)</label>
+                      <input
+                        type="number" min={1} value={editTplValidDays}
+                        onChange={e => setEditTplValidDays(Number(e.target.value))}
+                        className="w-full rounded-lg px-3 py-2 text-sm outline-none"
+                        style={{ background: 'rgba(0,20,30,0.8)', border: '1px solid rgba(124,58,237,0.2)', color: '#e0f7ff', caretColor: '#a78bfa' }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* IVA */}
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => setEditTplApplyIva(v => !v)}
+                      className="flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all"
+                      style={{
+                        background: editTplApplyIva ? 'rgba(124,58,237,0.1)' : 'rgba(0,20,30,0.7)',
+                        border: `1px solid ${editTplApplyIva ? 'rgba(124,58,237,0.4)' : 'rgba(124,58,237,0.15)'}`,
+                      }}
+                    >
+                      <div className="w-10 h-5 rounded-full relative flex-shrink-0" style={{ background: editTplApplyIva ? 'rgba(124,58,237,0.8)' : 'rgba(124,58,237,0.2)' }}>
+                        <div className="absolute top-0.5 w-4 h-4 rounded-full transition-all" style={{ background: '#fff', left: editTplApplyIva ? 22 : 2 }} />
                       </div>
-                    ))}
+                      <span className="text-sm" style={{ color: editTplApplyIva ? '#a78bfa' : 'rgba(224,247,255,0.4)' }}>
+                        IVA {editTplApplyIva ? 'incluido' : 'no incluido'}
+                      </span>
+                    </button>
+                  </div>
+
+                  {/* Notes */}
+                  <div>
+                    <label className="text-xs mb-1.5 block font-semibold tracking-widest uppercase" style={{ color: 'rgba(167,139,250,0.6)' }}>Notas y condiciones</label>
+                    <textarea
+                      value={editTplNotes}
+                      onChange={e => setEditTplNotes(e.target.value)}
+                      placeholder="Condiciones de pago, entrega, garantías..."
+                      rows={3}
+                      className="w-full rounded-lg px-3 py-2.5 text-sm outline-none resize-none"
+                      style={{ background: 'rgba(0,20,30,0.8)', border: '1px solid rgba(124,58,237,0.2)', color: '#e0f7ff', caretColor: '#a78bfa' }}
+                    />
+                  </div>
+
+                  {/* Action buttons */}
+                  <div className="flex gap-3 justify-end pt-1 border-t" style={{ borderColor: 'rgba(124,58,237,0.12)' }}>
+                    <button
+                      onClick={() => setEditingTemplate(null)}
+                      className="px-4 py-2 rounded-lg text-sm font-medium"
+                      style={{ background: 'rgba(0,20,30,0.7)', border: '1px solid rgba(124,58,237,0.12)', color: 'rgba(224,247,255,0.5)' }}
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      onClick={saveEditedTemplate}
+                      className="px-5 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 transition-all"
+                      style={{ background: 'rgba(124,58,237,0.15)', border: '1px solid rgba(124,58,237,0.4)', color: '#a78bfa' }}
+                      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.25)' }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.15)' }}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                        <polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
+                      </svg>
+                      Guardar cambios
+                    </button>
                   </div>
                 </div>
-              )}
-
-              {savedTemplates.length === 0 && (
-                <p className="text-sm text-center py-4" style={{ color: 'rgba(224,247,255,0.25)' }}>
-                  Aún no tienes plantillas guardadas
-                </p>
               )}
             </div>
           </div>
@@ -922,26 +1241,57 @@ export default function CotizacionesPage() {
               </div>
 
               <p className="text-xs" style={{ color: 'rgba(0,229,255,0.35)' }}>
-                Al hacer clic en "Abrir cliente de correo" se abrirá tu app de email con este mensaje pre-cargado.
+                El correo se enviará desde <span style={{ color: '#00e5ff' }}>contacto@riava.cl</span> directamente al destinatario.
               </p>
+
+              {/* Status feedback */}
+              {emailStatus === 'success' && (
+                <div className="flex items-center gap-2 px-4 py-3 rounded-xl" style={{ background: 'rgba(0,229,100,0.08)', border: '1px solid rgba(0,229,100,0.25)' }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00e564" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                  <span className="text-sm font-medium" style={{ color: '#00e564' }}>¡Cotización enviada correctamente!</span>
+                </div>
+              )}
+              {emailStatus === 'error' && (
+                <div className="flex items-center gap-2 px-4 py-3 rounded-xl" style={{ background: 'rgba(240,0,80,0.08)', border: '1px solid rgba(240,0,80,0.25)' }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f00050" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                  </svg>
+                  <span className="text-sm font-medium" style={{ color: '#f00050' }}>Error al enviar. Verifica la dirección e intenta de nuevo.</span>
+                </div>
+              )}
 
               <div className="flex gap-3 justify-end pt-1">
                 <button
-                  onClick={() => setShowEmailModal(false)}
+                  onClick={() => { setShowEmailModal(false); setEmailStatus('idle') }}
                   className="px-4 py-2 rounded-lg text-sm font-medium"
                   style={{ background: 'rgba(0,20,30,0.7)', border: '1px solid rgba(0,229,255,0.12)', color: 'rgba(224,247,255,0.5)' }}
+                  disabled={emailSending}
                 >
                   Cancelar
                 </button>
                 <button
                   onClick={sendEmail}
+                  disabled={emailSending || !emailTo || emailStatus === 'success'}
                   className="btn-tron px-5 py-2 rounded-lg text-sm font-semibold flex items-center gap-2"
-                  style={{ color: '#000a0f' }}
+                  style={{ color: '#000a0f', opacity: emailSending || !emailTo ? 0.6 : 1 }}
                 >
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
-                  </svg>
-                  Abrir cliente de correo
+                  {emailSending ? (
+                    <>
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ animation: 'spin 1s linear infinite' }}>
+                        <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                      </svg>
+                      Enviando...
+                    </>
+                  ) : (
+                    <>
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                      </svg>
+                      Enviar correo
+                    </>
+                  )}
                 </button>
               </div>
             </div>
