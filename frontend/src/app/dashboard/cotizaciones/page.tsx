@@ -313,9 +313,6 @@ export default function CotizacionesPage() {
           .stamp-seal line { stroke: #0a2030 !important; }
           .stamp-seal text { fill: #0a2030 !important; }
           .stamp-seal { opacity: 1 !important; }
-          .sig-text { fill: #000 !important; }
-          .sig-line { stroke: #000 !important; }
-          .sig-dot { fill: #000 !important; }
         }
       `}</style>
 
@@ -777,40 +774,8 @@ export default function CotizacionesPage() {
                 </p>
               </div>
 
-              {/* Firma + Timbre */}
-              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 16, flexShrink: 0 }}>
-
-                {/* Firma */}
-                <div style={{ textAlign: 'right' }}>
-                  <svg viewBox="0 0 200 72" style={{ width: 170, height: 60, display: 'block', marginLeft: 'auto' }}>
-                    <text
-                      x="8" y="52"
-                      className="sig-text"
-                      fill="rgba(0,229,255,0.85)"
-                      style={{
-                        fontFamily: "'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif",
-                        fontSize: '44px',
-                        fontStyle: 'italic',
-                        fontWeight: '400',
-                      }}
-                    >
-                      RIAVA
-                    </text>
-                    <path
-                      className="sig-line"
-                      d="M 4,62 C 30,71 90,68 140,61 C 162,57 183,60 197,65"
-                      fill="none"
-                      stroke="rgba(0,229,255,0.7)"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                    />
-                    <circle className="sig-dot" cx="197" cy="65" r="2.2" fill="rgba(0,229,255,0.7)" />
-                  </svg>
-
-                  <div style={{ width: 170, height: 1, background: 'rgba(0,229,255,0.2)', marginLeft: 'auto', marginTop: 4 }} />
-                  <p className="text-xs mt-2" style={{ color: 'rgba(0,229,255,0.45)' }}>Representante Legal</p>
-                  <p className="text-xs font-semibold mt-0.5" style={{ color: 'rgba(0,229,255,0.65)' }}>RIAVA System SpA</p>
-                </div>
+              {/* Timbre */}
+              <div style={{ display: 'flex', alignItems: 'flex-end', flexShrink: 0 }}>
 
                 {/* Timbre (Sello) */}
                 <svg
