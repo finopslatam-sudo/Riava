@@ -599,24 +599,44 @@ export default function CotizacionesPage() {
                     <span style={{ color: 'rgba(224,247,255,0.6)' }}>Subtotal</span>
                     <span style={{ color: '#e0f7ff' }}>{formatCLP(subtotal)}</span>
                   </div>
-                  {discountPct > 0 && (
+                  {discountAmount > 0 && (
                     <div className="flex justify-between text-sm">
                       <span style={{ color: 'rgba(240,0,255,0.7)' }}>Descuento ({discountPct}%)</span>
                       <span style={{ color: '#f000ff' }}>− {formatCLP(discountAmount)}</span>
                     </div>
                   )}
-                  {applyIva && (
-                    <div className="flex justify-between text-sm">
-                      <span style={{ color: 'rgba(0,229,255,0.6)' }}>IVA (19%)</span>
-                      <span style={{ color: '#00e5ff' }}>+ {formatCLP(ivaAmount)}</span>
-                    </div>
-                  )}
+
+                  {/* Separador */}
+                  <div style={{ height: 1, background: 'rgba(0,229,255,0.08)', margin: '4px 0' }} />
+
+                  {/* Total sin IVA */}
                   <div
-                    className="flex justify-between items-center mt-2 px-4 py-3 rounded-xl"
-                    style={{ background: 'rgba(0,229,255,0.08)', border: '1px solid rgba(0,229,255,0.2)' }}
+                    className="flex justify-between items-center px-4 py-3 rounded-xl"
+                    style={{ background: 'rgba(0,20,30,0.6)', border: '1px solid rgba(0,229,255,0.1)' }}
                   >
-                    <span className="font-bold text-sm" style={{ color: '#00e5ff' }}>TOTAL</span>
-                    <span className="font-bold text-xl" style={{ color: '#00e5ff' }}>{formatCLP(total)}</span>
+                    <div>
+                      <p className="font-semibold text-xs" style={{ color: 'rgba(224,247,255,0.5)' }}>TOTAL SIN IVA</p>
+                      <p className="text-xs mt-0.5" style={{ color: 'rgba(0,229,255,0.35)' }}>Neto</p>
+                    </div>
+                    <span className="font-bold text-lg" style={{ color: '#e0f7ff' }}>{formatCLP(afterDiscount)}</span>
+                  </div>
+
+                  {/* IVA line */}
+                  <div className="flex justify-between text-sm px-1">
+                    <span style={{ color: 'rgba(0,229,255,0.5)' }}>IVA (19%)</span>
+                    <span style={{ color: 'rgba(0,229,255,0.7)' }}>+ {formatCLP(afterDiscount * 0.19)}</span>
+                  </div>
+
+                  {/* Total con IVA */}
+                  <div
+                    className="flex justify-between items-center px-4 py-3 rounded-xl"
+                    style={{ background: 'rgba(0,229,255,0.08)', border: '1px solid rgba(0,229,255,0.25)' }}
+                  >
+                    <div>
+                      <p className="font-bold text-sm" style={{ color: '#00e5ff' }}>TOTAL CON IVA</p>
+                      <p className="text-xs mt-0.5" style={{ color: 'rgba(0,229,255,0.4)' }}>Incluye 19%</p>
+                    </div>
+                    <span className="font-bold text-xl" style={{ color: '#00e5ff' }}>{formatCLP(afterDiscount * 1.19)}</span>
                   </div>
                 </div>
               </div>
