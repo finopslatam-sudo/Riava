@@ -228,6 +228,14 @@ export default function CotizacionesPage() {
           .print-row { page-break-inside: avoid; }
           /* Push totals to the right */
           .print-totals-right { margin-left: auto !important; }
+          /* Stamp & signature in print */
+          .stamp-seal circle { stroke: #0a2030 !important; fill: none !important; }
+          .stamp-seal line { stroke: #0a2030 !important; }
+          .stamp-seal text { fill: #0a2030 !important; }
+          .stamp-seal { opacity: 1 !important; }
+          .sig-text { fill: #000 !important; }
+          .sig-line { stroke: #000 !important; }
+          .sig-dot { fill: #000 !important; }
         }
       `}</style>
 
@@ -659,7 +667,8 @@ export default function CotizacionesPage() {
             {notes && <p className="hidden print:block text-sm" style={{ color: '#000' }}>{notes}</p>}
 
             {/* Footer */}
-            <div className="mt-8 pt-6 flex flex-col sm:flex-row justify-between items-start gap-4" style={{ borderTop: '1px solid rgba(0,229,255,0.08)' }}>
+            <div className="mt-8 pt-6 flex flex-col sm:flex-row justify-between items-end gap-6" style={{ borderTop: '1px solid rgba(0,229,255,0.08)' }}>
+              {/* Disclaimer */}
               <div>
                 <p className="text-xs" style={{ color: 'rgba(0,229,255,0.35)' }}>
                   Esta cotización es válida por {validDays} días desde su emisión.
@@ -667,11 +676,83 @@ export default function CotizacionesPage() {
                 <p className="text-xs mt-1" style={{ color: 'rgba(0,229,255,0.35)' }}>
                   Los precios expresados están en Pesos Chilenos (CLP).
                 </p>
+                <p className="text-xs mt-1" style={{ color: 'rgba(0,229,255,0.2)' }}>
+                  Documento generado por RIAVA System SpA.
+                </p>
               </div>
-              <div className="text-right">
-                <div className="w-40 h-px mb-2" style={{ background: 'rgba(0,229,255,0.3)' }} />
-                <p className="text-xs" style={{ color: 'rgba(0,229,255,0.5)' }}>Firma y timbre</p>
-                <p className="text-xs mt-0.5" style={{ color: 'rgba(0,229,255,0.5)' }}>RIAVA System SpA</p>
+
+              {/* Firma + Timbre */}
+              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 16, flexShrink: 0 }}>
+
+                {/* Firma */}
+                <div style={{ textAlign: 'right' }}>
+                  <svg viewBox="0 0 200 72" style={{ width: 170, height: 60, display: 'block', marginLeft: 'auto' }}>
+                    <text
+                      x="8" y="52"
+                      className="sig-text"
+                      fill="rgba(0,229,255,0.85)"
+                      style={{
+                        fontFamily: "'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif",
+                        fontSize: '44px',
+                        fontStyle: 'italic',
+                        fontWeight: '400',
+                      }}
+                    >
+                      RIAVA
+                    </text>
+                    <path
+                      className="sig-line"
+                      d="M 4,62 C 30,71 90,68 140,61 C 162,57 183,60 197,65"
+                      fill="none"
+                      stroke="rgba(0,229,255,0.7)"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                    />
+                    <circle className="sig-dot" cx="197" cy="65" r="2.2" fill="rgba(0,229,255,0.7)" />
+                  </svg>
+
+                  <div style={{ width: 170, height: 1, background: 'rgba(0,229,255,0.2)', marginLeft: 'auto', marginTop: 4 }} />
+                  <p className="text-xs mt-2" style={{ color: 'rgba(0,229,255,0.45)' }}>Representante Legal</p>
+                  <p className="text-xs font-semibold mt-0.5" style={{ color: 'rgba(0,229,255,0.65)' }}>RIAVA System SpA</p>
+                </div>
+
+                {/* Timbre (Sello) */}
+                <svg
+                  viewBox="0 0 140 140"
+                  style={{ width: 100, height: 100, flexShrink: 0, transform: 'rotate(-8deg)', marginBottom: 10 }}
+                  className="stamp-seal"
+                >
+                  <defs>
+                    <path id="topArcSeal" d="M 14,70 A 56,56 0 0,1 126,70" />
+                  </defs>
+
+                  {/* Rings */}
+                  <circle cx="70" cy="70" r="66" fill="none" stroke="rgba(0,229,255,0.75)" strokeWidth="2.5" />
+                  <circle cx="70" cy="70" r="59" fill="none" stroke="rgba(0,229,255,0.35)" strokeWidth="0.7" strokeDasharray="2.5,2.5" />
+                  <circle cx="70" cy="70" r="56" fill="none" stroke="rgba(0,229,255,0.75)" strokeWidth="1.5" />
+
+                  {/* Top arc text */}
+                  <text fontSize="8.5" fontWeight="700" letterSpacing="2.5" fill="rgba(0,229,255,0.9)">
+                    <textPath href="#topArcSeal" startOffset="50%" textAnchor="middle">
+                      RIAVA SYSTEM SpA
+                    </textPath>
+                  </text>
+
+                  {/* Center decorators */}
+                  <text x="70" y="52" textAnchor="middle" fontSize="8" fill="rgba(0,229,255,0.55)" letterSpacing="5">✦✦✦</text>
+
+                  {/* RIAVA */}
+                  <text x="70" y="71" textAnchor="middle" fontSize="19" fontWeight="900" fill="rgba(0,229,255,0.9)" letterSpacing="2">RIAVA</text>
+
+                  {/* Separator */}
+                  <line x1="47" y1="77" x2="93" y2="77" stroke="rgba(0,229,255,0.4)" strokeWidth="0.8" />
+
+                  {/* System SpA */}
+                  <text x="70" y="87" textAnchor="middle" fontSize="6.5" fontWeight="600" fill="rgba(0,229,255,0.7)" letterSpacing="2">SYSTEM SpA</text>
+
+                  {/* Bottom decorators */}
+                  <text x="70" y="100" textAnchor="middle" fontSize="8" fill="rgba(0,229,255,0.4)" letterSpacing="5">✦✦✦</text>
+                </svg>
               </div>
             </div>
           </div>
