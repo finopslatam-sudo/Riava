@@ -271,7 +271,7 @@ export default function CotizacionesPage() {
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @page {
           size: A4 portrait;
-          margin: 10mm 12mm;
+          margin: 0;
         }
         @media print {
           html, body {
@@ -280,7 +280,7 @@ export default function CotizacionesPage() {
             background: #fff !important;
             color: #000 !important;
             font-size: 12px !important;
-            padding: 0 !important;
+            padding: 10mm 12mm !important;
             margin: 0 !important;
             box-sizing: border-box !important;
             -webkit-print-color-adjust: exact;
