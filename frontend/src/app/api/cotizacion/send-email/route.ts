@@ -162,8 +162,7 @@ function buildHtml(body: string, q: QuoteData): string {
         <table width="100%" cellpadding="0" cellspacing="0">
           <tr>
             <td>
-              <!-- IMAGEN DE FIRMA: reemplazar src con la URL de la imagen cuando esté disponible -->
-              <!-- <img src="https://riava.cl/firma-riava.png" alt="Firma" height="60" style="display:block;margin-bottom:10px;"> -->
+              <img src="https://riava.cl/firmacorreo.png" alt="Firma RIAVA" height="70" style="display:block;margin-bottom:10px;">
               <p style="margin:0;font-size:13px;font-weight:700;color:#111827;">RIAVA System SpA</p>
               <p style="margin:3px 0 0;font-size:12px;color:#6b7280;">contacto@riava.cl</p>
               <p style="margin:2px 0 0;font-size:12px;color:#6b7280;">www.riava.cl</p>

@@ -271,17 +271,20 @@ export default function CotizacionesPage() {
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @page {
           size: A4 portrait;
-          margin: 0;
+          margin: 10mm 12mm;
         }
         @media print {
           html, body {
-            width: 210mm;
+            width: 100% !important;
             height: auto !important;
             background: #fff !important;
             color: #000 !important;
-            font-size: 11px !important;
-            padding: 12mm 14mm !important;
+            font-size: 12px !important;
+            padding: 0 !important;
+            margin: 0 !important;
             box-sizing: border-box !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
           }
           /* Hide all layout chrome */
           aside, header, nav { display: none !important; }
