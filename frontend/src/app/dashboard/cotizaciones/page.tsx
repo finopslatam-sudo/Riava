@@ -132,8 +132,12 @@ export default function CotizacionesPage() {
   const total = afterDiscount + ivaAmount
 
   const handlePrint = useCallback(() => {
+    const clientLabel = clientName.trim() || clientCompany.trim() || 'Cliente'
+    const prevTitle = document.title
+    document.title = `${quoteNum} - ${clientLabel}`
     window.print()
-  }, [])
+    document.title = prevTitle
+  }, [quoteNum, clientName, clientCompany])
 
   // --- Templates ---
   const saveTemplate = () => {
