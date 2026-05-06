@@ -321,6 +321,8 @@ export default function CotizacionesPage() {
           .print-area * { color: #000 !important; border-color: #ccc !important; background: transparent !important; }
           /* Description: single line, no clip */
           .print-desc { white-space: nowrap !important; overflow: visible !important; display: block !important; }
+          /* Fix grid columns in print (drag handle + delete col hidden) */
+          .items-grid { grid-template-columns: 1fr 50px 130px 130px !important; }
           .print-area .print-section { padding: 6mm 0 !important; border-bottom: 1px solid #ddd !important; }
           .print-area .print-section:last-child { border-bottom: none !important; }
           .print-total-box { background: #f5f5f5 !important; border: 1px solid #ccc !important; }
@@ -535,7 +537,7 @@ export default function CotizacionesPage() {
 
             {/* Table header */}
             <div
-              className="grid text-xs font-semibold tracking-wide uppercase mb-2 px-3 py-2 rounded-lg"
+              className="items-grid grid text-xs font-semibold tracking-wide uppercase mb-2 px-3 py-2 rounded-lg"
               style={{
                 gridTemplateColumns: '24px 1fr 80px 130px 130px 40px',
                 background: 'rgba(0,229,255,0.06)',
@@ -547,7 +549,7 @@ export default function CotizacionesPage() {
               <span className="text-center">Cant.</span>
               <span className="text-right">Precio unit.</span>
               <span className="text-right">Subtotal</span>
-              <span />
+              <span className="no-print" />
             </div>
 
             {/* Items */}
@@ -559,7 +561,7 @@ export default function CotizacionesPage() {
                   onDragStart={() => handleDragStart(idx)}
                   onDragOver={e => handleDragOver(e, idx)}
                   onDragEnd={handleDragEnd}
-                  className="grid items-center gap-2 px-3 py-2 rounded-lg"
+                  className="items-grid grid items-center gap-2 px-3 py-2 rounded-lg"
                   style={{
                     gridTemplateColumns: '24px 1fr 80px 130px 130px 40px',
                     background: idx % 2 === 0 ? 'rgba(0,20,30,0.4)' : 'transparent',
@@ -634,7 +636,7 @@ export default function CotizacionesPage() {
                       <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
                     </svg>
                   </button>
-                  <span className="hidden print:block" />
+                  <span className="no-print" />
                 </div>
               ))}
             </div>
