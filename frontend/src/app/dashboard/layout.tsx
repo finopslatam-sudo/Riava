@@ -91,7 +91,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       >
         {/* Logo */}
         <div className="p-6 pb-4">
-          <RiavaLogo variant="full" className="h-8 w-auto" />
+          <Link href="/" className="inline-block transition-opacity hover:opacity-75">
+            <RiavaLogo variant="full" className="h-8 w-auto" />
+          </Link>
           <div className="divider-tron mt-4" />
         </div>
 

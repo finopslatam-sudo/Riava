@@ -2,6 +2,7 @@
 
 import { useState, useEffect, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { useAuth } from '@/lib/auth-context'
 import { RiavaLogo } from '@/components/ui/RiavaLogo'
 
@@ -92,7 +93,9 @@ export default function LoginPage() {
         >
           {/* Logo */}
           <div className="flex flex-col items-center mb-8">
-            <RiavaLogo variant="full" className="h-12 w-auto mb-4" />
+            <Link href="/" className="mb-4 transition-opacity hover:opacity-80">
+              <RiavaLogo variant="full" className="h-12 w-auto" />
+            </Link>
             <div className="divider-tron w-full" />
             <p className="mt-4 text-sm" style={{ color: 'rgba(0,229,255,0.6)' }}>
               Panel de administración
@@ -200,6 +203,21 @@ export default function LoginPage() {
           <p className="text-center text-xs mt-6" style={{ color: 'rgba(61,112,128,0.8)' }}>
             Acceso restringido · Solo administradores
           </p>
+
+          <div className="mt-4 flex justify-center">
+            <Link
+              href="/"
+              className="flex items-center gap-1.5 text-xs transition-colors"
+              style={{ color: 'rgba(0,229,255,0.45)' }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = '#00e5ff' }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(0,229,255,0.45)' }}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+              Volver al sitio web
+            </Link>
+          </div>
         </div>
       </div>
     </div>
