@@ -160,23 +160,17 @@ export default function CotizacionesPage() {
   const openEmailModal = () => {
     setEmailTo(clientEmail)
     setEmailSubject(`Cotización ${quoteNum} - RIAVA System SpA`)
+    const greeting = clientName ? `Estimado/a ${clientName},` : 'Estimado/a,'
     const bodyLines = [
-      `Estimado/a ${clientName || 'cliente'},`,
+      greeting,
       '',
-      `Junto con saludar, le hacemos llegar la cotización N° ${quoteNum} emitida con fecha ${date}.`,
+      'Junto con saludar, le hago envío de la cotización solicitada, la cual encontrará adjunta a este correo para su revisión.',
       '',
-      'DETALLE DE SERVICIOS:',
-      ...items.filter(i => i.description).map(i => `  • ${i.description} (x${i.qty}): ${formatCLP(i.qty * i.unitPrice)}`),
+      'Quedo atento/a a sus comentarios, dudas o a la posibilidad de revisarla en conjunto si lo estima conveniente.',
       '',
-      `Subtotal: ${formatCLP(subtotal)}`,
-      ...(discountAmount > 0 ? [`Descuento (${discountPct}%): − ${formatCLP(discountAmount)}`] : []),
-      ...(applyIva ? [`IVA (19%): + ${formatCLP(ivaAmount)}`] : []),
-      `TOTAL: ${formatCLP(total)}`,
+      'Espero que esta propuesta sea de su interés y que podamos avanzar en trabajar juntos próximamente.',
       '',
-      `Esta cotización es válida por ${validDays} días desde su emisión.`,
-      ...(notes ? ['', `Notas: ${notes}`] : []),
-      '',
-      'Quedamos atentos a cualquier consulta.',
+      'Agradezco desde ya su tiempo y consideración.',
       '',
       'Saludos cordiales,',
       'RIAVA System SpA',

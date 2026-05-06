@@ -101,7 +101,7 @@ function buildHtml(body: string, q: QuoteData): string {
       <tr><td style="background:#ffffff;padding:32px 36px;">
 
         <!-- Mensaje personalizado -->
-        <div style="font-size:14px;color:#374151;line-height:1.75;white-space:pre-line;margin-bottom:28px;">${body.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+        <div style="font-size:14px;color:#374151;line-height:1.75;margin-bottom:28px;">${body.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>')}</div>
 
         <div style="height:1px;background:#e5e7eb;margin-bottom:24px;"></div>
 
