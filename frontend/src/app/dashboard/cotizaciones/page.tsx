@@ -318,7 +318,7 @@ export default function CotizacionesPage() {
             padding: 0 !important;
             margin: 0 !important;
           }
-          .print-area * { color: #000 !important; border-color: #ccc !important; background: transparent !important; }
+          .print-area * { color: #000 !important; border-color: #ccc !important; background: transparent !important; overflow: visible !important; white-space: normal !important; }
           .print-area .print-section { padding: 6mm 0 !important; border-bottom: 1px solid #ddd !important; }
           .print-area .print-section:last-child { border-bottom: none !important; }
           .print-total-box { background: #f5f5f5 !important; border: 1px solid #ccc !important; }
@@ -586,7 +586,7 @@ export default function CotizacionesPage() {
                     className="no-print w-full bg-transparent text-sm outline-none"
                     style={{ color: '#e0f7ff', caretColor: '#00e5ff' }}
                   />
-                  <span className="hidden print:block text-sm truncate" style={{ color: '#e0f7ff' }}>{item.description || '—'}</span>
+                  <span className="hidden print:block text-sm" style={{ color: '#e0f7ff', whiteSpace: 'normal', wordBreak: 'break-word' }}>{item.description || '—'}</span>
 
                   {/* Qty */}
                   <input
