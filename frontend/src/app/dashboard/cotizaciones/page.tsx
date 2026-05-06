@@ -30,17 +30,19 @@ function formatCLP(n: number) {
   return n.toLocaleString('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 })
 }
 
-function quoteNumber() {
-  const now = new Date()
-  const year = now.getFullYear()
-  const seq = String(Math.floor(Math.random() * 900) + 100)
-  return `COT-${year}-${seq}`
+function nextQuoteNumber() {
+  const year = new Date().getFullYear()
+  const stored = localStorage.getItem('riava_quote_counter')
+  const parsed = stored ? JSON.parse(stored) : { year, seq: 0 }
+  const seq = parsed.year === year ? parsed.seq + 1 : 1
+  localStorage.setItem('riava_quote_counter', JSON.stringify({ year, seq }))
+  return `COT-${year}-${String(seq).padStart(4, '0')}`
 }
 
 const today = () => new Date().toISOString().split('T')[0]
 
 export default function CotizacionesPage() {
-  const [quoteNum] = useState(quoteNumber)
+  const [quoteNum, setQuoteNum] = useState(nextQuoteNumber)
   const [date, setDate] = useState(today)
   const [validDays, setValidDays] = useState(30)
 
@@ -333,6 +335,8 @@ export default function CotizacionesPage() {
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => {
+                setQuoteNum(nextQuoteNumber())
+                setDate(today())
                 setItems([newItem()])
                 setClientName(''); setClientCompany(''); setClientEmail(''); setClientPhone('')
                 setDiscountPct(0); setDiscountAmt(0); setApplyIva(false); setNotes('')
