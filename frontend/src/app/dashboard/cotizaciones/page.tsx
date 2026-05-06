@@ -97,6 +97,21 @@ export default function CotizacionesPage() {
     setItems(prev => prev.map(i => i.id === id ? { ...i, [field]: value } : i))
   }
 
+  const dragIndex = useRef<number>(-1)
+  const handleDragStart = (idx: number) => { dragIndex.current = idx }
+  const handleDragOver = (e: React.DragEvent, idx: number) => {
+    e.preventDefault()
+    if (dragIndex.current === -1 || dragIndex.current === idx) return
+    setItems(prev => {
+      const next = [...prev]
+      const [moved] = next.splice(dragIndex.current, 1)
+      next.splice(idx, 0, moved)
+      dragIndex.current = idx
+      return next
+    })
+  }
+  const handleDragEnd = () => { dragIndex.current = -1 }
+
   const subtotal = items.reduce((acc, i) => acc + i.qty * i.unitPrice, 0)
 
   const handleDiscountPct = (val: number) => {
@@ -516,11 +531,12 @@ export default function CotizacionesPage() {
             <div
               className="grid text-xs font-semibold tracking-wide uppercase mb-2 px-3 py-2 rounded-lg"
               style={{
-                gridTemplateColumns: '1fr 80px 130px 130px 40px',
+                gridTemplateColumns: '24px 1fr 80px 130px 130px 40px',
                 background: 'rgba(0,229,255,0.06)',
                 color: 'rgba(0,229,255,0.6)',
               }}
             >
+              <span className="no-print" />
               <span>Descripción</span>
               <span className="text-center">Cant.</span>
               <span className="text-right">Precio unit.</span>
@@ -533,13 +549,31 @@ export default function CotizacionesPage() {
               {items.map((item, idx) => (
                 <div
                   key={item.id}
+                  draggable
+                  onDragStart={() => handleDragStart(idx)}
+                  onDragOver={e => handleDragOver(e, idx)}
+                  onDragEnd={handleDragEnd}
                   className="grid items-center gap-2 px-3 py-2 rounded-lg"
                   style={{
-                    gridTemplateColumns: '1fr 80px 130px 130px 40px',
+                    gridTemplateColumns: '24px 1fr 80px 130px 130px 40px',
                     background: idx % 2 === 0 ? 'rgba(0,20,30,0.4)' : 'transparent',
                     border: '1px solid rgba(0,229,255,0.06)',
+                    cursor: 'default',
                   }}
                 >
+                  {/* Drag handle */}
+                  <div
+                    className="no-print flex items-center justify-center"
+                    style={{ cursor: 'grab', color: 'rgba(0,229,255,0.25)', flexShrink: 0 }}
+                    title="Arrastrar para reordenar"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                      <circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/>
+                      <circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/>
+                      <circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/>
+                    </svg>
+                  </div>
+
                   {/* Description */}
                   <input
                     value={item.description}
