@@ -6,7 +6,7 @@ type Params = Promise<{ id: string }>
 export async function DELETE(req: Request, context: { params: Params }) {
   const { id } = await context.params
 
-  const slots = getSlots()
+  const slots = await getSlots()
   const slot = slots.find(s => s.id === id)
 
   if (!slot) {
@@ -20,6 +20,6 @@ export async function DELETE(req: Request, context: { params: Params }) {
     )
   }
 
-  saveSlots(slots.filter(s => s.id !== id))
+  await saveSlots(slots.filter(s => s.id !== id))
   return NextResponse.json({ success: true })
 }

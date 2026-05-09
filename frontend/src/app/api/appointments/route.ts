@@ -118,7 +118,7 @@ function adminHtml(a: Appointment) {
 
 export async function GET(req: NextRequest) {
   const date = req.nextUrl.searchParams.get('date')
-  let appts = getAppointments()
+  let appts = await getAppointments()
   if (date) appts = appts.filter(a => a.date === date)
   return NextResponse.json(appts)
 }
@@ -138,7 +138,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Servicio inválido' }, { status: 400 })
   }
 
-  const slots = getSlots()
+  const slots = await getSlots()
   const slot = slots.find(s => s.id === slotId)
   if (!slot) return NextResponse.json({ error: 'Horario no encontrado' }, { status: 404 })
   if (slot.booked) return NextResponse.json({ error: 'Este horario ya fue reservado' }, { status: 409 })
@@ -169,11 +169,11 @@ export async function POST(req: NextRequest) {
 
   slot.booked = true
   slot.appointmentId = appt.id
-  saveSlots(slots)
+  await saveSlots(slots)
 
-  const appointments = getAppointments()
+  const appointments = await getAppointments()
   appointments.push(appt)
-  saveAppointments(appointments)
+  await saveAppointments(appointments)
 
   const adminEmail = process.env.ZOHO_EMAIL ?? 'contacto@riava.cl'
 

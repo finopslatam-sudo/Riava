@@ -1,11 +1,6 @@
-import fs from 'fs'
-import path from 'path'
+import { Redis } from '@upstash/redis'
 
-const DATA_DIR = path.join(process.cwd(), 'data')
-
-function ensureDir() {
-  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true })
-}
+const redis = Redis.fromEnv()
 
 export type TimeSlot = {
   id: string
@@ -32,21 +27,20 @@ export type Appointment = {
   createdAt: string
 }
 
-function readJSON<T>(filename: string, fallback: T): T {
-  ensureDir()
-  const p = path.join(DATA_DIR, filename)
-  try {
-    if (fs.existsSync(p)) return JSON.parse(fs.readFileSync(p, 'utf-8')) as T
-  } catch {}
-  return fallback
+export async function getSlots(): Promise<TimeSlot[]> {
+  const slots = await redis.get<TimeSlot[]>('riava:slots')
+  return slots ?? []
 }
 
-function writeJSON<T>(filename: string, data: T): void {
-  ensureDir()
-  fs.writeFileSync(path.join(DATA_DIR, filename), JSON.stringify(data, null, 2), 'utf-8')
+export async function saveSlots(slots: TimeSlot[]): Promise<void> {
+  await redis.set('riava:slots', slots)
 }
 
-export const getSlots = (): TimeSlot[] => readJSON<TimeSlot[]>('slots.json', [])
-export const saveSlots = (slots: TimeSlot[]): void => writeJSON('slots.json', slots)
-export const getAppointments = (): Appointment[] => readJSON<Appointment[]>('appointments.json', [])
-export const saveAppointments = (appts: Appointment[]): void => writeJSON('appointments.json', appts)
+export async function getAppointments(): Promise<Appointment[]> {
+  const appts = await redis.get<Appointment[]>('riava:appointments')
+  return appts ?? []
+}
+
+export async function saveAppointments(appts: Appointment[]): Promise<void> {
+  await redis.set('riava:appointments', appts)
+}

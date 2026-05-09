@@ -5,7 +5,7 @@ export async function GET(req: NextRequest) {
   const from = req.nextUrl.searchParams.get('from')
   const to   = req.nextUrl.searchParams.get('to')
 
-  let slots = getSlots()
+  let slots = await getSlots()
   if (from && to) slots = slots.filter(s => s.date >= from && s.date <= to)
 
   return NextResponse.json(slots)
@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Faltan campos requeridos' }, { status: 400 })
   }
 
-  const slots = getSlots()
+  const slots = await getSlots()
 
   if (slots.some(s => s.date === body.date && s.startTime === body.startTime)) {
     return NextResponse.json({ error: 'Ya existe un horario en esa fecha y hora' }, { status: 409 })
@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
   }
 
   slots.push(newSlot)
-  saveSlots(slots)
+  await saveSlots(slots)
 
   return NextResponse.json(newSlot, { status: 201 })
 }
