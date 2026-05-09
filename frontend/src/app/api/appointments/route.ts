@@ -17,6 +17,48 @@ function fmtDate(d: string) {
   return `${parseInt(day)} de ${months[parseInt(m) - 1]} de ${y}`
 }
 
+function generateICS(a: Appointment): string {
+  const dtStart = `${a.date.replace(/-/g, '')}T${a.startTime.replace(':', '')}00`
+  const dtEnd   = `${a.date.replace(/-/g, '')}T${a.endTime.replace(':', '')}00`
+  const dtstamp = new Date().toISOString().replace(/[-:.]/g, '').slice(0, 15) + 'Z'
+  const organizer = process.env.ZOHO_EMAIL ?? 'contacto@riava.cl'
+  const location  = a.meetLink ? `Google Meet: ${a.meetLink}` : 'Google Meet (enlace por confirmar)'
+  const desc = [
+    `Reunión agendada mediante RIAVA System SpA`,
+    `Servicio: ${a.service}`,
+    `Cliente: ${a.name} ${a.lastName}`,
+    a.meetLink ? `Enlace Meet: ${a.meetLink}` : '',
+    `Contacto: contacto@riava.cl`,
+  ].filter(Boolean).join('\\n')
+
+  return [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//RIAVA System SpA//RIAVA//ES',
+    'CALSCALE:GREGORIAN',
+    'METHOD:REQUEST',
+    'BEGIN:VEVENT',
+    `DTSTART;TZID=America/Santiago:${dtStart}`,
+    `DTEND;TZID=America/Santiago:${dtEnd}`,
+    `DTSTAMP:${dtstamp}`,
+    `UID:${a.id}@riava.cl`,
+    `ORGANIZER;CN=RIAVA System SpA:mailto:${organizer}`,
+    `ATTENDEE;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE;CN=${a.name} ${a.lastName}:mailto:${a.email}`,
+    `SUMMARY:Reunión RIAVA · ${a.service}`,
+    `DESCRIPTION:${desc}`,
+    `LOCATION:${location}`,
+    'STATUS:CONFIRMED',
+    'SEQUENCE:0',
+    'BEGIN:VALARM',
+    'TRIGGER:-PT30M',
+    'ACTION:DISPLAY',
+    'DESCRIPTION:Recordatorio: Reunión RIAVA en 30 minutos',
+    'END:VALARM',
+    'END:VEVENT',
+    'END:VCALENDAR',
+  ].join('\r\n')
+}
+
 function clientHtml(a: Appointment) {
   const meet = a.meetLink
     ? `<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
@@ -27,7 +69,11 @@ function clientHtml(a: Appointment) {
           <p style="margin:12px 0 0;font-size:11px;color:rgba(0,229,255,0.4);word-break:break-all;">${a.meetLink}</p>
         </td></tr>
       </table>`
-    : ''
+    : `<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+        <tr><td style="padding:16px;background:#fffbeb;border-radius:8px;border-left:3px solid #f59e0b;">
+          <p style="margin:0;font-size:13px;color:#92400e;">El enlace de Google Meet será confirmado próximamente. Te escribiremos a este correo.</p>
+        </td></tr>
+      </table>`
 
   return `<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"></head>
 <body style="margin:0;padding:0;background:#f0f4f8;font-family:Arial,Helvetica,sans-serif;">
@@ -39,7 +85,7 @@ function clientHtml(a: Appointment) {
   </td></tr>
   <tr><td style="background:#ffffff;padding:32px 36px;">
     <h2 style="margin:0 0 8px;font-size:20px;color:#111827;">¡Cita confirmada, ${a.name}!</h2>
-    <p style="margin:0 0 24px;font-size:14px;color:#6b7280;line-height:1.6;">Tu reunión con RIAVA System SpA ha sido agendada exitosamente.</p>
+    <p style="margin:0 0 24px;font-size:14px;color:#6b7280;line-height:1.6;">Tu reunión con RIAVA System SpA ha sido agendada exitosamente. Revisa el archivo adjunto para agregar el evento a tu calendario.</p>
     <div style="height:1px;background:#e5e7eb;margin-bottom:24px;"></div>
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
       <tr><td style="padding:16px;background:#f9fafb;border-radius:8px;border-left:3px solid #00e5ff;">
@@ -66,6 +112,27 @@ function clientHtml(a: Appointment) {
 </table></td></tr></table></body></html>`
 }
 
+function clientText(a: Appointment): string {
+  return [
+    `Confirmación de cita · RIAVA System SpA`,
+    ``,
+    `Hola ${a.name},`,
+    `Tu reunión ha sido agendada exitosamente.`,
+    ``,
+    `Detalles:`,
+    `  Fecha:    ${fmtDate(a.date)}`,
+    `  Hora:     ${a.startTime} – ${a.endTime} (Santiago, Chile)`,
+    `  Servicio: ${a.service}`,
+    a.meetLink ? `  Meet:     ${a.meetLink}` : `  Meet:     Se confirmará próximamente`,
+    ``,
+    `El archivo adjunto (cita-riava.ics) permite agregar el evento a tu calendario.`,
+    ``,
+    `¿Necesitas reagendar? Escríbenos a contacto@riava.cl`,
+    ``,
+    `RIAVA System SpA · www.riava.cl`,
+  ].join('\n')
+}
+
 function adminHtml(a: Appointment) {
   const meet = a.meetLink
     ? `<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
@@ -75,7 +142,11 @@ function adminHtml(a: Appointment) {
           <p style="margin:12px 0 0;font-size:11px;color:rgba(0,229,255,0.4);word-break:break-all;">${a.meetLink}</p>
         </td></tr>
       </table>`
-    : ''
+    : `<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+        <tr><td style="padding:14px 16px;background:#fffbeb;border-radius:8px;border-left:3px solid #f59e0b;">
+          <p style="margin:0;font-size:13px;color:#92400e;">⚠️ Google Meet no disponible — verifica las credenciales de Google Calendar en las variables de entorno de Vercel.</p>
+        </td></tr>
+      </table>`
 
   return `<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"></head>
 <body style="margin:0;padding:0;background:#f0f4f8;font-family:Arial,Helvetica,sans-serif;">
@@ -87,7 +158,7 @@ function adminHtml(a: Appointment) {
   </td></tr>
   <tr><td style="background:#ffffff;padding:32px 36px;">
     <h2 style="margin:0 0 8px;font-size:20px;color:#111827;">Nueva reunión en tu agenda</h2>
-    <p style="margin:0 0 24px;font-size:14px;color:#6b7280;line-height:1.6;">Un cliente agendó una cita a través del sistema de reservas.</p>
+    <p style="margin:0 0 24px;font-size:14px;color:#6b7280;line-height:1.6;">Un cliente agendó una cita a través del sistema de reservas. El archivo .ics adjunto permite añadir el evento al calendario.</p>
     <div style="height:1px;background:#e5e7eb;margin-bottom:24px;"></div>
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
       <tr><td style="padding:16px;background:#f9fafb;border-radius:8px;border-left:3px solid #f000ff;">
@@ -152,8 +223,12 @@ export async function POST(req: NextRequest) {
       endTime: slot.endTime,
       clientEmail: email,
     }) ?? ''
-  } catch {
-    // Google Meet unavailable — booking proceeds without link
+  } catch (err) {
+    console.error('Google Meet creation failed:', err)
+  }
+
+  if (!meetLink) {
+    console.warn('No Meet link generated — check GOOGLE_SERVICE_ACCOUNT_EMAIL and GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY env vars in Vercel')
   }
 
   const appt: Appointment = {
@@ -181,20 +256,31 @@ export async function POST(req: NextRequest) {
   await saveAppointments(appointments)
 
   const adminEmail = process.env.ZOHO_EMAIL ?? 'contacto@riava.cl'
+  const fromName   = process.env.ZOHO_EMAIL ? `"RIAVA System SpA" <${process.env.ZOHO_EMAIL}>` : '"RIAVA System SpA" <contacto@riava.cl>'
+  const icsContent = generateICS(appt)
+  const icsAttachment = {
+    filename: 'cita-riava.ics',
+    content: icsContent,
+    contentType: 'text/calendar; charset=utf-8; method=REQUEST',
+  }
 
   await Promise.all([
     transporter.sendMail({
-      from: `"RIAVA System SpA" <${process.env.ZOHO_EMAIL}>`,
+      from: fromName,
       to: email,
+      replyTo: adminEmail,
       subject: `Confirmación de cita · ${fmtDate(appt.date)} ${appt.startTime} · RIAVA System SpA`,
+      text: clientText(appt),
       html: clientHtml(appt),
+      attachments: [icsAttachment],
     }).catch(err => console.error('Error sending client email:', err)),
 
     transporter.sendMail({
-      from: `"RIAVA Sistema" <${process.env.ZOHO_EMAIL}>`,
+      from: fromName,
       to: adminEmail,
       subject: `Nueva cita: ${name} ${lastName} · ${fmtDate(appt.date)} ${appt.startTime}`,
       html: adminHtml(appt),
+      attachments: [icsAttachment],
     }).catch(err => console.error('Error sending admin email:', err)),
   ])
 
