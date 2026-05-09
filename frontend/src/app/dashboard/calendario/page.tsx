@@ -132,6 +132,10 @@ export default function CalendarioPage() {
   const [blockDayMsg, setBlockDayMsg] = useState('')
   const [blockDayConfirm, setBlockDayConfirm] = useState(false)
 
+  // Cancel appointment
+  const [cancelConfirmId, setCancelConfirmId] = useState<string | null>(null)
+  const [cancelLoading, setCancelLoading] = useState(false)
+
   // Repeat
   const [repeatMonFriWeekLoading, setRepeatMonFriWeekLoading] = useState(false)
   const [repeatMonFriMonthLoading, setRepeatMonFriMonthLoading] = useState(false)
@@ -202,6 +206,18 @@ export default function CalendarioPage() {
   const deleteSlot = async (id: string) => {
     const res = await fetch(`/api/appointments/slots/${id}`, { method: 'DELETE' })
     if (res.ok) setSlots(prev => prev.filter(s => s.id !== id))
+  }
+
+  const cancelAppt = async (apptId: string) => {
+    setCancelLoading(true)
+    const res = await fetch(`/api/appointments/${apptId}`, { method: 'DELETE' })
+    if (res.ok) {
+      const data = await res.json() as { slotId: string }
+      setSlots(prev => prev.map(s => s.id === data.slotId ? { ...s, booked: false, appointmentId: undefined } : s))
+      setAppointments(prev => prev.filter(a => a.id !== apptId))
+    }
+    setCancelLoading(false)
+    setCancelConfirmId(null)
   }
 
   const blockDay = async () => {
@@ -728,6 +744,30 @@ export default function CalendarioPage() {
                                         Abrir Meet
                                       </a>
                                     )}
+                                    <div className="mt-2">
+                                      {cancelConfirmId === appt.id ? (
+                                        <div className="flex gap-1.5">
+                                          <button onClick={() => cancelAppt(appt.id)} disabled={cancelLoading}
+                                            className="flex-1 py-1 rounded-lg text-xs font-semibold disabled:opacity-50"
+                                            style={{ background: 'rgba(240,0,255,0.15)', border: '1px solid rgba(240,0,255,0.4)', color: '#f000ff' }}>
+                                            {cancelLoading ? 'Eliminando...' : 'Confirmar eliminación'}
+                                          </button>
+                                          <button onClick={() => setCancelConfirmId(null)} disabled={cancelLoading}
+                                            className="px-3 py-1 rounded-lg text-xs"
+                                            style={{ border: '1px solid rgba(224,247,255,0.1)', color: 'rgba(224,247,255,0.4)' }}>
+                                            No
+                                          </button>
+                                        </div>
+                                      ) : (
+                                        <button onClick={() => setCancelConfirmId(appt.id)}
+                                          className="text-xs py-1 px-2 rounded-lg transition-colors"
+                                          style={{ color: 'rgba(240,0,255,0.5)', border: '1px solid rgba(240,0,255,0.15)' }}
+                                          onMouseEnter={e => { e.currentTarget.style.color = '#f000ff'; e.currentTarget.style.borderColor = 'rgba(240,0,255,0.4)' }}
+                                          onMouseLeave={e => { e.currentTarget.style.color = 'rgba(240,0,255,0.5)'; e.currentTarget.style.borderColor = 'rgba(240,0,255,0.15)' }}>
+                                          Eliminar cita
+                                        </button>
+                                      )}
+                                    </div>
                                   </div>
                                 )}
                               </>
