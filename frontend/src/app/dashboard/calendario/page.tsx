@@ -243,11 +243,14 @@ export default function CalendarioPage() {
   async function postSlotsToDate(date: string, daySlots: Slot[]): Promise<number> {
     let created = 0
     for (const slot of daySlots) {
-      const res = await fetch('/api/appointments/slots', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ date, startTime: slot.startTime, endTime: slot.endTime }),
-      })
-      if (res.ok) created++
+      try {
+        const res = await fetch('/api/appointments/slots', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ date, startTime: slot.startTime, endTime: slot.endTime }),
+          signal: AbortSignal.timeout(8000),
+        })
+        if (res.ok) created++
+      } catch { /* slot ya existe o timeout — continuar */ }
     }
     return created
   }
@@ -257,13 +260,20 @@ export default function CalendarioPage() {
     const daySlots = slotsForDate(selectedDate).filter(s => !s.booked)
     if (daySlots.length === 0) { setRepeatMsg('Sin horarios disponibles para repetir.'); setTimeout(() => setRepeatMsg(''), 3000); return }
     setRepeatMonFriWeekLoading(true)
-    const targets = getWeekMonFri(selectedDate).filter(d => d !== selectedDate)
-    let created = 0
-    for (const date of targets) created += await postSlotsToDate(date, daySlots)
-    await fetchSlots()
-    setRepeatMonFriWeekLoading(false)
-    setRepeatMsg(`✓ ${created} horario${created !== 1 ? 's' : ''} creado${created !== 1 ? 's' : ''} (Lun–Vie semana)`)
-    setTimeout(() => setRepeatMsg(''), 4000)
+    setRepeatMsg('')
+    try {
+      const targets = getWeekMonFri(selectedDate).filter(d => d !== selectedDate)
+      let created = 0
+      for (const date of targets) created += await postSlotsToDate(date, daySlots)
+      await fetchSlots()
+      setRepeatMsg(`✓ ${created} horario${created !== 1 ? 's' : ''} creado${created !== 1 ? 's' : ''} (Lun–Vie semana)`)
+      setTimeout(() => setRepeatMsg(''), 4000)
+    } catch {
+      setRepeatMsg('Error al repetir horarios. Intenta nuevamente.')
+      setTimeout(() => setRepeatMsg(''), 4000)
+    } finally {
+      setRepeatMonFriWeekLoading(false)
+    }
   }
 
   const repeatMonFriMonth = async () => {
@@ -271,13 +281,20 @@ export default function CalendarioPage() {
     const daySlots = slotsForDate(selectedDate).filter(s => !s.booked)
     if (daySlots.length === 0) { setRepeatMsg('Sin horarios disponibles para repetir.'); setTimeout(() => setRepeatMsg(''), 3000); return }
     setRepeatMonFriMonthLoading(true)
-    const targets = getMonFriAllMonth(viewYear, viewMonth).filter(d => d !== selectedDate)
-    let created = 0
-    for (const date of targets) created += await postSlotsToDate(date, daySlots)
-    await fetchSlots()
-    setRepeatMonFriMonthLoading(false)
-    setRepeatMsg(`✓ ${created} horario${created !== 1 ? 's' : ''} creado${created !== 1 ? 's' : ''} (Lun–Vie ${MONTHS_ES[viewMonth]})`)
-    setTimeout(() => setRepeatMsg(''), 4000)
+    setRepeatMsg('')
+    try {
+      const targets = getMonFriAllMonth(viewYear, viewMonth).filter(d => d !== selectedDate)
+      let created = 0
+      for (const date of targets) created += await postSlotsToDate(date, daySlots)
+      await fetchSlots()
+      setRepeatMsg(`✓ ${created} horario${created !== 1 ? 's' : ''} creado${created !== 1 ? 's' : ''} (Lun–Vie ${MONTHS_ES[viewMonth]})`)
+      setTimeout(() => setRepeatMsg(''), 4000)
+    } catch {
+      setRepeatMsg('Error al repetir horarios. Intenta nuevamente.')
+      setTimeout(() => setRepeatMsg(''), 4000)
+    } finally {
+      setRepeatMonFriMonthLoading(false)
+    }
   }
 
   const repeatSaturdays = async () => {
@@ -285,13 +302,20 @@ export default function CalendarioPage() {
     const daySlots = slotsForDate(selectedDate).filter(s => !s.booked)
     if (daySlots.length === 0) { setRepeatMsg('Sin horarios disponibles para repetir.'); setTimeout(() => setRepeatMsg(''), 3000); return }
     setRepeatSatLoading(true)
-    const targets = getSaturdaysInMonth(viewYear, viewMonth).filter(d => d !== selectedDate)
-    let created = 0
-    for (const date of targets) created += await postSlotsToDate(date, daySlots)
-    await fetchSlots()
-    setRepeatSatLoading(false)
-    setRepeatMsg(`✓ ${created} horario${created !== 1 ? 's' : ''} creado${created !== 1 ? 's' : ''} (Sábados de ${MONTHS_ES[viewMonth]})`)
-    setTimeout(() => setRepeatMsg(''), 4000)
+    setRepeatMsg('')
+    try {
+      const targets = getSaturdaysInMonth(viewYear, viewMonth).filter(d => d !== selectedDate)
+      let created = 0
+      for (const date of targets) created += await postSlotsToDate(date, daySlots)
+      await fetchSlots()
+      setRepeatMsg(`✓ ${created} horario${created !== 1 ? 's' : ''} creado${created !== 1 ? 's' : ''} (Sábados de ${MONTHS_ES[viewMonth]})`)
+      setTimeout(() => setRepeatMsg(''), 4000)
+    } catch {
+      setRepeatMsg('Error al repetir horarios. Intenta nuevamente.')
+      setTimeout(() => setRepeatMsg(''), 4000)
+    } finally {
+      setRepeatSatLoading(false)
+    }
   }
 
   const prevMonth = () => {
