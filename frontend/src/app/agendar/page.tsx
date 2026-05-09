@@ -95,11 +95,19 @@ export default function AgendarPage() {
     setSubmitting(true)
     setSubmitError('')
 
-    const res = await fetch('/api/appointments', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ slotId: selectedSlot.id, ...form }),
-    })
+    let res: Response
+    try {
+      res = await fetch('/api/appointments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slotId: selectedSlot.id, ...form }),
+        signal: AbortSignal.timeout(25000),
+      })
+    } catch {
+      setSubmitting(false)
+      setSubmitError('La solicitud tardó demasiado. Por favor intenta de nuevo.')
+      return
+    }
     const data = await res.json()
     setSubmitting(false)
 

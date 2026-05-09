@@ -28,6 +28,7 @@ async function getAccessToken(): Promise<string | null> {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: `grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion=${header}.${claims}.${sig}`,
+    signal: AbortSignal.timeout(8000),
   })
 
   if (!res.ok) return null
@@ -69,6 +70,7 @@ export async function createMeetEvent(params: {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
       body,
+      signal: AbortSignal.timeout(8000),
     }
   )
 

@@ -143,13 +143,18 @@ export async function POST(req: NextRequest) {
   if (!slot) return NextResponse.json({ error: 'Horario no encontrado' }, { status: 404 })
   if (slot.booked) return NextResponse.json({ error: 'Este horario ya fue reservado' }, { status: 409 })
 
-  const meetLink = await createMeetEvent({
-    name, lastName, service,
-    date: slot.date,
-    startTime: slot.startTime,
-    endTime: slot.endTime,
-    clientEmail: email,
-  }) ?? ''
+  let meetLink = ''
+  try {
+    meetLink = await createMeetEvent({
+      name, lastName, service,
+      date: slot.date,
+      startTime: slot.startTime,
+      endTime: slot.endTime,
+      clientEmail: email,
+    }) ?? ''
+  } catch {
+    // Google Meet unavailable — booking proceeds without link
+  }
 
   const appt: Appointment = {
     id: `appt-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
