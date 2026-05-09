@@ -216,19 +216,23 @@ export async function POST(req: NextRequest) {
 
   let meetLink = ''
   try {
-    meetLink = await createMeetEvent({
-      name, lastName, service,
-      date: slot.date,
-      startTime: slot.startTime,
-      endTime: slot.endTime,
-      clientEmail: email,
-    }) ?? ''
+    const meetResult = await Promise.race([
+      createMeetEvent({
+        name, lastName, service,
+        date: slot.date,
+        startTime: slot.startTime,
+        endTime: slot.endTime,
+        clientEmail: email,
+      }),
+      new Promise<null>(resolve => setTimeout(() => resolve(null), 12000)),
+    ])
+    meetLink = meetResult ?? ''
   } catch (err) {
     console.error('Google Meet creation failed:', err)
   }
 
   if (!meetLink) {
-    console.warn('No Meet link generated — check GOOGLE_SERVICE_ACCOUNT_EMAIL and GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY env vars in Vercel')
+    console.warn('[Meet] No link generated — confirm GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET and GOOGLE_OAUTH_REFRESH_TOKEN are set in Vercel')
   }
 
   const appt: Appointment = {

@@ -56,7 +56,7 @@ export default function AgendarPage() {
   const [submitting, setSubmitting]   = useState(false)
   const [submitError, setSubmitError] = useState('')
   const [success, setSuccess]         = useState(false)
-  const [bookedAppt, setBookedAppt]   = useState<{ date: string; startTime: string; endTime: string; meetLink: string } | null>(null)
+  const [bookedAppt, setBookedAppt]   = useState<{ date: string; startTime: string; endTime: string; meetLink: string; service: string; name: string; lastName: string } | null>(null)
 
   const fromStr = isoDate(viewYear, viewMonth, 1)
   const toStr   = isoDate(viewYear, viewMonth, daysInMonth(viewYear, viewMonth))
@@ -104,7 +104,7 @@ export default function AgendarPage() {
     const data = await res.json()
     setSubmitting(false)
     if (!res.ok) { setSubmitError(data.error ?? 'Error al agendar la cita. Intenta de nuevo.'); return }
-    setBookedAppt({ date: data.date, startTime: data.startTime, endTime: data.endTime, meetLink: data.meetLink })
+    setBookedAppt({ date: data.date, startTime: data.startTime, endTime: data.endTime, meetLink: data.meetLink, service: form.service, name: form.name, lastName: form.lastName })
     setSuccess(true)
     setSlots(prev => prev.map(s => s.id === selectedSlot.id ? { ...s, booked: true } : s))
   }
@@ -120,6 +120,42 @@ export default function AgendarPage() {
   const resetBooking = () => {
     setSuccess(false); setSelectedSlot(null); setSelectedDay(null)
     setForm({ name: '', lastName: '', company: '', email: '', phone: '', service: '' })
+  }
+
+  function googleCalendarUrl(appt: NonNullable<typeof bookedAppt>) {
+    const dtStart = `${appt.date.replace(/-/g, '')}T${appt.startTime.replace(':', '')}00`
+    const dtEnd   = `${appt.date.replace(/-/g, '')}T${appt.endTime.replace(':', '')}00`
+    const text    = encodeURIComponent(`Reunión RIAVA · ${appt.service}`)
+    const details = encodeURIComponent(`Reunión agendada con RIAVA System SpA\nServicio: ${appt.service}${appt.meetLink ? `\nMeet: ${appt.meetLink}` : ''}`)
+    const location = appt.meetLink ? encodeURIComponent(appt.meetLink) : ''
+    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${text}&dates=${dtStart}/${dtEnd}&details=${details}&location=${location}&ctz=America%2FSantiago`
+  }
+
+  function downloadICS(appt: NonNullable<typeof bookedAppt>) {
+    const dtStart = `${appt.date.replace(/-/g, '')}T${appt.startTime.replace(':', '')}00`
+    const dtEnd   = `${appt.date.replace(/-/g, '')}T${appt.endTime.replace(':', '')}00`
+    const uid     = `${Date.now()}@riava.cl`
+    const desc    = [`Servicio: ${appt.service}`, appt.meetLink ? `Meet: ${appt.meetLink}` : ''].filter(Boolean).join('\\n')
+    const ics = [
+      'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//RIAVA System SpA//RIAVA//ES',
+      'CALSCALE:GREGORIAN', 'METHOD:PUBLISH',
+      'BEGIN:VEVENT',
+      `DTSTART;TZID=America/Santiago:${dtStart}`,
+      `DTEND;TZID=America/Santiago:${dtEnd}`,
+      `SUMMARY:Reunión RIAVA · ${appt.service}`,
+      `DESCRIPTION:${desc}`,
+      appt.meetLink ? `LOCATION:${appt.meetLink}` : '',
+      `UID:${uid}`,
+      'STATUS:CONFIRMED',
+      'BEGIN:VALARM', 'TRIGGER:-PT30M', 'ACTION:DISPLAY',
+      'DESCRIPTION:Recordatorio: Reunión RIAVA en 30 min', 'END:VALARM',
+      'END:VEVENT', 'END:VCALENDAR',
+    ].filter(Boolean).join('\r\n')
+    const blob = new Blob([ics], { type: 'text/calendar' })
+    const url  = URL.createObjectURL(blob)
+    const a    = document.createElement('a')
+    a.href = url; a.download = 'cita-riava.ics'; a.click()
+    URL.revokeObjectURL(url)
   }
 
   return (
@@ -175,6 +211,23 @@ export default function AgendarPage() {
                   Unirse a Google Meet
                 </a>
               )}
+
+              {/* Calendar buttons */}
+              <div className="flex flex-col gap-2 mb-4">
+                <a href={googleCalendarUrl(bookedAppt)} target="_blank" rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-semibold transition-all"
+                  style={{ background: 'rgba(0,229,255,0.07)', border: '1px solid rgba(0,229,255,0.2)', color: '#00e5ff' }}>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  Agregar a Google Calendar
+                </a>
+                <button onClick={() => downloadICS(bookedAppt)}
+                  className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-semibold transition-all"
+                  style={{ background: 'rgba(0,229,255,0.04)', border: '1px solid rgba(0,229,255,0.12)', color: 'rgba(0,229,255,0.7)' }}>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  Descargar invitación (.ics)
+                </button>
+              </div>
+
               <button onClick={resetBooking} className="block w-full text-center text-xs mt-2 transition-colors"
                 style={{ color: 'rgba(0,229,255,0.4)' }}
                 onMouseEnter={e => { e.currentTarget.style.color = '#00e5ff' }}
