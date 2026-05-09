@@ -91,16 +91,16 @@ async function getAccessTokenServiceAccount(): Promise<string | null> {
   return data.access_token
 }
 
-async function getAccessToken(): Promise<string | null> {
-  // OAuth2 refresh token works with personal accounts and generates Meet links
+async function getAccessToken(): Promise<{ token: string; type: 'oauth2' | 'service-account' } | null> {
   const oauthToken = await getAccessTokenOAuth()
   if (oauthToken) {
     console.log('[Google Meet] Using OAuth2 refresh token (personal account mode)')
-    return oauthToken
+    return { token: oauthToken, type: 'oauth2' }
   }
-  // Fallback: service account JWT (requires Google Workspace + Domain-Wide Delegation)
   console.log('[Google Meet] OAuth2 not configured, falling back to service account JWT')
-  return getAccessTokenServiceAccount()
+  const saToken = await getAccessTokenServiceAccount()
+  if (saToken) return { token: saToken, type: 'service-account' }
+  return null
 }
 
 export async function createMeetEvent(params: {
@@ -112,12 +112,17 @@ export async function createMeetEvent(params: {
   endTime: string   // HH:mm
   clientEmail: string
 }): Promise<string | null> {
-  const token = await getAccessToken()
-  if (!token) return null
+  const auth = await getAccessToken()
+  if (!auth) return null
+  const token = auth.token
 
-  const calendarId = process.env.GOOGLE_CALENDAR_ID
-    || process.env.GOOGLE_IMPERSONATE_EMAIL
-    || 'primary'
+  // OAuth2 token represents the personal account → 'primary' is that account's calendar
+  // Service account → use GOOGLE_CALENDAR_ID (the impersonated user's calendar)
+  const calendarId = auth.type === 'oauth2'
+    ? (process.env.GOOGLE_CALENDAR_ID || 'primary')
+    : (process.env.GOOGLE_CALENDAR_ID || process.env.GOOGLE_IMPERSONATE_EMAIL || 'primary')
+
+  console.log(`[Google Meet] Using calendarId: "${calendarId}"`, `(auth: ${auth.type})`)
 
   const body = JSON.stringify({
     summary: `RIAVA · ${params.service} — ${params.name} ${params.lastName}`,

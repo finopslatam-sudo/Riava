@@ -279,7 +279,7 @@ export default function AgendarPage() {
 
                     return (
                       <button key={idx}
-                        onClick={() => { if (!clickable) return; setSelectedDay(isSelected ? null : dateStr); setSelectedSlot(null); setSubmitError('') }}
+                        onClick={() => { if (!clickable) return; setSelectedDay(isSelected ? null : dateStr); setSelectedSlot(null); setSubmitError(''); if (!isSelected) fetchSlots() }}
                         disabled={!clickable}
                         className="relative flex flex-col items-center justify-start rounded-xl pt-2 pb-1.5 transition-all"
                         style={{
