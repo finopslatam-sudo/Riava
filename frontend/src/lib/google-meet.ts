@@ -1,10 +1,43 @@
 import { createSign } from 'crypto'
 
-async function getAccessToken(): Promise<string | null> {
+// ── OAuth2 Refresh Token (recommended for personal Google accounts) ────────────
+async function getAccessTokenOAuth(): Promise<string | null> {
+  const clientId     = process.env.GOOGLE_OAUTH_CLIENT_ID
+  const clientSecret = process.env.GOOGLE_OAUTH_CLIENT_SECRET
+  const refreshToken = process.env.GOOGLE_OAUTH_REFRESH_TOKEN
+
+  if (!clientId || !clientSecret || !refreshToken) return null
+
+  const res = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      grant_type:    'refresh_token',
+      client_id:     clientId,
+      client_secret: clientSecret,
+      refresh_token: refreshToken,
+    }).toString(),
+    signal: AbortSignal.timeout(8000),
+  })
+
+  if (!res.ok) {
+    const body = await res.text()
+    console.error(`[Google Meet] OAuth2 refresh token error ${res.status}:`, body)
+    return null
+  }
+
+  const data = await res.json() as { access_token?: string }
+  if (!data.access_token) {
+    console.error('[Google Meet] OAuth2 response missing access_token:', JSON.stringify(data))
+    return null
+  }
+  return data.access_token
+}
+
+// ── Service Account JWT (fallback, only works with Google Workspace + DWD) ────
+async function getAccessTokenServiceAccount(): Promise<string | null> {
   const serviceEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL
   const rawKey       = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY
-  // Optional: impersonate a real Google Workspace user so Meet links are created
-  // on their behalf. Set GOOGLE_IMPERSONATE_EMAIL in Vercel env vars.
   const impersonate  = process.env.GOOGLE_IMPERSONATE_EMAIL
 
   if (!serviceEmail || !rawKey) {
@@ -22,7 +55,6 @@ async function getAccessToken(): Promise<string | null> {
     exp:   now + 3600,
     iat:   now,
   }
-  // sub = impersonation; requires Domain-Wide Delegation enabled on the service account
   if (impersonate) claimsObj.sub = impersonate
 
   const header = Buffer.from(JSON.stringify({ alg: 'RS256', typ: 'JWT' })).toString('base64url')
@@ -48,15 +80,27 @@ async function getAccessToken(): Promise<string | null> {
 
   if (!res.ok) {
     const body = await res.text()
-    console.error(`[Google Meet] OAuth token error ${res.status}:`, body)
+    console.error(`[Google Meet] Service account OAuth error ${res.status}:`, body)
     return null
   }
   const data = await res.json() as { access_token?: string }
   if (!data.access_token) {
-    console.error('[Google Meet] OAuth response missing access_token:', JSON.stringify(data))
+    console.error('[Google Meet] Service account OAuth missing access_token:', JSON.stringify(data))
     return null
   }
   return data.access_token
+}
+
+async function getAccessToken(): Promise<string | null> {
+  // OAuth2 refresh token works with personal accounts and generates Meet links
+  const oauthToken = await getAccessTokenOAuth()
+  if (oauthToken) {
+    console.log('[Google Meet] Using OAuth2 refresh token (personal account mode)')
+    return oauthToken
+  }
+  // Fallback: service account JWT (requires Google Workspace + Domain-Wide Delegation)
+  console.log('[Google Meet] OAuth2 not configured, falling back to service account JWT')
+  return getAccessTokenServiceAccount()
 }
 
 export async function createMeetEvent(params: {
@@ -71,7 +115,6 @@ export async function createMeetEvent(params: {
   const token = await getAccessToken()
   if (!token) return null
 
-  // Use GOOGLE_IMPERSONATE_EMAIL as calendar if no explicit ID is set
   const calendarId = process.env.GOOGLE_CALENDAR_ID
     || process.env.GOOGLE_IMPERSONATE_EMAIL
     || 'primary'
