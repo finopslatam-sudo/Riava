@@ -1,5 +1,17 @@
 export const SITE_NAME = "RIAVA"
 
+export const BOOKING_SERVICES = [
+  'FinOps Cloud AWS',
+  'Creación de páginas web',
+  'Automatizaciones',
+  'Cliente fiel',
+  'Desarrollo SaaS',
+  'Software a medida',
+  'Creación de imágenes y videos',
+] as const
+
+export type BookingService = (typeof BOOKING_SERVICES)[number]
+
 export const NAV_LINKS = [
   { label: "Servicios", href: "#services" },
   { label: "Impacto", href: "#impact" },
