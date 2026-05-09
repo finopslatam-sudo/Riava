@@ -154,6 +154,10 @@ export default function CalendarioPage() {
 
   useEffect(() => { fetchSlots() }, [fetchSlots])
   useEffect(() => {
+    const id = setInterval(fetchSlots, 60000)
+    return () => clearInterval(id)
+  }, [fetchSlots])
+  useEffect(() => {
     if (selectedDate) fetchAppointments(selectedDate); else setAppointments([])
   }, [selectedDate, fetchAppointments])
 

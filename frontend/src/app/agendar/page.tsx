@@ -120,6 +120,7 @@ export default function AgendarPage() {
   const resetBooking = () => {
     setSuccess(false); setSelectedSlot(null); setSelectedDay(null)
     setForm({ name: '', lastName: '', company: '', email: '', phone: '', service: '' })
+    fetchSlots()
   }
 
   function googleCalendarUrl(appt: NonNullable<typeof bookedAppt>) {
