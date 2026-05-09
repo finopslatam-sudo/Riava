@@ -182,19 +182,21 @@ export async function POST(req: NextRequest) {
 
   const adminEmail = process.env.ZOHO_EMAIL ?? 'contacto@riava.cl'
 
-  transporter.sendMail({
-    from: `"RIAVA System SpA" <${process.env.ZOHO_EMAIL}>`,
-    to: email,
-    subject: `Confirmación de cita · ${fmtDate(appt.date)} ${appt.startTime} · RIAVA System SpA`,
-    html: clientHtml(appt),
-  }).catch(console.error)
+  await Promise.all([
+    transporter.sendMail({
+      from: `"RIAVA System SpA" <${process.env.ZOHO_EMAIL}>`,
+      to: email,
+      subject: `Confirmación de cita · ${fmtDate(appt.date)} ${appt.startTime} · RIAVA System SpA`,
+      html: clientHtml(appt),
+    }).catch(err => console.error('Error sending client email:', err)),
 
-  transporter.sendMail({
-    from: `"RIAVA Sistema" <${process.env.ZOHO_EMAIL}>`,
-    to: adminEmail,
-    subject: `Nueva cita: ${name} ${lastName} · ${fmtDate(appt.date)} ${appt.startTime}`,
-    html: adminHtml(appt),
-  }).catch(console.error)
+    transporter.sendMail({
+      from: `"RIAVA Sistema" <${process.env.ZOHO_EMAIL}>`,
+      to: adminEmail,
+      subject: `Nueva cita: ${name} ${lastName} · ${fmtDate(appt.date)} ${appt.startTime}`,
+      html: adminHtml(appt),
+    }).catch(err => console.error('Error sending admin email:', err)),
+  ])
 
   return NextResponse.json(appt, { status: 201 })
 }

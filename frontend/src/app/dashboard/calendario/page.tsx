@@ -127,6 +127,11 @@ export default function CalendarioPage() {
   const [lunchLoading, setLunchLoading] = useState(false)
   const [lunchMsg, setLunchMsg] = useState('')
 
+  // Block full day
+  const [blockDayLoading, setBlockDayLoading] = useState(false)
+  const [blockDayMsg, setBlockDayMsg] = useState('')
+  const [blockDayConfirm, setBlockDayConfirm] = useState(false)
+
   // Repeat
   const [repeatMonFriWeekLoading, setRepeatMonFriWeekLoading] = useState(false)
   const [repeatMonFriMonthLoading, setRepeatMonFriMonthLoading] = useState(false)
@@ -193,6 +198,21 @@ export default function CalendarioPage() {
   const deleteSlot = async (id: string) => {
     const res = await fetch(`/api/appointments/slots/${id}`, { method: 'DELETE' })
     if (res.ok) setSlots(prev => prev.filter(s => s.id !== id))
+  }
+
+  const blockDay = async () => {
+    if (!selectedDate) return
+    setBlockDayLoading(true); setBlockDayMsg(''); setBlockDayConfirm(false)
+    const toDelete = slotsForDate(selectedDate).filter(s => !s.booked)
+    let deleted = 0
+    for (const slot of toDelete) {
+      const res = await fetch(`/api/appointments/slots/${slot.id}`, { method: 'DELETE' })
+      if (res.ok) { setSlots(prev => prev.filter(s => s.id !== slot.id)); deleted++ }
+    }
+    setBlockDayLoading(false)
+    if (deleted === 0) setBlockDayMsg('No hay horarios libres para eliminar.')
+    else setBlockDayMsg(`✓ ${deleted} horario${deleted !== 1 ? 's' : ''} eliminado${deleted !== 1 ? 's' : ''} · día bloqueado`)
+    setTimeout(() => setBlockDayMsg(''), 4000)
   }
 
   const blockLunchSlots = async (scope: 'day' | 'month') => {
@@ -276,11 +296,11 @@ export default function CalendarioPage() {
 
   const prevMonth = () => {
     if (viewMonth === 0) { setViewYear(y => y - 1); setViewMonth(11) } else setViewMonth(m => m - 1)
-    setSelectedDate(null)
+    setSelectedDate(null); setBlockDayConfirm(false)
   }
   const nextMonth = () => {
     if (viewMonth === 11) { setViewYear(y => y + 1); setViewMonth(0) } else setViewMonth(m => m + 1)
-    setSelectedDate(null)
+    setSelectedDate(null); setBlockDayConfirm(false)
   }
 
   const totalDays = daysInMonth(viewYear, viewMonth)
@@ -344,7 +364,7 @@ export default function CalendarioPage() {
               return (
                 <button
                   key={idx}
-                  onClick={() => setSelectedDate(isSelected ? null : dateStr)}
+                  onClick={() => { setSelectedDate(isSelected ? null : dateStr); setBlockDayConfirm(false) }}
                   title={holiday ? holidayName(dateStr) : undefined}
                   className="relative flex flex-col items-center justify-start rounded-xl pt-2 pb-1.5 transition-all"
                   style={{
@@ -455,6 +475,48 @@ export default function CalendarioPage() {
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                     {addLoading ? 'Guardando...' : `Agregar ${previewSlots.length > 0 ? previewSlots.length + ' horario' + (previewSlots.length !== 1 ? 's' : '') : 'horarios'}`}
                   </button>
+                </div>
+
+                {/* ── Block full day ── */}
+                <div style={{ borderTop: '1px solid rgba(0,229,255,0.07)', paddingTop: 16 }}>
+                  <p className="text-xs font-semibold tracking-widest uppercase mb-3" style={{ color: 'rgba(240,0,255,0.6)' }}>Bloquear día completo</p>
+                  <p className="text-xs mb-3" style={{ color: 'rgba(224,247,255,0.35)' }}>
+                    Elimina todos los horarios libres de este día. Los horarios con cita no se verán afectados.
+                  </p>
+                  {blockDayMsg && (
+                    <p className="text-xs mb-2" style={{ color: blockDayMsg.startsWith('✓') ? '#00e5ff' : '#f000ff' }}>{blockDayMsg}</p>
+                  )}
+                  {!blockDayConfirm ? (
+                    <button
+                      onClick={() => setBlockDayConfirm(true)}
+                      disabled={blockDayLoading || slotsForDate(selectedDate).filter(s => !s.booked).length === 0}
+                      className="w-full py-2 rounded-lg text-xs font-semibold transition-all disabled:opacity-40"
+                      style={{ background: 'rgba(240,0,255,0.06)', border: '1px solid rgba(240,0,255,0.25)', color: 'rgba(240,0,255,0.8)' }}
+                      onMouseEnter={e => { if (!blockDayLoading) e.currentTarget.style.background = 'rgba(240,0,255,0.12)' }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'rgba(240,0,255,0.06)' }}>
+                      {slotsForDate(selectedDate).filter(s => !s.booked).length === 0
+                        ? 'Sin horarios libres'
+                        : `Bloquear día · ${slotsForDate(selectedDate).filter(s => !s.booked).length} horario${slotsForDate(selectedDate).filter(s => !s.booked).length !== 1 ? 's' : ''} libre${slotsForDate(selectedDate).filter(s => !s.booked).length !== 1 ? 's' : ''}`}
+                    </button>
+                  ) : (
+                    <div className="rounded-xl p-3" style={{ background: 'rgba(240,0,255,0.05)', border: '1px solid rgba(240,0,255,0.2)' }}>
+                      <p className="text-xs mb-3" style={{ color: 'rgba(240,0,255,0.9)' }}>
+                        ¿Confirmas que deseas eliminar todos los horarios libres de este día?
+                      </p>
+                      <div className="flex gap-2">
+                        <button onClick={blockDay} disabled={blockDayLoading}
+                          className="flex-1 py-1.5 rounded-lg text-xs font-bold disabled:opacity-50"
+                          style={{ background: 'rgba(240,0,255,0.2)', border: '1px solid rgba(240,0,255,0.4)', color: '#f000ff' }}>
+                          {blockDayLoading ? 'Eliminando...' : 'Sí, bloquear'}
+                        </button>
+                        <button onClick={() => setBlockDayConfirm(false)}
+                          className="flex-1 py-1.5 rounded-lg text-xs font-semibold"
+                          style={{ background: 'transparent', border: '1px solid rgba(224,247,255,0.1)', color: 'rgba(224,247,255,0.4)' }}>
+                          Cancelar
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* ── Lunch block ── */}
