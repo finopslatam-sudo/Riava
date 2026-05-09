@@ -30,9 +30,15 @@ const DAYS_ES = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
 const MONTHS_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
 
 const TIME_OPTIONS: string[] = []
-for (let h = 7; h <= 21; h++) {
+for (let h = 7; h <= 20; h++) {
   TIME_OPTIONS.push(`${String(h).padStart(2, '0')}:00`)
   TIME_OPTIONS.push(`${String(h).padStart(2, '0')}:30`)
+}
+
+function addThirtyMinutes(time: string): string {
+  const [h, m] = time.split(':').map(Number)
+  const total = h * 60 + m + 30
+  return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`
 }
 
 function isoDate(y: number, m: number, d: number) {
@@ -78,14 +84,12 @@ export default function CalendarioPage() {
 
   // Add slot form
   const [newStart, setNewStart] = useState('09:00')
-  const [newEnd, setNewEnd] = useState('10:00')
   const [addError, setAddError] = useState('')
   const [addLoading, setAddLoading] = useState(false)
 
   // Edit slot
   const [editingSlotId, setEditingSlotId] = useState<string | null>(null)
   const [editStart, setEditStart] = useState('09:00')
-  const [editEnd, setEditEnd] = useState('10:00')
   const [editLoading, setEditLoading] = useState(false)
   const [editError, setEditError] = useState('')
 
@@ -121,12 +125,11 @@ export default function CalendarioPage() {
   const addSlot = async () => {
     if (!selectedDate) return
     setAddError('')
-    if (newStart >= newEnd) { setAddError('La hora de fin debe ser posterior a la de inicio.'); return }
     setAddLoading(true)
     const res = await fetch('/api/appointments/slots', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ date: selectedDate, startTime: newStart, endTime: newEnd }),
+      body: JSON.stringify({ date: selectedDate, startTime: newStart, endTime: addThirtyMinutes(newStart) }),
     })
     const data = await res.json()
     setAddLoading(false)
@@ -137,18 +140,16 @@ export default function CalendarioPage() {
   const startEdit = (slot: Slot) => {
     setEditingSlotId(slot.id)
     setEditStart(slot.startTime)
-    setEditEnd(slot.endTime)
     setEditError('')
   }
 
   const saveEdit = async (slotId: string) => {
-    if (editStart >= editEnd) { setEditError('La hora de fin debe ser posterior a la de inicio.'); return }
     setEditLoading(true)
     setEditError('')
     const res = await fetch(`/api/appointments/slots/${slotId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ startTime: editStart, endTime: editEnd }),
+      body: JSON.stringify({ startTime: editStart, endTime: addThirtyMinutes(editStart) }),
     })
     const data = await res.json()
     setEditLoading(false)
@@ -345,16 +346,15 @@ export default function CalendarioPage() {
                   </p>
                   <div className="flex gap-2 items-center mb-2">
                     <div className="flex-1">
-                      <label className="text-xs mb-1 block" style={{ color: 'rgba(0,229,255,0.4)' }}>Desde</label>
+                      <label className="text-xs mb-1 block" style={{ color: 'rgba(0,229,255,0.4)' }}>Hora de inicio</label>
                       <select value={newStart} onChange={e => setNewStart(e.target.value)} className="w-full rounded-lg px-2 py-1.5 text-sm outline-none" style={inputStyle}>
                         {TIME_OPTIONS.map(t => <option key={t} value={t}>{t}</option>)}
                       </select>
                     </div>
-                    <div className="flex-1">
-                      <label className="text-xs mb-1 block" style={{ color: 'rgba(0,229,255,0.4)' }}>Hasta</label>
-                      <select value={newEnd} onChange={e => setNewEnd(e.target.value)} className="w-full rounded-lg px-2 py-1.5 text-sm outline-none" style={inputStyle}>
-                        {TIME_OPTIONS.map(t => <option key={t} value={t}>{t}</option>)}
-                      </select>
+                    <div className="flex-1 flex items-end pb-1.5">
+                      <p className="text-xs" style={{ color: 'rgba(0,229,255,0.4)' }}>
+                        → {addThirtyMinutes(newStart)} <span style={{ color: 'rgba(0,229,255,0.25)' }}>(30 min)</span>
+                      </p>
                     </div>
                   </div>
                   {addError && <p className="text-xs mb-2" style={{ color: '#f000ff' }}>{addError}</p>}
@@ -423,16 +423,15 @@ export default function CalendarioPage() {
                                   <p className="text-xs font-semibold mb-2" style={{ color: 'rgba(0,229,255,0.6)' }}>Editar horario</p>
                                   <div className="flex gap-2 mb-2">
                                     <div className="flex-1">
-                                      <label className="text-xs mb-1 block" style={{ color: 'rgba(0,229,255,0.4)' }}>Desde</label>
+                                      <label className="text-xs mb-1 block" style={{ color: 'rgba(0,229,255,0.4)' }}>Hora de inicio</label>
                                       <select value={editStart} onChange={e => setEditStart(e.target.value)} className="w-full rounded-lg px-2 py-1.5 text-xs outline-none" style={inputStyle}>
                                         {TIME_OPTIONS.map(t => <option key={t} value={t}>{t}</option>)}
                                       </select>
                                     </div>
-                                    <div className="flex-1">
-                                      <label className="text-xs mb-1 block" style={{ color: 'rgba(0,229,255,0.4)' }}>Hasta</label>
-                                      <select value={editEnd} onChange={e => setEditEnd(e.target.value)} className="w-full rounded-lg px-2 py-1.5 text-xs outline-none" style={inputStyle}>
-                                        {TIME_OPTIONS.map(t => <option key={t} value={t}>{t}</option>)}
-                                      </select>
+                                    <div className="flex-1 flex items-end pb-1.5">
+                                      <p className="text-xs" style={{ color: 'rgba(0,229,255,0.4)' }}>
+                                        → {addThirtyMinutes(editStart)} <span style={{ color: 'rgba(0,229,255,0.25)' }}>(30 min)</span>
+                                      </p>
                                     </div>
                                   </div>
                                   {editError && <p className="text-xs mb-2" style={{ color: '#f000ff' }}>{editError}</p>}

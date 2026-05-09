@@ -3,11 +3,11 @@
 import { motion } from 'framer-motion'
 
 const SLOTS_PREVIEW = [
-  { day: 'Lun', times: ['09:00', '10:30', '15:00'] },
-  { day: 'Mar', times: ['09:00', '11:00'] },
-  { day: 'Mié', times: ['10:00', '14:00', '16:00'] },
+  { day: 'Lun', times: ['09:00', '09:30', '10:00'] },
+  { day: 'Mar', times: ['10:00', '10:30'] },
+  { day: 'Mié', times: ['09:00', '14:00', '15:00'] },
   { day: 'Jue', times: ['09:30', '11:00'] },
-  { day: 'Vie', times: ['09:00', '10:00', '15:30'] },
+  { day: 'Vie', times: ['09:00', '09:30', '15:30'] },
 ]
 
 export function Booking() {
