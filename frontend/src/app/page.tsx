@@ -3,6 +3,7 @@ import { Hero } from "@/components/sections/Hero"
 import { Testimonials } from "@/components/sections/Testimonials"
 import { Services } from "@/components/sections/Services"
 import { Impact } from "@/components/sections/Impact"
+import { Booking } from "@/components/sections/Booking"
 import { Contact } from "@/components/sections/Contact"
 import { Footer } from "@/components/ui/Footer"
 
@@ -14,6 +15,7 @@ export default function Home() {
       <Testimonials />
       <Services />
       <Impact />
+      <Booking />
       <Contact />
       <Footer />
     </main>
