@@ -139,6 +139,7 @@ export default function CalendarioPage() {
   // Admin booking
   const [bookingSlotId, setBookingSlotId] = useState<string | null>(null)
   const [bookingForm, setBookingForm] = useState({ name: '', lastName: '', company: '', email: '', phone: '', service: '' })
+  const [bookingTwoSlots, setBookingTwoSlots] = useState(false)
   const [bookingLoading, setBookingLoading] = useState(false)
   const [bookingError, setBookingError] = useState('')
 
@@ -226,9 +227,16 @@ export default function CalendarioPage() {
     setCancelConfirmId(null)
   }
 
-  const bookAdmin = async (slotId: string) => {
+  const bookAdmin = async (slot: Slot) => {
     if (!bookingForm.name || !bookingForm.lastName || !bookingForm.email || !bookingForm.service) {
       setBookingError('Nombre, apellido, email y servicio son obligatorios.')
+      return
+    }
+    const nextSlot = bookingTwoSlots
+      ? slots.find(s => s.date === slot.date && s.startTime === slot.endTime && !s.booked)
+      : null
+    if (bookingTwoSlots && !nextSlot) {
+      setBookingError('No hay un horario libre consecutivo para agendar 1 hora.')
       return
     }
     setBookingLoading(true); setBookingError('')
@@ -236,14 +244,18 @@ export default function CalendarioPage() {
       const res = await fetch('/api/appointments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ slotId, ...bookingForm }),
+        body: JSON.stringify({ slotId: slot.id, ...(nextSlot ? { slotId2: nextSlot.id } : {}), ...bookingForm }),
         signal: AbortSignal.timeout(25000),
       })
       const data = await res.json()
       if (!res.ok) { setBookingError(data.error ?? 'Error al reservar.'); setBookingLoading(false); return }
-      setSlots(prev => prev.map(s => s.id === slotId ? { ...s, booked: true, appointmentId: data.id } : s))
+      setSlots(prev => prev.map(s =>
+        s.id === slot.id ? { ...s, booked: true, appointmentId: data.id } :
+        nextSlot && s.id === nextSlot.id ? { ...s, booked: true, appointmentId: data.id } : s
+      ))
       setAppointments(prev => [...prev, data])
       setBookingSlotId(null)
+      setBookingTwoSlots(false)
       setBookingForm({ name: '', lastName: '', company: '', email: '', phone: '', service: '' })
     } catch {
       setBookingError('La solicitud tardó demasiado. Intenta de nuevo.')
@@ -740,7 +752,7 @@ export default function CalendarioPage() {
                                     </span>
                                     {!slot.booked && (
                                       <>
-                                        <button onClick={() => { setBookingSlotId(bookingSlotId === slot.id ? null : slot.id); setBookingError(''); setBookingForm({ name: '', lastName: '', company: '', email: '', phone: '', service: '' }); setEditingSlotId(null) }}
+                                        <button onClick={() => { setBookingSlotId(bookingSlotId === slot.id ? null : slot.id); setBookingError(''); setBookingTwoSlots(false); setBookingForm({ name: '', lastName: '', company: '', email: '', phone: '', service: '' }); setEditingSlotId(null) }}
                                           className="p-1 rounded transition-colors"
                                           style={{ color: bookingSlotId === slot.id ? '#00e5ff' : 'rgba(0,229,255,0.4)' }}
                                           onMouseEnter={e => { e.currentTarget.style.color = '#00e5ff' }}
@@ -768,61 +780,83 @@ export default function CalendarioPage() {
                                     )}
                                   </div>
                                 </div>
-                                {bookingSlotId === slot.id && (
-                                  <div className="mt-3 pt-3" style={{ borderTop: '1px solid rgba(0,229,255,0.1)' }}>
-                                    <p className="text-xs font-semibold mb-2" style={{ color: 'rgba(0,229,255,0.6)' }}>Reservar cita</p>
-                                    <div className="flex flex-col gap-2">
-                                      <div className="grid grid-cols-2 gap-2">
-                                        <div>
-                                          <label className="text-xs mb-0.5 block" style={{ color: 'rgba(0,229,255,0.4)' }}>Nombre *</label>
-                                          <input value={bookingForm.name} onChange={e => setBookingForm(f => ({ ...f, name: e.target.value }))}
-                                            placeholder="Ricardo" className="w-full rounded-lg px-2 py-1.5 text-xs outline-none" style={inputStyle} />
+                                {bookingSlotId === slot.id && (() => {
+                                  const nextFreeSlot = slots.find(s => s.date === slot.date && s.startTime === slot.endTime && !s.booked)
+                                  return (
+                                    <div className="mt-3 pt-3" style={{ borderTop: '1px solid rgba(0,229,255,0.1)' }}>
+                                      <p className="text-xs font-semibold mb-2" style={{ color: 'rgba(0,229,255,0.6)' }}>Reservar cita</p>
+                                      <div className="flex flex-col gap-2">
+                                        {nextFreeSlot && (
+                                          <button
+                                            onClick={() => setBookingTwoSlots(v => !v)}
+                                            className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium transition-all"
+                                            style={{
+                                              background: bookingTwoSlots ? 'rgba(0,229,255,0.1)' : 'rgba(0,20,30,0.5)',
+                                              border: `1px solid ${bookingTwoSlots ? 'rgba(0,229,255,0.4)' : 'rgba(0,229,255,0.15)'}`,
+                                              color: bookingTwoSlots ? '#00e5ff' : 'rgba(0,229,255,0.5)',
+                                            }}>
+                                            <span className="flex items-center justify-center w-3.5 h-3.5 rounded-sm flex-shrink-0"
+                                              style={{ background: bookingTwoSlots ? '#00e5ff' : 'transparent', border: `1.5px solid ${bookingTwoSlots ? '#00e5ff' : 'rgba(0,229,255,0.3)'}` }}>
+                                              {bookingTwoSlots && <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#000a0f" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
+                                            </span>
+                                            Reunión de 1 hora
+                                            <span style={{ color: 'rgba(0,229,255,0.35)', marginLeft: 'auto' }}>
+                                              {slot.startTime} – {nextFreeSlot.endTime}
+                                            </span>
+                                          </button>
+                                        )}
+                                        <div className="grid grid-cols-2 gap-2">
+                                          <div>
+                                            <label className="text-xs mb-0.5 block" style={{ color: 'rgba(0,229,255,0.4)' }}>Nombre *</label>
+                                            <input value={bookingForm.name} onChange={e => setBookingForm(f => ({ ...f, name: e.target.value }))}
+                                              placeholder="Ricardo" className="w-full rounded-lg px-2 py-1.5 text-xs outline-none" style={inputStyle} />
+                                          </div>
+                                          <div>
+                                            <label className="text-xs mb-0.5 block" style={{ color: 'rgba(0,229,255,0.4)' }}>Apellido *</label>
+                                            <input value={bookingForm.lastName} onChange={e => setBookingForm(f => ({ ...f, lastName: e.target.value }))}
+                                              placeholder="García" className="w-full rounded-lg px-2 py-1.5 text-xs outline-none" style={inputStyle} />
+                                          </div>
                                         </div>
                                         <div>
-                                          <label className="text-xs mb-0.5 block" style={{ color: 'rgba(0,229,255,0.4)' }}>Apellido *</label>
-                                          <input value={bookingForm.lastName} onChange={e => setBookingForm(f => ({ ...f, lastName: e.target.value }))}
-                                            placeholder="García" className="w-full rounded-lg px-2 py-1.5 text-xs outline-none" style={inputStyle} />
+                                          <label className="text-xs mb-0.5 block" style={{ color: 'rgba(0,229,255,0.4)' }}>Empresa</label>
+                                          <input value={bookingForm.company} onChange={e => setBookingForm(f => ({ ...f, company: e.target.value }))}
+                                            placeholder="Empresa SpA" className="w-full rounded-lg px-2 py-1.5 text-xs outline-none" style={inputStyle} />
                                         </div>
-                                      </div>
-                                      <div>
-                                        <label className="text-xs mb-0.5 block" style={{ color: 'rgba(0,229,255,0.4)' }}>Empresa</label>
-                                        <input value={bookingForm.company} onChange={e => setBookingForm(f => ({ ...f, company: e.target.value }))}
-                                          placeholder="Empresa SpA" className="w-full rounded-lg px-2 py-1.5 text-xs outline-none" style={inputStyle} />
-                                      </div>
-                                      <div>
-                                        <label className="text-xs mb-0.5 block" style={{ color: 'rgba(0,229,255,0.4)' }}>Email *</label>
-                                        <input type="email" value={bookingForm.email} onChange={e => setBookingForm(f => ({ ...f, email: e.target.value }))}
-                                          placeholder="correo@ejemplo.cl" className="w-full rounded-lg px-2 py-1.5 text-xs outline-none" style={inputStyle} />
-                                      </div>
-                                      <div>
-                                        <label className="text-xs mb-0.5 block" style={{ color: 'rgba(0,229,255,0.4)' }}>Teléfono</label>
-                                        <input value={bookingForm.phone} onChange={e => setBookingForm(f => ({ ...f, phone: e.target.value }))}
-                                          placeholder="+56 9 1234 5678" className="w-full rounded-lg px-2 py-1.5 text-xs outline-none" style={inputStyle} />
-                                      </div>
-                                      <div>
-                                        <label className="text-xs mb-0.5 block" style={{ color: 'rgba(0,229,255,0.4)' }}>Servicio *</label>
-                                        <select value={bookingForm.service} onChange={e => setBookingForm(f => ({ ...f, service: e.target.value }))}
-                                          className="w-full rounded-lg px-2 py-1.5 text-xs outline-none" style={inputStyle}>
-                                          <option value="">Seleccionar...</option>
-                                          {BOOKING_SERVICES.map(s => <option key={s} value={s}>{s}</option>)}
-                                        </select>
-                                      </div>
-                                      {bookingError && <p className="text-xs" style={{ color: '#f000ff' }}>{bookingError}</p>}
-                                      <div className="flex gap-2">
-                                        <button onClick={() => bookAdmin(slot.id)} disabled={bookingLoading}
-                                          className="flex-1 py-1.5 rounded-lg text-xs font-semibold disabled:opacity-50"
-                                          style={{ background: 'rgba(0,229,255,0.12)', border: '1px solid rgba(0,229,255,0.3)', color: '#00e5ff' }}>
-                                          {bookingLoading ? 'Reservando...' : 'Confirmar reserva'}
-                                        </button>
-                                        <button onClick={() => { setBookingSlotId(null); setBookingError('') }}
-                                          className="px-3 py-1.5 rounded-lg text-xs"
-                                          style={{ border: '1px solid rgba(224,247,255,0.1)', color: 'rgba(224,247,255,0.4)' }}>
-                                          Cancelar
-                                        </button>
+                                        <div>
+                                          <label className="text-xs mb-0.5 block" style={{ color: 'rgba(0,229,255,0.4)' }}>Email *</label>
+                                          <input type="email" value={bookingForm.email} onChange={e => setBookingForm(f => ({ ...f, email: e.target.value }))}
+                                            placeholder="correo@ejemplo.cl" className="w-full rounded-lg px-2 py-1.5 text-xs outline-none" style={inputStyle} />
+                                        </div>
+                                        <div>
+                                          <label className="text-xs mb-0.5 block" style={{ color: 'rgba(0,229,255,0.4)' }}>Teléfono</label>
+                                          <input value={bookingForm.phone} onChange={e => setBookingForm(f => ({ ...f, phone: e.target.value }))}
+                                            placeholder="+56 9 1234 5678" className="w-full rounded-lg px-2 py-1.5 text-xs outline-none" style={inputStyle} />
+                                        </div>
+                                        <div>
+                                          <label className="text-xs mb-0.5 block" style={{ color: 'rgba(0,229,255,0.4)' }}>Servicio *</label>
+                                          <select value={bookingForm.service} onChange={e => setBookingForm(f => ({ ...f, service: e.target.value }))}
+                                            className="w-full rounded-lg px-2 py-1.5 text-xs outline-none" style={inputStyle}>
+                                            <option value="">Seleccionar...</option>
+                                            {BOOKING_SERVICES.map(s => <option key={s} value={s}>{s}</option>)}
+                                          </select>
+                                        </div>
+                                        {bookingError && <p className="text-xs" style={{ color: '#f000ff' }}>{bookingError}</p>}
+                                        <div className="flex gap-2">
+                                          <button onClick={() => bookAdmin(slot)} disabled={bookingLoading}
+                                            className="flex-1 py-1.5 rounded-lg text-xs font-semibold disabled:opacity-50"
+                                            style={{ background: 'rgba(0,229,255,0.12)', border: '1px solid rgba(0,229,255,0.3)', color: '#00e5ff' }}>
+                                            {bookingLoading ? 'Reservando...' : 'Confirmar reserva'}
+                                          </button>
+                                          <button onClick={() => { setBookingSlotId(null); setBookingTwoSlots(false); setBookingError('') }}
+                                            className="px-3 py-1.5 rounded-lg text-xs"
+                                            style={{ border: '1px solid rgba(224,247,255,0.1)', color: 'rgba(224,247,255,0.4)' }}>
+                                            Cancelar
+                                          </button>
+                                        </div>
                                       </div>
                                     </div>
-                                  </div>
-                                )}
+                                  )
+                                })()}
                                 {slot.booked && appt && (
                                   <div className="mt-2 pt-2" style={{ borderTop: '1px solid rgba(240,0,255,0.1)' }}>
                                     <p className="text-xs font-semibold" style={{ color: '#e0f7ff' }}>{appt.name} {appt.lastName}</p>

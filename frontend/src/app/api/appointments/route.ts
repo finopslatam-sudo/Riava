@@ -196,11 +196,11 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const body = (await req.json()) as {
-    slotId: string; name: string; lastName: string
+    slotId: string; slotId2?: string; name: string; lastName: string
     company?: string; email: string; phone?: string; service: string
   }
 
-  const { slotId, name, lastName, company, email, phone, service } = body
+  const { slotId, slotId2, name, lastName, company, email, phone, service } = body
 
   if (!slotId || !name || !lastName || !email || !service) {
     return NextResponse.json({ error: 'Faltan campos requeridos' }, { status: 400 })
@@ -214,6 +214,18 @@ export async function POST(req: NextRequest) {
   if (!slot) return NextResponse.json({ error: 'Horario no encontrado' }, { status: 404 })
   if (slot.booked) return NextResponse.json({ error: 'Este horario ya fue reservado' }, { status: 409 })
 
+  let slot2 = null
+  if (slotId2) {
+    slot2 = slots.find(s => s.id === slotId2)
+    if (!slot2) return NextResponse.json({ error: 'Segundo horario no encontrado' }, { status: 404 })
+    if (slot2.booked) return NextResponse.json({ error: 'El segundo horario ya fue reservado' }, { status: 409 })
+    if (slot2.date !== slot.date || slot2.startTime !== slot.endTime) {
+      return NextResponse.json({ error: 'El segundo horario no es consecutivo al primero' }, { status: 400 })
+    }
+  }
+
+  const endTime = slot2 ? slot2.endTime : slot.endTime
+
   let meetLink = ''
   try {
     const meetResult = await Promise.race([
@@ -221,7 +233,7 @@ export async function POST(req: NextRequest) {
         name, lastName, service,
         date: slot.date,
         startTime: slot.startTime,
-        endTime: slot.endTime,
+        endTime,
         clientEmail: email,
       }),
       new Promise<null>(resolve => setTimeout(() => resolve(null), 12000)),
@@ -240,7 +252,7 @@ export async function POST(req: NextRequest) {
     slotId,
     date: slot.date,
     startTime: slot.startTime,
-    endTime: slot.endTime,
+    endTime,
     name,
     lastName,
     company: company ?? '',
@@ -253,6 +265,10 @@ export async function POST(req: NextRequest) {
 
   slot.booked = true
   slot.appointmentId = appt.id
+  if (slot2) {
+    slot2.booked = true
+    slot2.appointmentId = appt.id
+  }
   await saveSlots(slots)
 
   const appointments = await getAppointments()
