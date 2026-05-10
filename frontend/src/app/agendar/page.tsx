@@ -79,7 +79,7 @@ export default function AgendarPage() {
     setSelectedDay(null); setSelectedSlot(null)
   }
 
-  const slotsForDay   = (date: string) => slots.filter(s => s.date === date && !s.booked).sort((a, b) => a.startTime.localeCompare(b.startTime))
+  const slotsForDay   = (date: string) => slots.filter(s => s.date === date).sort((a, b) => a.startTime.localeCompare(b.startTime))
   const hasAvailable  = (date: string) => slots.some(s => s.date === date && !s.booked)
 
   const handleFieldChange = (field: keyof FormState, value: string) => setForm(prev => ({ ...prev, [field]: value }))
@@ -170,7 +170,7 @@ export default function AgendarPage() {
       </div>
 
       <header className="relative z-10 flex items-center justify-between px-6 py-4" style={{ borderBottom: '1px solid rgba(0,229,255,0.08)' }}>
-        <Link href="/"><RiavaLogo variant="full" className="h-8 w-auto" /></Link>
+        <Link href="/"><RiavaLogo variant="full" className="h-6 w-auto max-w-[140px]" /></Link>
         <Link href="/" className="flex items-center gap-1.5 text-xs transition-colors" style={{ color: 'rgba(0,229,255,0.5)' }}
           onMouseEnter={e => { e.currentTarget.style.color = '#00e5ff' }}
           onMouseLeave={e => { e.currentTarget.style.color = 'rgba(0,229,255,0.5)' }}>
@@ -285,16 +285,16 @@ export default function AgendarPage() {
                         className="relative flex flex-col items-center justify-start rounded-xl pt-2 pb-1.5 transition-all"
                         style={{
                           minHeight: 56,
-                          background: isSelected ? 'rgba(0,229,255,0.12)' : holiday ? 'rgba(255,170,0,0.04)' : isToday ? 'rgba(0,229,255,0.05)' : 'transparent',
-                          border: isSelected ? '1px solid rgba(0,229,255,0.4)' : holiday ? '1px solid rgba(255,170,0,0.2)' : isToday ? '1px solid rgba(0,229,255,0.2)' : '1px solid transparent',
+                          background: isSelected ? 'rgba(0,229,255,0.12)' : holiday ? 'rgba(255,60,60,0.06)' : isToday ? 'rgba(0,229,255,0.05)' : 'transparent',
+                          border: isSelected ? '1px solid rgba(0,229,255,0.4)' : holiday ? '1px solid rgba(255,60,60,0.3)' : isToday ? '1px solid rgba(0,229,255,0.2)' : '1px solid transparent',
                           opacity: isPast ? 0.3 : !avail && !holiday ? 0.4 : 1,
                           cursor: clickable ? 'pointer' : 'default',
                         }}>
-                        <span className="text-sm font-medium" style={{ color: isSelected ? '#00e5ff' : holiday ? '#ffaa00' : isToday ? '#00e5ff' : '#e0f7ff' }}>
+                        <span className="text-sm font-medium" style={{ color: isSelected ? '#00e5ff' : holiday ? '#ff5555' : isToday ? '#00e5ff' : '#e0f7ff' }}>
                           {day}
                         </span>
                         <div className="flex gap-0.5 mt-1">
-                          {holiday && <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#ffaa00' }} />}
+                          {holiday && <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#ff5555' }} />}
                           {!holiday && avail && <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#00e5ff' }} />}
                         </div>
                       </button>
@@ -307,8 +307,8 @@ export default function AgendarPage() {
                   <div className="flex items-center gap-1.5 text-xs" style={{ color: 'rgba(0,229,255,0.5)' }}>
                     <span className="w-2 h-2 rounded-full" style={{ background: '#00e5ff' }} />Disponible
                   </div>
-                  <div className="flex items-center gap-1.5 text-xs" style={{ color: 'rgba(255,170,0,0.6)' }}>
-                    <span className="w-2 h-2 rounded-full" style={{ background: '#ffaa00' }} />Feriado
+                  <div className="flex items-center gap-1.5 text-xs" style={{ color: 'rgba(255,85,85,0.7)' }}>
+                    <span className="w-2 h-2 rounded-full" style={{ background: '#ff5555' }} />Feriado
                   </div>
                 </div>
               </div>
@@ -351,11 +351,20 @@ export default function AgendarPage() {
                     <div className="p-4 flex flex-col gap-2">
                       {loadingSlots ? (
                         <div className="py-8 text-center text-sm" style={{ color: 'rgba(0,229,255,0.4)' }}>Cargando...</div>
-                      ) : daySlots.length === 0 ? (
+                      ) : daySlots.length === 0 || daySlots.every(s => s.booked) ? (
                         <div className="py-8 text-center">
                           <p className="text-sm" style={{ color: 'rgba(224,247,255,0.35)' }}>Sin horarios disponibles para este día</p>
                         </div>
-                      ) : daySlots.map(slot => (
+                      ) : daySlots.map(slot => slot.booked ? (
+                        <div key={slot.id}
+                          className="w-full rounded-xl px-4 py-3 text-sm font-medium flex items-center justify-between"
+                          style={{ background: 'rgba(255,60,60,0.05)', border: '1px solid rgba(255,60,60,0.2)', cursor: 'default' }}>
+                          <span style={{ color: 'rgba(224,247,255,0.35)' }}>{slot.startTime} – {slot.endTime}</span>
+                          <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,60,60,0.15)', color: '#ff5555', border: '1px solid rgba(255,60,60,0.3)' }}>
+                            No disponible
+                          </span>
+                        </div>
+                      ) : (
                         <button key={slot.id}
                           onClick={() => { setSelectedSlot(slot); setSubmitError('') }}
                           className="w-full rounded-xl px-4 py-3 text-sm font-medium flex items-center justify-between transition-all"
