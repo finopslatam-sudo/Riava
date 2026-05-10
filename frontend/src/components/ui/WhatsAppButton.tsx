@@ -1,6 +1,11 @@
 "use client"
 
+import { useAuth } from "@/lib/auth-context"
+
 export function WhatsAppButton() {
+  const { user, loading } = useAuth()
+  if (loading || user) return null
+
   return (
     <a
       href="https://wa.me/56965090121"
