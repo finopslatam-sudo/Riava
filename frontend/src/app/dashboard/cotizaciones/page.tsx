@@ -340,7 +340,7 @@ export default function CotizacionesPage() {
 
       <div className="no-print-wrapper p-4 lg:p-8 min-h-full">
         {/* Header */}
-        <div className="no-print flex items-center justify-between mb-8">
+        <div className="no-print flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
             <h1 className="text-2xl font-bold" style={{ color: '#e0f7ff' }}>
               Cotizaciones
@@ -535,6 +535,10 @@ export default function CotizacionesPage() {
               Ítems
             </h3>
 
+            {/* Table — scrollable on mobile */}
+            <div className="overflow-x-auto -mx-2 px-2">
+            <div style={{ minWidth: 480 }}>
+
             {/* Table header */}
             <div
               className="items-grid grid text-xs font-semibold tracking-wide uppercase mb-2 px-3 py-2 rounded-lg"
@@ -641,6 +645,9 @@ export default function CotizacionesPage() {
               ))}
             </div>
 
+            </div>{/* /minWidth */}
+            </div>{/* /overflow-x-auto */}
+
             {/* Add item button */}
             <button
               onClick={addItem}
@@ -734,7 +741,7 @@ export default function CotizacionesPage() {
               </div>
 
               {/* Totals */}
-              <div className="min-w-64 print-totals-right">
+              <div className="w-full sm:min-w-64 sm:w-auto print-totals-right">
                 <h3 className="text-xs font-semibold tracking-widest uppercase mb-4" style={{ color: 'rgba(0,229,255,0.5)' }}>
                   Resumen
                 </h3>
@@ -1043,6 +1050,9 @@ export default function CotizacionesPage() {
                   {/* Items */}
                   <div>
                     <label className="text-xs mb-2 block font-semibold tracking-widest uppercase" style={{ color: 'rgba(167,139,250,0.6)' }}>Ítems</label>
+                    {/* Table — scrollable on mobile */}
+                    <div className="overflow-x-auto -mx-1 px-1">
+                    <div style={{ minWidth: 320 }}>
                     {/* Table header */}
                     <div
                       className="grid text-xs font-semibold tracking-wide uppercase mb-1.5 px-3 py-2 rounded-lg"
@@ -1092,6 +1102,8 @@ export default function CotizacionesPage() {
                         </div>
                       ))}
                     </div>
+                    </div>{/* /minWidth */}
+                    </div>{/* /overflow-x-auto */}
                     <button
                       onClick={addEditItem}
                       className="mt-2 flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all"

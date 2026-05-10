@@ -582,9 +582,15 @@ export default function PlantillasPage() {
             </div>
             {/* Scaled preview */}
             <div style={{ flex: 1, overflow: 'hidden', position: 'relative', background: previewTpl.palette.bg }}>
-              <div style={{ position: 'absolute', top: 0, left: 0, width: 320, height: 200, transformOrigin: 'top left', transform: 'scale(3)' }}>
-                {previewTpl.preview}
-              </div>
+              {(() => {
+                const modalW = Math.min((typeof window !== 'undefined' ? window.innerWidth : 1200) * 0.94, 980)
+                const scale = Math.min(3, modalW / 320)
+                return (
+                  <div style={{ position: 'absolute', top: 0, left: 0, width: 320, height: 200, transformOrigin: 'top left', transform: `scale(${scale})` }}>
+                    {previewTpl.preview}
+                  </div>
+                )
+              })()}
             </div>
           </div>
         </div>

@@ -260,14 +260,14 @@ export default function AgendarPage() {
                 </div>
 
                 {/* Day headers */}
-                <div className="grid grid-cols-7 px-4 pt-4 pb-1">
+                <div className="grid grid-cols-7 px-2 sm:px-4 pt-4 pb-1">
                   {DAYS_ES_SHORT.map(d => (
-                    <div key={d} className="text-center text-xs font-semibold tracking-wide uppercase pb-2" style={{ color: 'rgba(0,229,255,0.4)' }}>{d}</div>
+                    <div key={d} className="text-center text-xs font-semibold uppercase pb-2" style={{ color: 'rgba(0,229,255,0.4)' }}>{d}</div>
                   ))}
                 </div>
 
                 {/* Grid */}
-                <div className="grid grid-cols-7 gap-1 px-4 pb-5">
+                <div className="grid grid-cols-7 gap-1 px-2 sm:px-4 pb-5">
                   {cells.map((day, idx) => {
                     if (day === null) return <div key={idx} />
                     const dateStr  = isoDate(viewYear, viewMonth, day)

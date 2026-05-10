@@ -428,14 +428,14 @@ export default function CalendarioPage() {
           </div>
 
           {/* Day headers */}
-          <div className="grid grid-cols-7 px-4 pt-4 pb-1">
+          <div className="grid grid-cols-7 px-2 sm:px-4 pt-4 pb-1">
             {DAYS_ES.map(d => (
-              <div key={d} className="text-center text-xs font-semibold tracking-wide uppercase pb-2" style={{ color: 'rgba(0,229,255,0.4)' }}>{d}</div>
+              <div key={d} className="text-center text-xs font-semibold uppercase pb-2" style={{ color: 'rgba(0,229,255,0.4)' }}>{d}</div>
             ))}
           </div>
 
           {/* Days grid */}
-          <div className="grid grid-cols-7 gap-1 px-4 pb-5">
+          <div className="grid grid-cols-7 gap-1 px-2 sm:px-4 pb-5">
             {loading && cells.length === 0 ? (
               <div className="col-span-7 py-8 text-center text-sm" style={{ color: 'rgba(0,229,255,0.4)' }}>Cargando...</div>
             ) : cells.map((day, idx) => {
@@ -489,8 +489,8 @@ export default function CalendarioPage() {
         </div>
 
         {/* Day panel */}
-        <div className="xl:w-96 rounded-2xl overflow-hidden flex flex-col"
-          style={{ background: 'rgba(0,10,15,0.85)', border: '1px solid rgba(0,229,255,0.12)', minHeight: 480 }}>
+        <div className="xl:w-96 rounded-2xl overflow-hidden flex flex-col min-h-48 xl:min-h-[480px]"
+          style={{ background: 'rgba(0,10,15,0.85)', border: '1px solid rgba(0,229,255,0.12)' }}>
           {!selectedDate ? (
             <div className="flex-1 flex flex-col items-center justify-center px-6 py-12 text-center gap-3">
               <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="rgba(0,229,255,0.2)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
