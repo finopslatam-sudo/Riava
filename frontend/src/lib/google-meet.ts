@@ -145,7 +145,7 @@ export async function createMeetEvent(params: {
     },
   })
 
-  const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?conferenceDataVersion=1&sendUpdates=all`
+  const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?conferenceDataVersion=1&sendUpdates=none`
 
   const res = await fetch(url, {
     method: 'POST',
