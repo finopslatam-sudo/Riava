@@ -1,5 +1,7 @@
 import nodemailer from 'nodemailer'
 import { NextResponse } from 'next/server'
+import { readFile } from 'fs/promises'
+import path from 'path'
 
 const transporter = nodemailer.createTransport({
   host: 'smtp.zoho.com',
@@ -183,11 +185,12 @@ function buildHtml(body: string, q: QuoteData): string {
 
 export async function POST(req: Request) {
   try {
-    const { to, subject, body, quoteData } = (await req.json()) as {
+    const { to, subject, body, quoteData, attachAlcances } = (await req.json()) as {
       to: string
       subject: string
       body: string
       quoteData: QuoteData
+      attachAlcances?: boolean
     }
 
     if (!to || !subject) {
@@ -196,12 +199,24 @@ export async function POST(req: Request) {
 
     const html = buildHtml(body, quoteData)
 
+    const attachments: { filename: string; content: Buffer; contentType: string }[] = []
+    if (attachAlcances) {
+      const pdfPath = path.join(process.cwd(), 'public', 'alcances-tecnicos-ecommerce.pdf')
+      const pdfBuffer = await readFile(pdfPath)
+      attachments.push({
+        filename: 'Alcances técnicos E-commerce - RIAVA.pdf',
+        content: pdfBuffer,
+        contentType: 'application/pdf',
+      })
+    }
+
     await transporter.sendMail({
       from: `"RIAVA System SpA" <${process.env.ZOHO_EMAIL}>`,
       to,
       subject,
       text: body,
       html,
+      attachments,
     })
 
     return NextResponse.json({ success: true })

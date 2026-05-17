@@ -78,6 +78,7 @@ export default function CotizacionesPage() {
   const [emailBody, setEmailBody] = useState('')
   const [emailSending, setEmailSending] = useState(false)
   const [emailStatus, setEmailStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  const [attachAlcances, setAttachAlcances] = useState(false)
 
   // Use-templates modal + template editing
   const [showUseTemplatesModal, setShowUseTemplatesModal] = useState(false)
@@ -210,6 +211,7 @@ export default function CotizacionesPage() {
           to: emailTo,
           subject: emailSubject,
           body: emailBody,
+          attachAlcances,
           quoteData: {
             quoteNum, date, clientName, clientCompany, clientEmail, clientPhone,
             items, subtotal, discountAmount, discountPct,
@@ -222,7 +224,7 @@ export default function CotizacionesPage() {
       })
       if (res.ok) {
         setEmailStatus('success')
-        setTimeout(() => { setShowEmailModal(false); setEmailStatus('idle') }, 2500)
+        setTimeout(() => { setShowEmailModal(false); setEmailStatus('idle'); setAttachAlcances(false) }, 2500)
       } else {
         setEmailStatus('error')
       }
@@ -1259,6 +1261,43 @@ export default function CotizacionesPage() {
                   style={{ background: 'rgba(0,20,30,0.8)', border: '1px solid rgba(0,229,255,0.15)', color: '#e0f7ff', caretColor: '#00e5ff', lineHeight: 1.6 }}
                 />
               </div>
+
+              {/* Adjunto PDF */}
+              <button
+                type="button"
+                onClick={() => setAttachAlcances(v => !v)}
+                className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left w-full"
+                style={{
+                  background: attachAlcances ? 'rgba(0,229,255,0.07)' : 'rgba(0,20,30,0.5)',
+                  border: `1px solid ${attachAlcances ? 'rgba(0,229,255,0.3)' : 'rgba(0,229,255,0.1)'}`,
+                }}
+              >
+                <span
+                  className="flex items-center justify-center w-4 h-4 rounded flex-shrink-0"
+                  style={{
+                    background: attachAlcances ? '#00e5ff' : 'transparent',
+                    border: `1.5px solid ${attachAlcances ? '#00e5ff' : 'rgba(0,229,255,0.3)'}`,
+                  }}
+                >
+                  {attachAlcances && (
+                    <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#000a0f" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                  )}
+                </span>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium" style={{ color: attachAlcances ? '#00e5ff' : 'rgba(224,247,255,0.6)' }}>
+                    Adjuntar Alcances técnicos E-commerce
+                  </p>
+                  <p className="text-xs mt-0.5" style={{ color: 'rgba(0,229,255,0.35)' }}>
+                    Incluye el PDF con los alcances técnicos del proyecto E-commerce
+                  </p>
+                </div>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                  className="ml-auto flex-shrink-0" style={{ color: 'rgba(0,229,255,0.35)' }}>
+                  <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+                </svg>
+              </button>
 
               <p className="text-xs" style={{ color: 'rgba(0,229,255,0.35)' }}>
                 El correo se enviará desde <span style={{ color: '#00e5ff' }}>contacto@riava.cl</span> directamente al destinatario.
