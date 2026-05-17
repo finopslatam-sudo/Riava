@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import { RiavaLogo } from '@/components/ui/RiavaLogo'
 import { BOOKING_SERVICES } from '@/lib/constants'
@@ -44,6 +44,8 @@ const inputStyle = { background: 'rgba(0,20,30,0.8)', border: '1px solid rgba(0,
 export default function AgendarPage() {
   const today = new Date()
   const todayStr = toISODate(today)
+
+  const slotsPanelRef = useRef<HTMLDivElement>(null)
 
   const [viewYear, setViewYear]   = useState(today.getFullYear())
   const [viewMonth, setViewMonth] = useState(today.getMonth())
@@ -280,7 +282,19 @@ export default function AgendarPage() {
 
                     return (
                       <button key={idx}
-                        onClick={() => { if (!clickable) return; setSelectedDay(isSelected ? null : dateStr); setSelectedSlot(null); setSubmitError(''); if (!isSelected) fetchSlots() }}
+                        onClick={() => {
+                          if (!clickable) return
+                          const selecting = !isSelected
+                          setSelectedDay(selecting ? dateStr : null)
+                          setSelectedSlot(null)
+                          setSubmitError('')
+                          if (selecting) {
+                            fetchSlots()
+                            if (window.innerWidth < 1280) {
+                              setTimeout(() => slotsPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
+                            }
+                          }
+                        }}
                         disabled={!clickable}
                         className="relative flex flex-col items-center justify-start rounded-xl pt-2 pb-1.5 transition-all"
                         style={{
@@ -315,7 +329,7 @@ export default function AgendarPage() {
             </div>
 
             {/* Right panel */}
-            <div className="xl:w-96">
+            <div className="xl:w-96" ref={slotsPanelRef}>
               <div className="glass-tron rounded-2xl overflow-hidden min-h-64"
                 style={{ border: '1px solid rgba(0,229,255,0.15)', boxShadow: '0 0 40px rgba(0,229,255,0.06)' }}>
 
