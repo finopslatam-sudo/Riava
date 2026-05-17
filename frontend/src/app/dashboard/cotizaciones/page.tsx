@@ -186,7 +186,7 @@ export default function CotizacionesPage() {
       '',
       'Junto con saludar, le hago envío de la cotización solicitada, la cual encontrará adjunta a este correo para su revisión. Asimismo, se adjunta un documento con los alcances técnicos del proyecto para su referencia.',
       '',
-      'Quedo atento/a a sus comentarios, dudas o a la posibilidad de revisarla en conjunto si lo estima conveniente.',
+      'Quedo atento a sus comentarios, dudas o a la posibilidad de revisarla en conjunto si lo estima conveniente.',
       '',
       'Espero que esta propuesta sea de su interés y que podamos avanzar en trabajar juntos próximamente.',
       '',
@@ -257,15 +257,15 @@ export default function CotizacionesPage() {
     const updated = savedTemplates.map(t =>
       t.id === editingTemplate.id
         ? {
-            ...t,
-            name: editTplName.trim() || t.name,
-            items: editTplItems,
-            discountPct: editTplDiscountPct,
-            discountAmt: Math.round(tplSubtotal * editTplDiscountPct / 100),
-            applyIva: editTplApplyIva,
-            notes: editTplNotes,
-            validDays: editTplValidDays,
-          }
+          ...t,
+          name: editTplName.trim() || t.name,
+          items: editTplItems,
+          discountPct: editTplDiscountPct,
+          discountAmt: Math.round(tplSubtotal * editTplDiscountPct / 100),
+          applyIva: editTplApplyIva,
+          notes: editTplNotes,
+          validDays: editTplValidDays,
+        }
         : t
     )
     setSavedTemplates(updated)
@@ -539,115 +539,115 @@ export default function CotizacionesPage() {
 
             {/* Table — scrollable on mobile */}
             <div className="overflow-x-auto -mx-2 px-2">
-            <div style={{ minWidth: 480 }}>
+              <div style={{ minWidth: 480 }}>
 
-            {/* Table header */}
-            <div
-              className="items-grid grid text-xs font-semibold tracking-wide uppercase mb-2 px-3 py-2 rounded-lg"
-              style={{
-                gridTemplateColumns: '24px 1fr 80px 130px 130px 40px',
-                background: 'rgba(0,229,255,0.06)',
-                color: 'rgba(0,229,255,0.6)',
-              }}
-            >
-              <span className="no-print" />
-              <span>Descripción</span>
-              <span className="text-center">Cant.</span>
-              <span className="text-right">Precio unit.</span>
-              <span className="text-right">Subtotal</span>
-              <span className="no-print" />
-            </div>
-
-            {/* Items */}
-            <div className="flex flex-col gap-2">
-              {items.map((item, idx) => (
+                {/* Table header */}
                 <div
-                  key={item.id}
-                  draggable
-                  onDragStart={() => handleDragStart(idx)}
-                  onDragOver={e => handleDragOver(e, idx)}
-                  onDragEnd={handleDragEnd}
-                  className="items-grid grid items-center gap-2 px-3 py-2 rounded-lg"
+                  className="items-grid grid text-xs font-semibold tracking-wide uppercase mb-2 px-3 py-2 rounded-lg"
                   style={{
                     gridTemplateColumns: '24px 1fr 80px 130px 130px 40px',
-                    background: idx % 2 === 0 ? 'rgba(0,20,30,0.4)' : 'transparent',
-                    border: '1px solid rgba(0,229,255,0.06)',
-                    cursor: 'default',
+                    background: 'rgba(0,229,255,0.06)',
+                    color: 'rgba(0,229,255,0.6)',
                   }}
                 >
-                  {/* Drag handle */}
-                  <div
-                    className="no-print flex items-center justify-center"
-                    style={{ cursor: 'grab', color: 'rgba(0,229,255,0.25)', flexShrink: 0 }}
-                    title="Arrastrar para reordenar"
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                      <circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/>
-                      <circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/>
-                      <circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/>
-                    </svg>
-                  </div>
-
-                  {/* Description */}
-                  <input
-                    value={item.description}
-                    onChange={e => updateItem(item.id, 'description', e.target.value)}
-                    placeholder="Descripción del servicio o producto..."
-                    className="no-print w-full bg-transparent text-sm outline-none"
-                    style={{ color: '#e0f7ff', caretColor: '#00e5ff' }}
-                  />
-                  <span className="hidden print:block print-desc text-sm" style={{ color: '#e0f7ff' }}>{item.description || '—'}</span>
-
-                  {/* Qty */}
-                  <input
-                    type="number"
-                    min={1}
-                    value={item.qty}
-                    onChange={e => updateItem(item.id, 'qty', Number(e.target.value))}
-                    className="no-print w-full bg-transparent text-sm outline-none text-center"
-                    style={{ color: '#e0f7ff', caretColor: '#00e5ff' }}
-                  />
-                  <span className="hidden print:block text-sm text-center" style={{ color: '#e0f7ff' }}>{item.qty}</span>
-
-                  {/* Unit price */}
-                  <input
-                    type="number"
-                    min={0}
-                    value={item.unitPrice}
-                    onChange={e => updateItem(item.id, 'unitPrice', Number(e.target.value))}
-                    className="no-print w-full bg-transparent text-sm outline-none text-right"
-                    style={{ color: '#e0f7ff', caretColor: '#00e5ff' }}
-                  />
-                  <span className="hidden print:block text-sm text-right" style={{ color: '#e0f7ff' }}>{formatCLP(item.unitPrice)}</span>
-
-                  {/* Subtotal */}
-                  <span className="text-sm text-right font-medium" style={{ color: '#00e5ff' }}>
-                    {formatCLP(item.qty * item.unitPrice)}
-                  </span>
-
-                  {/* Delete */}
-                  <button
-                    className="no-print flex items-center justify-center w-7 h-7 rounded-lg transition-all"
-                    style={{ color: 'rgba(240,0,255,0.5)' }}
-                    onClick={() => removeItem(item.id)}
-                    disabled={items.length === 1}
-                    title="Eliminar ítem"
-                    onMouseEnter={e => { if (items.length > 1) e.currentTarget.style.color = '#f000ff' }}
-                    onMouseLeave={e => { e.currentTarget.style.color = 'rgba(240,0,255,0.5)' }}
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="3 6 5 6 21 6" />
-                      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-                      <path d="M10 11v6M14 11v6" />
-                      <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-                    </svg>
-                  </button>
+                  <span className="no-print" />
+                  <span>Descripción</span>
+                  <span className="text-center">Cant.</span>
+                  <span className="text-right">Precio unit.</span>
+                  <span className="text-right">Subtotal</span>
                   <span className="no-print" />
                 </div>
-              ))}
-            </div>
 
-            </div>{/* /minWidth */}
+                {/* Items */}
+                <div className="flex flex-col gap-2">
+                  {items.map((item, idx) => (
+                    <div
+                      key={item.id}
+                      draggable
+                      onDragStart={() => handleDragStart(idx)}
+                      onDragOver={e => handleDragOver(e, idx)}
+                      onDragEnd={handleDragEnd}
+                      className="items-grid grid items-center gap-2 px-3 py-2 rounded-lg"
+                      style={{
+                        gridTemplateColumns: '24px 1fr 80px 130px 130px 40px',
+                        background: idx % 2 === 0 ? 'rgba(0,20,30,0.4)' : 'transparent',
+                        border: '1px solid rgba(0,229,255,0.06)',
+                        cursor: 'default',
+                      }}
+                    >
+                      {/* Drag handle */}
+                      <div
+                        className="no-print flex items-center justify-center"
+                        style={{ cursor: 'grab', color: 'rgba(0,229,255,0.25)', flexShrink: 0 }}
+                        title="Arrastrar para reordenar"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                          <circle cx="9" cy="6" r="1.5" /><circle cx="15" cy="6" r="1.5" />
+                          <circle cx="9" cy="12" r="1.5" /><circle cx="15" cy="12" r="1.5" />
+                          <circle cx="9" cy="18" r="1.5" /><circle cx="15" cy="18" r="1.5" />
+                        </svg>
+                      </div>
+
+                      {/* Description */}
+                      <input
+                        value={item.description}
+                        onChange={e => updateItem(item.id, 'description', e.target.value)}
+                        placeholder="Descripción del servicio o producto..."
+                        className="no-print w-full bg-transparent text-sm outline-none"
+                        style={{ color: '#e0f7ff', caretColor: '#00e5ff' }}
+                      />
+                      <span className="hidden print:block print-desc text-sm" style={{ color: '#e0f7ff' }}>{item.description || '—'}</span>
+
+                      {/* Qty */}
+                      <input
+                        type="number"
+                        min={1}
+                        value={item.qty}
+                        onChange={e => updateItem(item.id, 'qty', Number(e.target.value))}
+                        className="no-print w-full bg-transparent text-sm outline-none text-center"
+                        style={{ color: '#e0f7ff', caretColor: '#00e5ff' }}
+                      />
+                      <span className="hidden print:block text-sm text-center" style={{ color: '#e0f7ff' }}>{item.qty}</span>
+
+                      {/* Unit price */}
+                      <input
+                        type="number"
+                        min={0}
+                        value={item.unitPrice}
+                        onChange={e => updateItem(item.id, 'unitPrice', Number(e.target.value))}
+                        className="no-print w-full bg-transparent text-sm outline-none text-right"
+                        style={{ color: '#e0f7ff', caretColor: '#00e5ff' }}
+                      />
+                      <span className="hidden print:block text-sm text-right" style={{ color: '#e0f7ff' }}>{formatCLP(item.unitPrice)}</span>
+
+                      {/* Subtotal */}
+                      <span className="text-sm text-right font-medium" style={{ color: '#00e5ff' }}>
+                        {formatCLP(item.qty * item.unitPrice)}
+                      </span>
+
+                      {/* Delete */}
+                      <button
+                        className="no-print flex items-center justify-center w-7 h-7 rounded-lg transition-all"
+                        style={{ color: 'rgba(240,0,255,0.5)' }}
+                        onClick={() => removeItem(item.id)}
+                        disabled={items.length === 1}
+                        title="Eliminar ítem"
+                        onMouseEnter={e => { if (items.length > 1) e.currentTarget.style.color = '#f000ff' }}
+                        onMouseLeave={e => { e.currentTarget.style.color = 'rgba(240,0,255,0.5)' }}
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="3 6 5 6 21 6" />
+                          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                          <path d="M10 11v6M14 11v6" />
+                          <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                        </svg>
+                      </button>
+                      <span className="no-print" />
+                    </div>
+                  ))}
+                </div>
+
+              </div>{/* /minWidth */}
             </div>{/* /overflow-x-auto */}
 
             {/* Add item button */}
@@ -891,7 +891,7 @@ export default function CotizacionesPage() {
             <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: '1px solid rgba(240,0,255,0.12)' }}>
               <h2 className="text-base font-semibold" style={{ color: '#f000ff' }}>Plantillas de cotización</h2>
               <button onClick={() => setShowTemplateModal(false)} style={{ color: 'rgba(224,247,255,0.4)' }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
               </button>
             </div>
 
@@ -960,7 +960,7 @@ export default function CotizacionesPage() {
                     onMouseEnter={e => { e.currentTarget.style.color = '#a78bfa' }}
                     onMouseLeave={e => { e.currentTarget.style.color = 'rgba(167,139,250,0.6)' }}
                   >
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M15 18l-6-6 6-6" /></svg>
                     Volver
                   </button>
                 )}
@@ -969,7 +969,7 @@ export default function CotizacionesPage() {
                 </h2>
               </div>
               <button onClick={() => { setShowUseTemplatesModal(false); setEditingTemplate(null) }} style={{ color: 'rgba(224,247,255,0.4)' }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
               </button>
             </div>
 
@@ -980,7 +980,7 @@ export default function CotizacionesPage() {
                   {savedTemplates.length === 0 && (
                     <div className="text-center py-12">
                       <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="rgba(124,58,237,0.3)" strokeWidth="1.5" className="mx-auto mb-3">
-                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
                       </svg>
                       <p className="text-sm" style={{ color: 'rgba(224,247,255,0.25)' }}>Aún no tienes plantillas guardadas</p>
                       <p className="text-xs mt-1" style={{ color: 'rgba(224,247,255,0.15)' }}>Crea una desde el botón Guardar plantilla</p>
@@ -1026,7 +1026,7 @@ export default function CotizacionesPage() {
                           onMouseEnter={e => { e.currentTarget.style.color = '#f000ff'; e.currentTarget.style.background = 'rgba(240,0,255,0.08)' }}
                           onMouseLeave={e => { e.currentTarget.style.color = 'rgba(240,0,255,0.5)'; e.currentTarget.style.background = 'transparent' }}
                         >
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" /><path d="M10 11v6M14 11v6" /><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" /></svg>
                         </button>
                       </div>
                     </div>
@@ -1054,57 +1054,57 @@ export default function CotizacionesPage() {
                     <label className="text-xs mb-2 block font-semibold tracking-widest uppercase" style={{ color: 'rgba(167,139,250,0.6)' }}>Ítems</label>
                     {/* Table — scrollable on mobile */}
                     <div className="overflow-x-auto -mx-1 px-1">
-                    <div style={{ minWidth: 320 }}>
-                    {/* Table header */}
-                    <div
-                      className="grid text-xs font-semibold tracking-wide uppercase mb-1.5 px-3 py-2 rounded-lg"
-                      style={{ gridTemplateColumns: '1fr 64px 110px 36px', background: 'rgba(124,58,237,0.08)', color: 'rgba(167,139,250,0.6)' }}
-                    >
-                      <span>Descripción</span>
-                      <span className="text-center">Cant.</span>
-                      <span className="text-right">Precio unit.</span>
-                      <span />
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      {editTplItems.map((item, idx) => (
+                      <div style={{ minWidth: 320 }}>
+                        {/* Table header */}
                         <div
-                          key={item.id}
-                          className="grid items-center gap-2 px-3 py-2 rounded-lg"
-                          style={{ gridTemplateColumns: '1fr 64px 110px 36px', background: idx % 2 === 0 ? 'rgba(0,20,30,0.4)' : 'transparent', border: '1px solid rgba(124,58,237,0.08)' }}
+                          className="grid text-xs font-semibold tracking-wide uppercase mb-1.5 px-3 py-2 rounded-lg"
+                          style={{ gridTemplateColumns: '1fr 64px 110px 36px', background: 'rgba(124,58,237,0.08)', color: 'rgba(167,139,250,0.6)' }}
                         >
-                          <input
-                            value={item.description}
-                            onChange={e => updateEditItem(item.id, 'description', e.target.value)}
-                            placeholder="Descripción..."
-                            className="w-full bg-transparent text-sm outline-none"
-                            style={{ color: '#e0f7ff', caretColor: '#a78bfa' }}
-                          />
-                          <input
-                            type="number" min={1} value={item.qty}
-                            onChange={e => updateEditItem(item.id, 'qty', Number(e.target.value))}
-                            className="w-full bg-transparent text-sm outline-none text-center"
-                            style={{ color: '#e0f7ff', caretColor: '#a78bfa' }}
-                          />
-                          <input
-                            type="number" min={0} value={item.unitPrice}
-                            onChange={e => updateEditItem(item.id, 'unitPrice', Number(e.target.value))}
-                            className="w-full bg-transparent text-sm outline-none text-right"
-                            style={{ color: '#e0f7ff', caretColor: '#a78bfa' }}
-                          />
-                          <button
-                            onClick={() => removeEditItem(item.id)}
-                            disabled={editTplItems.length === 1}
-                            className="flex items-center justify-center w-7 h-7 rounded-lg transition-all"
-                            style={{ color: editTplItems.length === 1 ? 'rgba(240,0,255,0.2)' : 'rgba(240,0,255,0.5)' }}
-                            onMouseEnter={e => { if (editTplItems.length > 1) e.currentTarget.style.color = '#f000ff' }}
-                            onMouseLeave={e => { e.currentTarget.style.color = editTplItems.length === 1 ? 'rgba(240,0,255,0.2)' : 'rgba(240,0,255,0.5)' }}
-                          >
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-                          </button>
+                          <span>Descripción</span>
+                          <span className="text-center">Cant.</span>
+                          <span className="text-right">Precio unit.</span>
+                          <span />
                         </div>
-                      ))}
-                    </div>
-                    </div>{/* /minWidth */}
+                        <div className="flex flex-col gap-1.5">
+                          {editTplItems.map((item, idx) => (
+                            <div
+                              key={item.id}
+                              className="grid items-center gap-2 px-3 py-2 rounded-lg"
+                              style={{ gridTemplateColumns: '1fr 64px 110px 36px', background: idx % 2 === 0 ? 'rgba(0,20,30,0.4)' : 'transparent', border: '1px solid rgba(124,58,237,0.08)' }}
+                            >
+                              <input
+                                value={item.description}
+                                onChange={e => updateEditItem(item.id, 'description', e.target.value)}
+                                placeholder="Descripción..."
+                                className="w-full bg-transparent text-sm outline-none"
+                                style={{ color: '#e0f7ff', caretColor: '#a78bfa' }}
+                              />
+                              <input
+                                type="number" min={1} value={item.qty}
+                                onChange={e => updateEditItem(item.id, 'qty', Number(e.target.value))}
+                                className="w-full bg-transparent text-sm outline-none text-center"
+                                style={{ color: '#e0f7ff', caretColor: '#a78bfa' }}
+                              />
+                              <input
+                                type="number" min={0} value={item.unitPrice}
+                                onChange={e => updateEditItem(item.id, 'unitPrice', Number(e.target.value))}
+                                className="w-full bg-transparent text-sm outline-none text-right"
+                                style={{ color: '#e0f7ff', caretColor: '#a78bfa' }}
+                              />
+                              <button
+                                onClick={() => removeEditItem(item.id)}
+                                disabled={editTplItems.length === 1}
+                                className="flex items-center justify-center w-7 h-7 rounded-lg transition-all"
+                                style={{ color: editTplItems.length === 1 ? 'rgba(240,0,255,0.2)' : 'rgba(240,0,255,0.5)' }}
+                                onMouseEnter={e => { if (editTplItems.length > 1) e.currentTarget.style.color = '#f000ff' }}
+                                onMouseLeave={e => { e.currentTarget.style.color = editTplItems.length === 1 ? 'rgba(240,0,255,0.2)' : 'rgba(240,0,255,0.5)' }}
+                              >
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" /><path d="M10 11v6M14 11v6" /><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" /></svg>
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>{/* /minWidth */}
                     </div>{/* /overflow-x-auto */}
                     <button
                       onClick={addEditItem}
@@ -1113,7 +1113,7 @@ export default function CotizacionesPage() {
                       onMouseEnter={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.1)'; e.currentTarget.style.color = '#a78bfa' }}
                       onMouseLeave={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.05)'; e.currentTarget.style.color = 'rgba(167,139,250,0.6)' }}
                     >
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
                       Agregar ítem
                     </button>
                   </div>
@@ -1189,8 +1189,8 @@ export default function CotizacionesPage() {
                       onMouseLeave={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.15)' }}
                     >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
-                        <polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                        <polyline points="17 21 17 13 7 13 7 21" /><polyline points="7 3 7 8 15 8" />
                       </svg>
                       Guardar cambios
                     </button>
@@ -1221,7 +1221,7 @@ export default function CotizacionesPage() {
             <div className="flex items-center justify-between px-6 py-4 flex-shrink-0" style={{ borderBottom: '1px solid rgba(0,229,255,0.1)' }}>
               <h2 className="text-base font-semibold" style={{ color: '#00e5ff' }}>Enviar cotización por correo</h2>
               <button onClick={() => setShowEmailModal(false)} style={{ color: 'rgba(224,247,255,0.4)' }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
               </button>
             </div>
 
@@ -1281,7 +1281,7 @@ export default function CotizacionesPage() {
                 >
                   {attachAlcances && (
                     <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#000a0f" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="20 6 9 17 4 12"/>
+                      <polyline points="20 6 9 17 4 12" />
                     </svg>
                   )}
                 </span>
@@ -1295,7 +1295,7 @@ export default function CotizacionesPage() {
                 </div>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
                   className="ml-auto flex-shrink-0" style={{ color: 'rgba(0,229,255,0.35)' }}>
-                  <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+                  <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
                 </svg>
               </button>
 
@@ -1307,7 +1307,7 @@ export default function CotizacionesPage() {
               {emailStatus === 'success' && (
                 <div className="flex items-center gap-2 px-4 py-3 rounded-xl" style={{ background: 'rgba(0,229,100,0.08)', border: '1px solid rgba(0,229,100,0.25)' }}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00e564" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="20 6 9 17 4 12"/>
+                    <polyline points="20 6 9 17 4 12" />
                   </svg>
                   <span className="text-sm font-medium" style={{ color: '#00e564' }}>¡Cotización enviada correctamente!</span>
                 </div>
@@ -1315,7 +1315,7 @@ export default function CotizacionesPage() {
               {emailStatus === 'error' && (
                 <div className="flex items-center gap-2 px-4 py-3 rounded-xl" style={{ background: 'rgba(240,0,80,0.08)', border: '1px solid rgba(240,0,80,0.25)' }}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f00050" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                    <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
                   </svg>
                   <span className="text-sm font-medium" style={{ color: '#f00050' }}>Error al enviar. Verifica la dirección e intenta de nuevo.</span>
                 </div>
@@ -1339,14 +1339,14 @@ export default function CotizacionesPage() {
                   {emailSending ? (
                     <>
                       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ animation: 'spin 1s linear infinite' }}>
-                        <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                        <path d="M21 12a9 9 0 1 1-6.219-8.56" />
                       </svg>
                       Enviando...
                     </>
                   ) : (
                     <>
                       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                        <line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" />
                       </svg>
                       Enviar correo
                     </>
