@@ -5,7 +5,7 @@ import { BOOKING_SERVICES } from '@/lib/constants'
 
 type Slot = {
   id: string; date: string; startTime: string; endTime: string
-  booked: boolean; appointmentId?: string
+  booked: boolean; blocked?: boolean; appointmentId?: string
 }
 type Appointment = {
   id: string; date: string; startTime: string; endTime: string
@@ -136,6 +136,9 @@ export default function CalendarioPage() {
   const [cancelConfirmId, setCancelConfirmId] = useState<string | null>(null)
   const [cancelLoading, setCancelLoading] = useState(false)
 
+  // Block/unblock slot
+  const [blockLoading, setBlockLoading] = useState<string | null>(null)
+
   // Admin booking
   const [bookingSlotId, setBookingSlotId] = useState<string | null>(null)
   const [bookingForm, setBookingForm] = useState({ name: '', lastName: '', company: '', email: '', phone: '', service: '' })
@@ -173,8 +176,8 @@ export default function CalendarioPage() {
   }, [selectedDate, fetchAppointments])
 
   const slotsForDate = (date: string) => slots.filter(s => s.date === date)
-  const hasAvailable = (date: string) => slots.some(s => s.date === date && !s.booked)
-  const hasBooked    = (date: string) => slots.some(s => s.date === date && s.booked)
+  const hasAvailable = (date: string) => slots.some(s => s.date === date && !s.booked && !s.blocked)
+  const hasBooked    = (date: string) => slots.some(s => s.date === date && (s.booked || s.blocked))
 
   const previewSlots = generateSlotsInRange(newStart, newEnd)
 
@@ -213,6 +216,26 @@ export default function CalendarioPage() {
   const deleteSlot = async (id: string) => {
     const res = await fetch(`/api/appointments/slots/${id}`, { method: 'DELETE' })
     if (res.ok) setSlots(prev => prev.filter(s => s.id !== id))
+  }
+
+  const blockSlot = async (id: string) => {
+    setBlockLoading(id)
+    const res = await fetch(`/api/appointments/slots/${id}`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ blocked: true }),
+    })
+    if (res.ok) setSlots(prev => prev.map(s => s.id === id ? { ...s, blocked: true } : s))
+    setBlockLoading(null)
+  }
+
+  const unblockSlot = async (id: string) => {
+    setBlockLoading(id)
+    const res = await fetch(`/api/appointments/slots/${id}`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ blocked: false }),
+    })
+    if (res.ok) setSlots(prev => prev.map(s => s.id === id ? { ...s, blocked: false } : s))
+    setBlockLoading(null)
   }
 
   const cancelAppt = async (apptId: string) => {
@@ -445,6 +468,7 @@ export default function CalendarioPage() {
               const isSelected = selectedDate === dateStr
               const avail = hasAvailable(dateStr)
               const booked = hasBooked(dateStr)
+              const hasBlockedSlots = slots.some(s => s.date === dateStr && s.blocked)
               const isPast = dateStr < todayStr
               const holiday = isHoliday(dateStr)
 
@@ -468,6 +492,7 @@ export default function CalendarioPage() {
                     {holiday && <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#ffaa00' }} />}
                     {avail && <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#00e5ff' }} />}
                     {booked && <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#f000ff' }} />}
+                    {hasBlockedSlots && !booked && <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#ff7a20' }} />}
                   </div>
                 </button>
               )
@@ -481,6 +506,9 @@ export default function CalendarioPage() {
             </div>
             <div className="flex items-center gap-1.5 text-xs" style={{ color: 'rgba(240,0,255,0.5)' }}>
               <span className="w-2 h-2 rounded-full" style={{ background: '#f000ff' }} />Con cita
+            </div>
+            <div className="flex items-center gap-1.5 text-xs" style={{ color: 'rgba(255,120,0,0.6)' }}>
+              <span className="w-2 h-2 rounded-full" style={{ background: '#ff7a20' }} />Bloqueado
             </div>
             <div className="flex items-center gap-1.5 text-xs" style={{ color: 'rgba(255,170,0,0.6)' }}>
               <span className="w-2 h-2 rounded-full" style={{ background: '#ffaa00' }} />Feriado
@@ -705,8 +733,8 @@ export default function CalendarioPage() {
                         return (
                           <div key={slot.id} className="rounded-xl p-3"
                             style={{
-                              background: slot.booked ? 'rgba(240,0,255,0.05)' : 'rgba(0,20,30,0.5)',
-                              border: `1px solid ${slot.booked ? 'rgba(240,0,255,0.2)' : 'rgba(0,229,255,0.1)'}`,
+                              background: slot.booked ? 'rgba(240,0,255,0.05)' : slot.blocked ? 'rgba(255,100,0,0.05)' : 'rgba(0,20,30,0.5)',
+                              border: `1px solid ${slot.booked ? 'rgba(240,0,255,0.2)' : slot.blocked ? 'rgba(255,120,0,0.3)' : 'rgba(0,229,255,0.1)'}`,
                             }}>
                             {isEditing ? (
                               <div>
@@ -742,15 +770,30 @@ export default function CalendarioPage() {
                             ) : (
                               <>
                                 <div className="flex items-center justify-between mb-1">
-                                  <span className="text-sm font-semibold" style={{ color: slot.booked ? '#f000ff' : '#00e5ff' }}>
+                                  <span className="text-sm font-semibold" style={{ color: slot.booked ? '#f000ff' : slot.blocked ? '#ff7a20' : '#00e5ff' }}>
                                     {slot.startTime} – {slot.endTime}
                                   </span>
                                   <div className="flex items-center gap-1.5">
                                     <span className="text-xs px-2 py-0.5 rounded-full"
-                                      style={{ background: slot.booked ? 'rgba(240,0,255,0.12)' : 'rgba(0,229,255,0.1)', color: slot.booked ? '#f000ff' : '#00e5ff' }}>
-                                      {slot.booked ? 'Reservado' : 'Libre'}
+                                      style={{
+                                        background: slot.booked ? 'rgba(240,0,255,0.12)' : slot.blocked ? 'rgba(255,120,0,0.12)' : 'rgba(0,229,255,0.1)',
+                                        color: slot.booked ? '#f000ff' : slot.blocked ? '#ff7a20' : '#00e5ff',
+                                      }}>
+                                      {slot.booked ? 'Reservado' : slot.blocked ? 'Bloqueado' : 'Libre'}
                                     </span>
-                                    {!slot.booked && (
+                                    {slot.blocked && (
+                                      <button
+                                        onClick={() => unblockSlot(slot.id)}
+                                        disabled={blockLoading === slot.id}
+                                        className="p-1 rounded transition-colors disabled:opacity-50"
+                                        style={{ color: 'rgba(255,120,0,0.5)' }}
+                                        onMouseEnter={e => { e.currentTarget.style.color = '#ff7a20' }}
+                                        onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,120,0,0.5)' }}
+                                        title="Desbloquear">
+                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>
+                                      </button>
+                                    )}
+                                    {!slot.booked && !slot.blocked && (
                                       <>
                                         <button onClick={() => { setBookingSlotId(bookingSlotId === slot.id ? null : slot.id); setBookingError(''); setBookingTwoSlots(false); setBookingForm({ name: '', lastName: '', company: '', email: '', phone: '', service: '' }); setEditingSlotId(null) }}
                                           className="p-1 rounded transition-colors"
@@ -768,13 +811,15 @@ export default function CalendarioPage() {
                                           title="Editar">
                                           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                         </button>
-                                        <button onClick={() => deleteSlot(slot.id)}
-                                          className="p-1 rounded transition-colors"
-                                          style={{ color: 'rgba(240,0,255,0.4)' }}
-                                          onMouseEnter={e => { e.currentTarget.style.color = '#f000ff' }}
-                                          onMouseLeave={e => { e.currentTarget.style.color = 'rgba(240,0,255,0.4)' }}
-                                          title="Eliminar">
-                                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                                        <button
+                                          onClick={() => blockSlot(slot.id)}
+                                          disabled={blockLoading === slot.id}
+                                          className="p-1 rounded transition-colors disabled:opacity-50"
+                                          style={{ color: 'rgba(255,120,0,0.4)' }}
+                                          onMouseEnter={e => { e.currentTarget.style.color = '#ff7a20' }}
+                                          onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,120,0,0.4)' }}
+                                          title="Marcar como ocupado">
+                                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                                         </button>
                                       </>
                                     )}

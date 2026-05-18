@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { RiavaLogo } from '@/components/ui/RiavaLogo'
 import { BOOKING_SERVICES } from '@/lib/constants'
 
-type Slot = { id: string; date: string; startTime: string; endTime: string; booked: boolean }
+type Slot = { id: string; date: string; startTime: string; endTime: string; booked: boolean; blocked?: boolean }
 type FormState = { name: string; lastName: string; company: string; email: string; phone: string; service: string }
 
 const MONTHS_ES       = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
@@ -82,7 +82,7 @@ export default function AgendarPage() {
   }
 
   const slotsForDay   = (date: string) => slots.filter(s => s.date === date).sort((a, b) => a.startTime.localeCompare(b.startTime))
-  const hasAvailable  = (date: string) => slots.some(s => s.date === date && !s.booked)
+  const hasAvailable  = (date: string) => slots.some(s => s.date === date && !s.booked && !s.blocked)
 
   const handleFieldChange = (field: keyof FormState, value: string) => setForm(prev => ({ ...prev, [field]: value }))
 
@@ -365,11 +365,11 @@ export default function AgendarPage() {
                     <div className="p-4 flex flex-col gap-2">
                       {loadingSlots ? (
                         <div className="py-8 text-center text-sm" style={{ color: 'rgba(0,229,255,0.4)' }}>Cargando...</div>
-                      ) : daySlots.length === 0 || daySlots.every(s => s.booked) ? (
+                      ) : daySlots.length === 0 || daySlots.every(s => s.booked || s.blocked) ? (
                         <div className="py-8 text-center">
                           <p className="text-sm" style={{ color: 'rgba(224,247,255,0.35)' }}>Sin horarios disponibles para este día</p>
                         </div>
-                      ) : daySlots.map(slot => slot.booked ? (
+                      ) : daySlots.map(slot => (slot.booked || slot.blocked) ? (
                         <div key={slot.id}
                           className="w-full rounded-xl px-4 py-3 text-sm font-medium flex items-center justify-between"
                           style={{ background: 'rgba(255,60,60,0.05)', border: '1px solid rgba(255,60,60,0.2)', cursor: 'default' }}>

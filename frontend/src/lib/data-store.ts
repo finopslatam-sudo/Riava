@@ -8,6 +8,7 @@ export type TimeSlot = {
   startTime: string  // HH:mm
   endTime: string    // HH:mm
   booked: boolean
+  blocked?: boolean
   appointmentId?: string
 }
 
