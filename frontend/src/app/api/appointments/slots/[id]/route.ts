@@ -5,11 +5,18 @@ type Params = Promise<{ id: string }>
 
 export async function PATCH(req: NextRequest, context: { params: Params }) {
   const { id } = await context.params
-  const body = (await req.json()) as { startTime?: string; endTime?: string; blocked?: boolean }
+  const body = (await req.json()) as { startTime?: string; endTime?: string; blocked?: boolean; booked?: boolean }
 
   const slots = await getSlots()
   const slot = slots.find(s => s.id === id)
   if (!slot) return NextResponse.json({ error: 'Horario no encontrado' }, { status: 404 })
+
+  if ('booked' in body && body.booked === false) {
+    slot.booked = false
+    slot.appointmentId = undefined
+    await saveSlots(slots)
+    return NextResponse.json(slot)
+  }
 
   if ('blocked' in body && typeof body.blocked === 'boolean') {
     if (slot.booked) return NextResponse.json({ error: 'No se puede bloquear un horario con cita' }, { status: 409 })

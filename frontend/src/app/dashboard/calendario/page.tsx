@@ -902,6 +902,25 @@ export default function CalendarioPage() {
                                     </div>
                                   )
                                 })()}
+                                {slot.booked && !appt && (
+                                  <div className="mt-2 pt-2" style={{ borderTop: '1px solid rgba(240,0,255,0.1)' }}>
+                                    <p className="text-xs mb-2" style={{ color: 'rgba(224,247,255,0.35)' }}>Sin cita asociada — horario huérfano</p>
+                                    <button
+                                      onClick={async () => {
+                                        const res = await fetch(`/api/appointments/slots/${slot.id}`, {
+                                          method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+                                          body: JSON.stringify({ booked: false }),
+                                        })
+                                        if (res.ok) setSlots(prev => prev.map(s => s.id === slot.id ? { ...s, booked: false, appointmentId: undefined } : s))
+                                      }}
+                                      className="text-xs py-1 px-2 rounded-lg transition-colors"
+                                      style={{ color: 'rgba(0,229,255,0.5)', border: '1px solid rgba(0,229,255,0.2)' }}
+                                      onMouseEnter={e => { e.currentTarget.style.color = '#00e5ff'; e.currentTarget.style.borderColor = 'rgba(0,229,255,0.4)' }}
+                                      onMouseLeave={e => { e.currentTarget.style.color = 'rgba(0,229,255,0.5)'; e.currentTarget.style.borderColor = 'rgba(0,229,255,0.2)' }}>
+                                      Liberar horario
+                                    </button>
+                                  </div>
+                                )}
                                 {slot.booked && appt && (
                                   <div className="mt-2 pt-2" style={{ borderTop: '1px solid rgba(240,0,255,0.1)' }}>
                                     <p className="text-xs font-semibold" style={{ color: '#e0f7ff' }}>{appt.name} {appt.lastName}</p>
