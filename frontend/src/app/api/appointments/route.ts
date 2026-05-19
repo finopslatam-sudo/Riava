@@ -250,6 +250,7 @@ export async function POST(req: NextRequest) {
   const appt: Appointment = {
     id: `appt-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
     slotId,
+    ...(slotId2 ? { slotId2 } : {}),
     date: slot.date,
     startTime: slot.startTime,
     endTime,

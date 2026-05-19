@@ -15,6 +15,7 @@ export type TimeSlot = {
 export type Appointment = {
   id: string
   slotId: string
+  slotId2?: string
   date: string
   startTime: string
   endTime: string

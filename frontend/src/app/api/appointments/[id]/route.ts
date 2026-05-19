@@ -13,8 +13,9 @@ export async function DELETE(_req: NextRequest, context: { params: Params }) {
 
   const updatedAppointments = appointments.filter(a => a.id !== id)
 
+  const slotIds = new Set([appt.slotId, ...(appt.slotId2 ? [appt.slotId2] : [])])
   const updatedSlots = slots.map(s =>
-    s.id === appt.slotId ? { ...s, booked: false, appointmentId: undefined } : s
+    slotIds.has(s.id) ? { ...s, booked: false, appointmentId: undefined } : s
   )
 
   await Promise.all([saveAppointments(updatedAppointments), saveSlots(updatedSlots)])
