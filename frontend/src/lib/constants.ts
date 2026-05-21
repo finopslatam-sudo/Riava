@@ -104,6 +104,18 @@ export const SERVICES = [
     tags: ["IA Generativa", "Video", "Publicidad", "Animación"],
     image: "/services/media_ia.png",
   },
+  {
+    id: "educacion-empresas",
+    title: "Educación Empresas IA",
+    description:
+      "Programa de capacitación en IA Generativa para equipos corporativos. ChatGPT, Claude, Gemini, Midjourney, GitHub Copilot, n8n y más. Del fundamento al dominio real, aplicado a cada rol y área de tu empresa.",
+    icon: "🎓",
+    cta: null,
+    href: "/servicios/educacion-empresas",
+    highlight: false,
+    tags: ["Capacitación", "IA Generativa", "Equipos", "Certificación"],
+    image: "/services/automatizacion.png",
+  },
 ]
 
 export const TESTIMONIALS = [
