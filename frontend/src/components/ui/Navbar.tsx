@@ -13,6 +13,7 @@ const SERVICE_LINKS = [
   { label: "Software a medida", href: "/servicios/software-a-medida", icon: "⚙️" },
   { label: "FinOps Cloud AWS", href: "/servicios/finops-cloud-aws", icon: "💰" },
   { label: "Contenido IA", href: "/servicios/contenido-ia", icon: "🎬" },
+  { label: "Educación Empresas IA", href: "/servicios/educacion-empresas", icon: "🎓" },
 ]
 
 export function Navbar() {
