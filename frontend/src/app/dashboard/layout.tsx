@@ -44,15 +44,60 @@ const NAV = [
   },
 ]
 
-const SERVICES_NAV = [
-  { href: '/servicios/finops-cloud-aws', label: 'FinOps Cloud', icon: '💰' },
-  { href: '/servicios/reserva-de-citas', label: 'Reservas inteligentes', icon: '📅' },
-  { href: '/servicios/crear-paginas-web', label: 'Páginas Web', icon: '🌐' },
-  { href: '/servicios/desarrollo-saas', label: 'Desarrollo SaaS', icon: '🚀' },
-  { href: '/servicios/automatizaciones', label: 'Automatizaciones', icon: '🤖' },
-  { href: '/servicios/software-a-medida', label: 'Software a medida', icon: '⚙️' },
-  { href: '/servicios/contenido-ia', label: 'Contenido IA', icon: '🎬' },
-  { href: '/servicios/educacion-empresas', label: 'Educación Empresas IA', icon: '🎓' },
+const LEADS_NAV = [
+  {
+    href: '/dashboard/meta-ads',
+    label: 'Meta Ads',
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+      </svg>
+    ),
+  },
+  {
+    href: '/dashboard/campanas',
+    label: 'Campañas',
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+      </svg>
+    ),
+  },
+  {
+    href: '/dashboard/leads',
+    label: 'Leads',
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+      </svg>
+    ),
+  },
+  {
+    href: '/dashboard/pipeline',
+    label: 'Pipeline',
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="3" width="5" height="18" rx="1" />
+        <rect x="10" y="3" width="5" height="12" rx="1" />
+        <rect x="17" y="3" width="5" height="8" rx="1" />
+      </svg>
+    ),
+  },
+  {
+    href: '/dashboard/analiticas',
+    label: 'Analíticas',
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="18" y1="20" x2="18" y2="10" />
+        <line x1="12" y1="20" x2="12" y2="4" />
+        <line x1="6" y1="20" x2="6" y2="14" />
+      </svg>
+    ),
+  },
 ]
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -110,7 +155,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 px-3 py-2 flex flex-col gap-1">
+        <nav className="flex-1 px-3 py-2 flex flex-col gap-1 overflow-y-auto">
           {NAV.map(item => {
             const active = pathname === item.href
             return (
@@ -130,13 +175,40 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </Link>
             )
           })}
+
+          {/* Riava Leads */}
+          <div className="mt-4 mb-1 px-3">
+            <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'rgba(0,229,255,0.35)' }}>
+              Riava Leads
+            </p>
+          </div>
+          <div className="divider-tron mx-3 mb-1" />
+          {LEADS_NAV.map(item => {
+            const active = pathname.startsWith(item.href)
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setSidebarOpen(false)}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all"
+                style={{
+                  color: active ? '#00e5ff' : 'rgba(224,247,255,0.5)',
+                  background: active ? 'rgba(0,229,255,0.08)' : 'transparent',
+                  border: active ? '1px solid rgba(0,229,255,0.2)' : '1px solid transparent',
+                }}
+              >
+                <span style={{ color: active ? '#00e5ff' : 'rgba(0,229,255,0.4)' }}>{item.icon}</span>
+                {item.label}
+              </Link>
+            )
+          })}
         </nav>
 
         {/* User + logout */}
         <div className="p-4" style={{ borderTop: '1px solid rgba(0,229,255,0.1)' }}>
           <div className="flex items-center gap-3 mb-3">
             <div
-              className="flex items-center justify-center rounded-full text-xs font-bold flex-shrink-0"
+              className="flex items-center justify-center rounded-full text-xs font-bold shrink-0"
               style={{
                 width: 36,
                 height: 36,
