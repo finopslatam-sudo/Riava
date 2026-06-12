@@ -61,7 +61,7 @@ export function Testimonials() {
             return (
               <div
                 key={i}
-                className="flex-shrink-0 w-[320px] sm:w-[360px] flex flex-col p-6 rounded-2xl border border-[#00e5ff]/10 bg-[#00141e] overflow-hidden relative"
+                className="shrink-0 w-[320px] sm:w-[360px] flex flex-col p-6 rounded-2xl border border-[#00e5ff]/10 bg-[#00141e] overflow-hidden relative"
                 style={{ boxShadow: "0 4px 32px rgba(0,0,0,0.5)" }}
               >
                 {/* Top accent line */}

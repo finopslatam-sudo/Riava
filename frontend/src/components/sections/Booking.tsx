@@ -137,7 +137,7 @@ export function Booking() {
                 className="flex items-start gap-4"
               >
                 <div
-                  className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center text-lg"
+                  className="shrink-0 w-10 h-10 rounded-xl flex items-center justify-center text-lg"
                   style={{ background: 'rgba(0,229,255,0.07)', border: '1px solid rgba(0,229,255,0.15)' }}
                 >
                   {step.icon}

@@ -840,7 +840,7 @@ export default function CalendarioPage() {
                                               border: `1px solid ${bookingTwoSlots ? 'rgba(0,229,255,0.4)' : 'rgba(0,229,255,0.15)'}`,
                                               color: bookingTwoSlots ? '#00e5ff' : 'rgba(0,229,255,0.5)',
                                             }}>
-                                            <span className="flex items-center justify-center w-3.5 h-3.5 rounded-sm flex-shrink-0"
+                                            <span className="flex items-center justify-center w-3.5 h-3.5 rounded-sm shrink-0"
                                               style={{ background: bookingTwoSlots ? '#00e5ff' : 'transparent', border: `1.5px solid ${bookingTwoSlots ? '#00e5ff' : 'rgba(0,229,255,0.3)'}` }}>
                                               {bookingTwoSlots && <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#000a0f" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
                                             </span>

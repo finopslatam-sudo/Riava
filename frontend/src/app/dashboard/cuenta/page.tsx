@@ -147,7 +147,7 @@ export default function CuentaPage() {
       {/* Avatar card */}
       <div className="flex items-center gap-5 mb-6 p-5 rounded-2xl" style={{ background: 'rgba(0,229,255,0.04)', border: '1px solid rgba(0,229,255,0.1)' }}>
         <div
-          className="flex items-center justify-center rounded-full text-xl font-bold flex-shrink-0"
+          className="flex items-center justify-center rounded-full text-xl font-bold shrink-0"
           style={{
             width: 64,
             height: 64,

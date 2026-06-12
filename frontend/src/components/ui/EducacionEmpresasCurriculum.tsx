@@ -504,7 +504,7 @@ export function EducacionEmpresasCurriculum() {
                                 style={{ background: `${levelColor}08`, border: `1px solid ${levelColor}15` }}
                               >
                                 <span
-                                  className="w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center text-[10px] font-mono font-bold mt-0.5"
+                                  className="w-5 h-5 rounded-full shrink-0 flex items-center justify-center text-[10px] font-mono font-bold mt-0.5"
                                   style={{ background: `${levelColor}25`, color: levelColor }}
                                 >
                                   {i + 1}

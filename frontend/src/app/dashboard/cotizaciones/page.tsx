@@ -723,7 +723,7 @@ export default function CotizacionesPage() {
                     }}
                   >
                     <div
-                      className="w-10 h-5 rounded-full relative transition-all flex-shrink-0"
+                      className="w-10 h-5 rounded-full relative transition-all shrink-0"
                       style={{ background: applyIva ? 'rgba(0,229,255,0.8)' : 'rgba(0,229,255,0.15)' }}
                     >
                       <div
@@ -950,7 +950,7 @@ export default function CotizacionesPage() {
             }}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 flex-shrink-0" style={{ borderBottom: '1px solid rgba(124,58,237,0.15)' }}>
+            <div className="flex items-center justify-between px-6 py-4 shrink-0" style={{ borderBottom: '1px solid rgba(124,58,237,0.15)' }}>
               <div className="flex items-center gap-3">
                 {editingTemplate && (
                   <button
@@ -1000,7 +1000,7 @@ export default function CotizacionesPage() {
                           {t.discountPct > 0 ? ` · ${t.discountPct}% descuento` : ''}
                         </p>
                       </div>
-                      <div className="flex gap-2 flex-shrink-0">
+                      <div className="flex gap-2 shrink-0">
                         <button
                           onClick={() => { loadTemplate(t); setShowUseTemplatesModal(false) }}
                           className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
@@ -1150,7 +1150,7 @@ export default function CotizacionesPage() {
                         border: `1px solid ${editTplApplyIva ? 'rgba(124,58,237,0.4)' : 'rgba(124,58,237,0.15)'}`,
                       }}
                     >
-                      <div className="w-10 h-5 rounded-full relative flex-shrink-0" style={{ background: editTplApplyIva ? 'rgba(124,58,237,0.8)' : 'rgba(124,58,237,0.2)' }}>
+                      <div className="w-10 h-5 rounded-full relative shrink-0" style={{ background: editTplApplyIva ? 'rgba(124,58,237,0.8)' : 'rgba(124,58,237,0.2)' }}>
                         <div className="absolute top-0.5 w-4 h-4 rounded-full transition-all" style={{ background: '#fff', left: editTplApplyIva ? 22 : 2 }} />
                       </div>
                       <span className="text-sm" style={{ color: editTplApplyIva ? '#a78bfa' : 'rgba(224,247,255,0.4)' }}>
@@ -1218,7 +1218,7 @@ export default function CotizacionesPage() {
             }}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 flex-shrink-0" style={{ borderBottom: '1px solid rgba(0,229,255,0.1)' }}>
+            <div className="flex items-center justify-between px-6 py-4 shrink-0" style={{ borderBottom: '1px solid rgba(0,229,255,0.1)' }}>
               <h2 className="text-base font-semibold" style={{ color: '#00e5ff' }}>Enviar cotización por correo</h2>
               <button onClick={() => setShowEmailModal(false)} style={{ color: 'rgba(224,247,255,0.4)' }}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
@@ -1273,7 +1273,7 @@ export default function CotizacionesPage() {
                 }}
               >
                 <span
-                  className="flex items-center justify-center w-4 h-4 rounded flex-shrink-0"
+                  className="flex items-center justify-center w-4 h-4 rounded shrink-0"
                   style={{
                     background: attachAlcances ? '#00e5ff' : 'transparent',
                     border: `1.5px solid ${attachAlcances ? '#00e5ff' : 'rgba(0,229,255,0.3)'}`,
@@ -1294,7 +1294,7 @@ export default function CotizacionesPage() {
                   </p>
                 </div>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                  className="ml-auto flex-shrink-0" style={{ color: 'rgba(0,229,255,0.35)' }}>
+                  className="ml-auto shrink-0" style={{ color: 'rgba(0,229,255,0.35)' }}>
                   <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
                 </svg>
               </button>
