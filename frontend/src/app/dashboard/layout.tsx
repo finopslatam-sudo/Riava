@@ -33,17 +33,6 @@ const NAV = [
     ),
   },
   {
-    href: '/dashboard/plantillas',
-    label: 'Plantillas Web',
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-        <line x1="3" y1="9" x2="21" y2="9" />
-        <line x1="9" y1="21" x2="9" y2="9" />
-      </svg>
-    ),
-  },
-  {
     href: '/dashboard/cuenta',
     label: 'Mi Cuenta',
     icon: (
@@ -53,6 +42,17 @@ const NAV = [
       </svg>
     ),
   },
+]
+
+const SERVICES_NAV = [
+  { href: '/servicios/finops-cloud-aws', label: 'FinOps Cloud', icon: '💰' },
+  { href: '/servicios/reserva-de-citas', label: 'Reservas inteligentes', icon: '📅' },
+  { href: '/servicios/crear-paginas-web', label: 'Páginas Web', icon: '🌐' },
+  { href: '/servicios/desarrollo-saas', label: 'Desarrollo SaaS', icon: '🚀' },
+  { href: '/servicios/automatizaciones', label: 'Automatizaciones', icon: '🤖' },
+  { href: '/servicios/software-a-medida', label: 'Software a medida', icon: '⚙️' },
+  { href: '/servicios/contenido-ia', label: 'Contenido IA', icon: '🎬' },
+  { href: '/servicios/educacion-empresas', label: 'Educación Empresas IA', icon: '🎓' },
 ]
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
