@@ -10,6 +10,9 @@ from app.models.mixins import TimestampMixin, UUIDPrimaryKeyMixin
 
 if TYPE_CHECKING:
     from app.models.user import User
+    from app.models.meta_connection import MetaConnection
+    from app.models.campaign import Campaign
+    from app.models.lead import Lead
 
 
 class PlanEnum(str, enum.Enum):
@@ -41,4 +44,13 @@ class Company(Base, UUIDPrimaryKeyMixin, TimestampMixin):
         back_populates="company",
         cascade="all, delete-orphan",
         lazy="noload",
+    )
+    meta_connections: Mapped[list["MetaConnection"]] = relationship(
+        "MetaConnection", back_populates="company", cascade="all, delete-orphan", lazy="noload"
+    )
+    campaigns: Mapped[list["Campaign"]] = relationship(
+        "Campaign", back_populates="company", cascade="all, delete-orphan", lazy="noload"
+    )
+    leads: Mapped[list["Lead"]] = relationship(
+        "Lead", back_populates="company", cascade="all, delete-orphan", lazy="noload"
     )

@@ -79,6 +79,7 @@ export default function CotizacionesPage() {
   const [emailSending, setEmailSending] = useState(false)
   const [emailStatus, setEmailStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const [attachAlcances, setAttachAlcances] = useState(false)
+  const [attachTerminos, setAttachTerminos] = useState(true)
 
   // Use-templates modal + template editing
   const [showUseTemplatesModal, setShowUseTemplatesModal] = useState(false)
@@ -212,6 +213,7 @@ export default function CotizacionesPage() {
           subject: emailSubject,
           body: emailBody,
           attachAlcances,
+          attachTerminos,
           quoteData: {
             quoteNum, date, clientName, clientCompany, clientEmail, clientPhone,
             items, subtotal, discountAmount, discountPct,
@@ -1291,6 +1293,43 @@ export default function CotizacionesPage() {
                   </p>
                   <p className="text-xs mt-0.5" style={{ color: 'rgba(0,229,255,0.35)' }}>
                     Incluye el PDF con los alcances técnicos del proyecto E-commerce
+                  </p>
+                </div>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                  className="ml-auto shrink-0" style={{ color: 'rgba(0,229,255,0.35)' }}>
+                  <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                </svg>
+              </button>
+
+              {/* Adjunto Términos y Condiciones */}
+              <button
+                type="button"
+                onClick={() => setAttachTerminos(v => !v)}
+                className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left w-full"
+                style={{
+                  background: attachTerminos ? 'rgba(0,229,255,0.07)' : 'rgba(0,20,30,0.5)',
+                  border: `1px solid ${attachTerminos ? 'rgba(0,229,255,0.3)' : 'rgba(0,229,255,0.1)'}`,
+                }}
+              >
+                <span
+                  className="flex items-center justify-center w-4 h-4 rounded shrink-0"
+                  style={{
+                    background: attachTerminos ? '#00e5ff' : 'transparent',
+                    border: `1.5px solid ${attachTerminos ? '#00e5ff' : 'rgba(0,229,255,0.3)'}`,
+                  }}
+                >
+                  {attachTerminos && (
+                    <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#000a0f" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  )}
+                </span>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium" style={{ color: attachTerminos ? '#00e5ff' : 'rgba(224,247,255,0.6)' }}>
+                    Adjuntar Términos y Condiciones
+                  </p>
+                  <p className="text-xs mt-0.5" style={{ color: 'rgba(0,229,255,0.35)' }}>
+                    Incluye el PDF con los T&C de desarrollo web de RIAVA System
                   </p>
                 </div>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"

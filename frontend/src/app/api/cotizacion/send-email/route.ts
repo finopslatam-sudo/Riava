@@ -185,12 +185,13 @@ function buildHtml(body: string, q: QuoteData): string {
 
 export async function POST(req: Request) {
   try {
-    const { to, subject, body, quoteData, attachAlcances } = (await req.json()) as {
+    const { to, subject, body, quoteData, attachAlcances, attachTerminos } = (await req.json()) as {
       to: string
       subject: string
       body: string
       quoteData: QuoteData
       attachAlcances?: boolean
+      attachTerminos?: boolean
     }
 
     if (!to || !subject) {
@@ -205,6 +206,15 @@ export async function POST(req: Request) {
       const pdfBuffer = await readFile(pdfPath)
       attachments.push({
         filename: 'Alcances técnicos E-commerce - RIAVA.pdf',
+        content: pdfBuffer,
+        contentType: 'application/pdf',
+      })
+    }
+    if (attachTerminos !== false) {
+      const pdfPath = path.join(process.cwd(), 'public', 'terminos-y-condiciones.pdf')
+      const pdfBuffer = await readFile(pdfPath)
+      attachments.push({
+        filename: 'Términos y Condiciones - RIAVA System.pdf',
         content: pdfBuffer,
         contentType: 'application/pdf',
       })
