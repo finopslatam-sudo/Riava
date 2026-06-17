@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 
 type AdAccount = { id: string; name: string; account_status: number }
@@ -41,7 +41,7 @@ function fmtMoney(n: string | undefined) {
   return `$${Number(n).toLocaleString('es-CL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
 
-export default function MetaAdsPage() {
+function MetaAdsContent() {
   const searchParams = useSearchParams()
   const justConnected = searchParams.get('connected') === '1'
   const connectError = searchParams.get('error')
@@ -270,5 +270,17 @@ export default function MetaAdsPage() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function MetaAdsPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-96">
+        <div className="loader" />
+      </div>
+    }>
+      <MetaAdsContent />
+    </Suspense>
   )
 }
