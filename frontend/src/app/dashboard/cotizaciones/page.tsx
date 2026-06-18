@@ -185,7 +185,7 @@ export default function CotizacionesPage() {
     const bodyLines = [
       greeting,
       '',
-      'Junto con saludar, le hago envío de la cotización solicitada, la cual encontrará adjunta a este correo para su revisión. Asimismo, se adjunta un documento con los alcances técnicos del proyecto para su referencia.',
+      'Junto con saludar, le hago envío de la cotización solicitada, la cual encontrará adjunta a este correo para su revisión. Asimismo, se adjunta un documento con los términos y condiciones del proyecto para su referencia.',
       '',
       'Quedo atento a sus comentarios, dudas o a la posibilidad de revisarla en conjunto si lo estima conveniente.',
       '',
