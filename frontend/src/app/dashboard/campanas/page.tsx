@@ -88,9 +88,10 @@ export default function CampanasPage() {
               <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
             </svg>
           </div>
-          <p className="text-sm font-medium" style={{ color: 'rgba(240,0,80,0.8)' }}>{error}</p>
-          <p className="text-xs mt-2" style={{ color: 'rgba(224,247,255,0.3)' }}>
-            Inicia el backend con <code style={{ color: '#00e5ff' }}>uvicorn app.main:app --reload</code>
+          <p className="text-sm font-medium" style={{ color: '#e0f7ff' }}>Esta sección estará disponible próximamente</p>
+          <p className="text-xs mt-2" style={{ color: 'rgba(224,247,255,0.35)' }}>
+            El servidor de leads está siendo configurado. Mientras tanto, revisa tus campañas en{' '}
+            <a href="/dashboard/meta-ads" style={{ color: '#00e5ff' }}>Meta Ads</a>.
           </p>
         </div>
       ) : campaigns.length === 0 ? (

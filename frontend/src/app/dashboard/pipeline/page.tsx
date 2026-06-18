@@ -87,9 +87,9 @@ export default function PipelinePage() {
     return (
       <div className="p-4 lg:p-8">
         <div className="max-w-lg mx-auto text-center py-16">
-          <p className="text-sm" style={{ color: 'rgba(240,0,80,0.8)' }}>{error}</p>
-          <p className="text-xs mt-2" style={{ color: 'rgba(224,247,255,0.3)' }}>
-            Inicia el backend con <code style={{ color: '#00e5ff' }}>uvicorn app.main:app --reload</code>
+          <p className="text-sm font-medium" style={{ color: '#e0f7ff' }}>Esta sección estará disponible próximamente</p>
+          <p className="text-xs mt-2" style={{ color: 'rgba(224,247,255,0.35)' }}>
+            El servidor de leads está siendo configurado.
           </p>
         </div>
       </div>

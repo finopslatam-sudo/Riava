@@ -64,9 +64,9 @@ export default function AnaliticasPage() {
               <line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" />
             </svg>
           </div>
-          <p className="text-sm font-medium" style={{ color: 'rgba(240,0,80,0.8)' }}>{error}</p>
-          <p className="text-xs mt-2" style={{ color: 'rgba(224,247,255,0.3)' }}>
-            Inicia el backend: <code style={{ color: '#00e5ff' }}>uvicorn app.main:app --reload</code>
+          <p className="text-sm font-medium" style={{ color: '#e0f7ff' }}>Esta sección estará disponible próximamente</p>
+          <p className="text-xs mt-2" style={{ color: 'rgba(224,247,255,0.35)' }}>
+            El servidor de leads está siendo configurado.
           </p>
           {/* Offline preview with zeroed values */}
           <p className="text-xs mt-6 px-4 py-2 rounded-xl inline-block"
