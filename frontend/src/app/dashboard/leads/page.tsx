@@ -135,6 +135,8 @@ export default function LeadsPage() {
   const [statusFilter, setStatusFilter] = useState<LeadStatus | ''>('')
   const [page, setPage] = useState(1)
   const [showModal, setShowModal] = useState(false)
+  const [syncing, setSyncing] = useState(false)
+  const [syncMsg, setSyncMsg] = useState('')
   const PAGE_SIZE = 20
 
   const fetchLeads = useCallback(() => {
@@ -164,6 +166,26 @@ export default function LeadsPage() {
     setTotal(t => t + 1)
   }
 
+  const handleSyncMeta = async () => {
+    setSyncing(true)
+    setSyncMsg('')
+    try {
+      const res = await fetch('/api/meta/leads/import', { method: 'POST' })
+      const data = await res.json() as { imported?: number; skipped?: number; error?: string }
+      if (!res.ok) {
+        setSyncMsg(data.error === 'No conectado a Meta' ? 'Conecta Meta primero en Ajustes → Meta Ads' : 'Error al sincronizar')
+      } else {
+        setSyncMsg(data.imported === 0 ? 'Sin leads nuevos para importar' : `${data.imported} lead${data.imported !== 1 ? 's' : ''} importado${data.imported !== 1 ? 's' : ''}`)
+        if ((data.imported ?? 0) > 0) fetchLeads()
+      }
+    } catch {
+      setSyncMsg('Error de conexión')
+    } finally {
+      setSyncing(false)
+      setTimeout(() => setSyncMsg(''), 5000)
+    }
+  }
+
   const totalPages = Math.ceil(total / PAGE_SIZE)
 
   return (
@@ -178,24 +200,43 @@ export default function LeadsPage() {
             {total > 0 ? `${total.toLocaleString('es-CL')} leads capturados` : 'Gestión de leads'}
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <a href="/dashboard/pipeline"
-            className="px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2"
-            style={{ background: 'rgba(0,229,255,0.06)', border: '1px solid rgba(0,229,255,0.18)', color: '#00e5ff' }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <rect x="3" y="3" width="5" height="18" rx="1" /><rect x="10" y="3" width="5" height="12" rx="1" /><rect x="17" y="3" width="5" height="8" rx="1" />
-            </svg>
-            Ver pipeline
-          </a>
-          <button
-            onClick={() => setShowModal(true)}
-            className="btn-tron px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2"
-            style={{ color: '#000a0f' }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-            Nuevo lead
-          </button>
+        <div className="flex flex-col items-end gap-2">
+          <div className="flex items-center gap-2">
+            <a href="/dashboard/pipeline"
+              className="px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2"
+              style={{ background: 'rgba(0,229,255,0.06)', border: '1px solid rgba(0,229,255,0.18)', color: '#00e5ff' }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="3" y="3" width="5" height="18" rx="1" /><rect x="10" y="3" width="5" height="12" rx="1" /><rect x="17" y="3" width="5" height="8" rx="1" />
+              </svg>
+              Ver pipeline
+            </a>
+            <button
+              onClick={handleSyncMeta}
+              disabled={syncing}
+              className="px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2"
+              style={{ background: 'rgba(24,119,242,0.12)', border: '1px solid rgba(24,119,242,0.35)', color: syncing ? 'rgba(100,160,255,0.5)' : '#4e9fff' }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+                style={{ animation: syncing ? 'spin 1s linear infinite' : 'none' }}>
+                <polyline points="23 4 23 10 17 10" /><polyline points="1 20 1 14 7 14" />
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+              </svg>
+              {syncing ? 'Sincronizando...' : 'Sincronizar Meta'}
+            </button>
+            <button
+              onClick={() => setShowModal(true)}
+              className="btn-tron px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2"
+              style={{ color: '#000a0f' }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              Nuevo lead
+            </button>
+          </div>
+          {syncMsg && (
+            <p className="text-xs font-medium" style={{ color: syncMsg.includes('importado') ? '#00e564' : 'rgba(0,229,255,0.6)' }}>
+              {syncMsg}
+            </p>
+          )}
         </div>
       </div>
 
