@@ -26,6 +26,106 @@ function ScoreBadge({ score }: { score: number }) {
   )
 }
 
+type NewLeadForm = {
+  full_name: string
+  email: string
+  phone: string
+  company_name: string
+  source_campaign: string
+  status: LeadStatus
+}
+
+const EMPTY_FORM: NewLeadForm = {
+  full_name: '', email: '', phone: '', company_name: '', source_campaign: '', status: 'new',
+}
+
+function NewLeadModal({ onClose, onCreated }: { onClose: () => void; onCreated: (lead: Lead) => void }) {
+  const [form, setForm] = useState<NewLeadForm>(EMPTY_FORM)
+  const [saving, setSaving] = useState(false)
+  const [err, setErr] = useState('')
+
+  const set = (k: keyof NewLeadForm) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+    setForm(f => ({ ...f, [k]: e.target.value }))
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!form.full_name.trim() || !form.email.trim()) { setErr('Nombre y email son requeridos'); return }
+    setSaving(true); setErr('')
+    try {
+      const lead = await leadsApi.create(form)
+      onCreated(lead)
+    } catch {
+      setErr('Error al crear el lead. Intenta nuevamente.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }}
+      onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="w-full max-w-md rounded-2xl p-6" style={{ background: '#000a0f', border: '1px solid rgba(0,229,255,0.2)' }}>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-base font-bold" style={{ color: '#e0f7ff' }}>Nuevo lead</h2>
+          <button onClick={onClose} style={{ color: 'rgba(224,247,255,0.4)' }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+          {[
+            { label: 'Nombre completo *', key: 'full_name', placeholder: 'Juan Pérez' },
+            { label: 'Email *', key: 'email', placeholder: 'juan@empresa.cl' },
+            { label: 'Teléfono', key: 'phone', placeholder: '+56 9 1234 5678' },
+            { label: 'Empresa', key: 'company_name', placeholder: 'Empresa SPA' },
+            { label: 'Campaña origen', key: 'source_campaign', placeholder: 'Campaña Pág Web' },
+          ].map(f => (
+            <div key={f.key}>
+              <label className="text-xs font-medium block mb-1" style={{ color: 'rgba(0,229,255,0.6)' }}>{f.label}</label>
+              <input
+                value={form[f.key as keyof NewLeadForm] as string}
+                onChange={set(f.key as keyof NewLeadForm)}
+                placeholder={f.placeholder}
+                className="w-full px-3 py-2 rounded-lg text-sm outline-none"
+                style={{ background: 'rgba(0,229,255,0.04)', border: '1px solid rgba(0,229,255,0.15)', color: '#e0f7ff', caretColor: '#00e5ff' }}
+              />
+            </div>
+          ))}
+
+          <div>
+            <label className="text-xs font-medium block mb-1" style={{ color: 'rgba(0,229,255,0.6)' }}>Estado</label>
+            <select
+              value={form.status}
+              onChange={set('status')}
+              className="w-full px-3 py-2 rounded-lg text-sm outline-none"
+              style={{ background: 'rgba(0,229,255,0.04)', border: '1px solid rgba(0,229,255,0.15)', color: '#e0f7ff' }}>
+              {ALL_STATUSES.map(s => <option key={s} value={s} style={{ background: '#000a0f' }}>{STATUS_CONFIG[s].label}</option>)}
+            </select>
+          </div>
+
+          {err && <p className="text-xs" style={{ color: '#f00050' }}>{err}</p>}
+
+          <div className="flex gap-3 mt-2">
+            <button type="button" onClick={onClose}
+              className="flex-1 py-2.5 rounded-xl text-sm font-medium"
+              style={{ border: '1px solid rgba(0,229,255,0.15)', color: 'rgba(224,247,255,0.5)' }}>
+              Cancelar
+            </button>
+            <button type="submit" disabled={saving}
+              className="flex-1 py-2.5 rounded-xl text-sm font-bold btn-tron"
+              style={{ color: '#000a0f', opacity: saving ? 0.6 : 1 }}>
+              {saving ? 'Guardando...' : 'Crear lead'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
 export default function LeadsPage() {
   const [leads, setLeads] = useState<Lead[]>([])
   const [total, setTotal] = useState(0)
@@ -34,31 +134,42 @@ export default function LeadsPage() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<LeadStatus | ''>('')
   const [page, setPage] = useState(1)
+  const [showModal, setShowModal] = useState(false)
   const PAGE_SIZE = 20
 
   const fetchLeads = useCallback(() => {
     setLoading(true)
     leadsApi.list({ page, size: PAGE_SIZE, search: search || undefined, status: statusFilter || undefined })
       .then(data => { setLeads(data.items); setTotal(data.total) })
-      .catch(() => setError('No se pudo conectar al backend.'))
+      .catch(() => setError('error'))
       .finally(() => setLoading(false))
   }, [page, search, statusFilter])
 
   useEffect(() => { fetchLeads() }, [fetchLeads])
 
   const handleStatusChange = async (id: string, status: LeadStatus) => {
+    const prev = leads.find(l => l.id === id)
+    setLeads(ls => ls.map(l => l.id === id ? { ...l, status } : l))
     try {
       const updated = await leadsApi.updateStatus(id, status)
-      setLeads(prev => prev.map(l => l.id === id ? updated : l))
+      setLeads(ls => ls.map(l => l.id === id ? updated : l))
     } catch {
-      // silent — user sees no change
+      if (prev) setLeads(ls => ls.map(l => l.id === id ? prev : l))
     }
+  }
+
+  const handleCreated = (lead: Lead) => {
+    setShowModal(false)
+    setLeads(prev => [lead, ...prev])
+    setTotal(t => t + 1)
   }
 
   const totalPages = Math.ceil(total / PAGE_SIZE)
 
   return (
     <div className="p-4 lg:p-8">
+      {showModal && <NewLeadModal onClose={() => setShowModal(false)} onCreated={handleCreated} />}
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
@@ -76,6 +187,15 @@ export default function LeadsPage() {
             </svg>
             Ver pipeline
           </a>
+          <button
+            onClick={() => setShowModal(true)}
+            className="btn-tron px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2"
+            style={{ color: '#000a0f' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            Nuevo lead
+          </button>
         </div>
       </div>
 
@@ -112,10 +232,7 @@ export default function LeadsPage() {
         </div>
       ) : error ? (
         <div className="max-w-lg mx-auto text-center py-16">
-          <p className="text-sm font-medium" style={{ color: '#e0f7ff' }}>Esta sección estará disponible próximamente</p>
-          <p className="text-xs mt-2" style={{ color: 'rgba(224,247,255,0.35)' }}>
-            El servidor de leads está siendo configurado.
-          </p>
+          <p className="text-sm font-medium" style={{ color: 'rgba(224,247,255,0.5)' }}>Error al cargar leads. Recarga la página.</p>
         </div>
       ) : leads.length === 0 ? (
         <div className="max-w-lg mx-auto text-center py-16">
@@ -132,15 +249,16 @@ export default function LeadsPage() {
             {search || statusFilter ? 'Sin resultados para este filtro' : 'Sin leads todavía'}
           </p>
           {(!search && !statusFilter) ? (
-            <p className="text-xs mt-2" style={{ color: 'rgba(224,247,255,0.3)' }}>
-              Los leads aparecerán aquí cuando lleguen desde Meta Ads
-            </p>
+            <button onClick={() => setShowModal(true)}
+              className="inline-flex items-center gap-2 mt-4 px-4 py-2 rounded-lg text-sm font-medium btn-tron"
+              style={{ color: '#000a0f' }}>
+              Crear primer lead
+            </button>
           ) : null}
         </div>
       ) : (
         <>
           <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(0,10,18,0.9)', border: '1px solid rgba(0,229,255,0.12)' }}>
-            {/* Header row */}
             <div className="grid px-5 py-3 text-xs font-semibold uppercase tracking-wider"
               style={{ gridTemplateColumns: '1fr 180px 130px 100px 110px', color: 'rgba(0,229,255,0.4)', borderBottom: '1px solid rgba(0,229,255,0.08)' }}>
               <span>Lead</span>
@@ -186,24 +304,19 @@ export default function LeadsPage() {
             })}
           </div>
 
-          {/* Pagination */}
           {totalPages > 1 ? (
             <div className="flex items-center justify-between mt-4">
               <p className="text-xs" style={{ color: 'rgba(0,229,255,0.4)' }}>
                 Página {page} de {totalPages}
               </p>
               <div className="flex gap-2">
-                <button
-                  onClick={() => setPage(p => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                  className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+                <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
+                  className="px-3 py-1.5 rounded-lg text-xs font-medium"
                   style={{ background: 'rgba(0,10,18,0.9)', border: '1px solid rgba(0,229,255,0.15)', color: page === 1 ? 'rgba(0,229,255,0.25)' : '#00e5ff' }}>
                   Anterior
                 </button>
-                <button
-                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                  disabled={page === totalPages}
-                  className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+                <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}
+                  className="px-3 py-1.5 rounded-lg text-xs font-medium"
                   style={{ background: 'rgba(0,10,18,0.9)', border: '1px solid rgba(0,229,255,0.15)', color: page === totalPages ? 'rgba(0,229,255,0.25)' : '#00e5ff' }}>
                   Siguiente
                 </button>
