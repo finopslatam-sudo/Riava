@@ -21,6 +21,10 @@ export async function GET() {
   const token = cookieStore.get('meta_access_token')?.value
   if (!token) return NextResponse.json({ error: 'No conectado a Meta' }, { status: 401 })
 
+  // Check what permissions the token actually has
+  const permRes = await fetch(`https://graph.facebook.com/v19.0/me/permissions?access_token=${token}`)
+  const permData = permRes.ok ? await permRes.json() : null
+
   // Step 1: get pages the user manages
   const pagesRes = await fetch(
     `https://graph.facebook.com/v19.0/me/accounts?fields=id,name,access_token&access_token=${token}`
@@ -29,24 +33,30 @@ export async function GET() {
     const err = await pagesRes.json()
     return NextResponse.json({ error: 'Error obteniendo páginas', detail: err }, { status: 502 })
   }
-  const { data: pages } = await pagesRes.json() as { data: { id: string; name: string; access_token: string }[] }
+  const pagesData = await pagesRes.json() as { data: { id: string; name: string; access_token: string }[] }
+  const pages = pagesData.data
 
+  const debug: Record<string, unknown>[] = []
   const allLeads: MetaLead[] = []
 
   for (const page of pages) {
-    // Step 2: get lead gen forms for this page (use page-level access token)
+    const pageDebug: Record<string, unknown> = { page_id: page.id, page_name: page.name, forms: [] }
+
+    // Step 2: get lead gen forms for this page
     const formsRes = await fetch(
       `https://graph.facebook.com/v19.0/${page.id}/leadgen_forms?` +
-      new URLSearchParams({
-        fields: 'id,name,status',
-        access_token: page.access_token,
-      })
+      new URLSearchParams({ fields: 'id,name,status', access_token: page.access_token })
     )
-    if (!formsRes.ok) continue
-    const { data: forms } = await formsRes.json() as { data: { id: string; name: string; status: string }[] }
+    const formsData = formsRes.ok ? await formsRes.json() : null
+    pageDebug.forms_status = formsRes.status
+    pageDebug.forms_raw = formsData
+
+    if (!formsRes.ok || !formsData?.data) { debug.push(pageDebug); continue }
+    const forms = formsData.data as { id: string; name: string; status: string }[]
 
     for (const form of forms) {
-      // Step 3: get leads for each form
+      const formDebug: Record<string, unknown> = { form_id: form.id, form_name: form.name }
+
       const leadsRes = await fetch(
         `https://graph.facebook.com/v19.0/${form.id}/leads?` +
         new URLSearchParams({
@@ -55,17 +65,24 @@ export async function GET() {
           access_token: page.access_token,
         })
       )
-      if (!leadsRes.ok) continue
-      const { data: leads } = await leadsRes.json() as { data: Omit<MetaLead, 'form_id' | 'form_name'>[] }
+      const leadsData = leadsRes.ok ? await leadsRes.json() : null
+      formDebug.leads_status = leadsRes.status
+      formDebug.leads_raw = leadsData
+      ;(pageDebug.forms as unknown[]).push(formDebug)
 
-      for (const lead of leads) {
+      if (!leadsRes.ok || !leadsData?.data) continue
+      for (const lead of leadsData.data as Omit<MetaLead, 'form_id' | 'form_name'>[]) {
         allLeads.push({ ...lead, form_id: form.id, form_name: form.name })
       }
     }
+    debug.push(pageDebug)
   }
 
-  // Sort newest first
   allLeads.sort((a, b) => new Date(b.created_time).getTime() - new Date(a.created_time).getTime())
 
-  return NextResponse.json({ leads: allLeads, total: allLeads.length })
+  return NextResponse.json({
+    leads: allLeads,
+    total: allLeads.length,
+    debug: { permissions: permData, pages_count: pages.length, pages: debug },
+  })
 }
