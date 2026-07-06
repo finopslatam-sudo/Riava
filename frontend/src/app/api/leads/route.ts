@@ -14,7 +14,8 @@ export async function GET(req: NextRequest) {
   if (search) leads = leads.filter(l =>
     l.full_name.toLowerCase().includes(search) ||
     l.email.toLowerCase().includes(search) ||
-    l.company_name.toLowerCase().includes(search)
+    l.company_name.toLowerCase().includes(search) ||
+    l.source_campaign.toLowerCase().includes(search)
   )
 
   const total = leads.length
