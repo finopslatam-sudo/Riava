@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
-import { getAllLeads, createLead } from '@/lib/leads-store'
+import { getAllLeads, createLead, updateLead } from '@/lib/leads-store'
 import { scoreLead } from '@/lib/lead-scoring'
 import { getAccessiblePages } from '@/lib/meta-pages'
 
@@ -42,7 +42,7 @@ export async function POST() {
   const pages = await getAccessiblePages(token)
 
   const existingLeads = await getAllLeads()
-  const existingEmails = new Set(existingLeads.map(l => l.email.toLowerCase()))
+  const existingByEmail = new Map(existingLeads.map(l => [l.email.toLowerCase(), l]))
 
   let imported = 0
   let skipped = 0
@@ -80,7 +80,16 @@ export async function POST() {
 
       for (const ml of (metaLeads ?? [])) {
         const email = field(ml.field_data, 'email', 'correo_electronico', 'correo', 'e-mail')
-        if (!email || existingEmails.has(email.toLowerCase())) { skipped++; continue }
+        if (!email) { skipped++; continue }
+
+        const existing = existingByEmail.get(email.toLowerCase())
+        if (existing) {
+          skipped++
+          if (existing.created_at !== ml.created_time) {
+            await updateLead(existing.id, { created_at: ml.created_time })
+          }
+          continue
+        }
 
         const full_name =
           field(ml.field_data, 'full_name', 'nombre_completo', 'nombre', 'name') ||
@@ -99,7 +108,7 @@ export async function POST() {
           full_name, email, phone, company_name, source_campaign, custom_fields,
         })
 
-        await createLead({
+        const lead = await createLead({
           full_name,
           email,
           phone,
@@ -109,9 +118,10 @@ export async function POST() {
           score,
           ai_reasoning: reasoning,
           custom_fields,
+          created_at: ml.created_time,
         })
 
-        existingEmails.add(email.toLowerCase())
+        existingByEmail.set(email.toLowerCase(), lead)
         imported++
       }
     }

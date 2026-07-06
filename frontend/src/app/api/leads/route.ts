@@ -18,6 +18,8 @@ export async function GET(req: NextRequest) {
     l.source_campaign.toLowerCase().includes(search)
   )
 
+  leads = leads.slice().sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+
   const total = leads.length
   const items = leads.slice((page - 1) * size, page * size)
 

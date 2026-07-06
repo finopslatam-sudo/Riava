@@ -36,6 +36,7 @@ export type CreateLeadInput = {
   assigned_to?: string | null
   custom_fields?: Record<string, string>
   ai_reasoning?: string
+  created_at?: string
 }
 
 export async function getAllLeads(): Promise<Lead[]> {
@@ -58,7 +59,7 @@ export async function createLead(input: CreateLeadInput): Promise<Lead> {
     assigned_to: input.assigned_to ?? null,
     custom_fields: input.custom_fields ?? {},
     ai_reasoning: input.ai_reasoning ?? '',
-    created_at: now,
+    created_at: input.created_at ?? now,
     updated_at: now,
   }
   await redis.set(KEY, [lead, ...leads])
@@ -70,7 +71,7 @@ export async function getLeadById(id: string): Promise<Lead | null> {
   return leads.find(l => l.id === id) ?? null
 }
 
-export async function updateLead(id: string, updates: Partial<Omit<Lead, 'id' | 'created_at'>>): Promise<Lead | null> {
+export async function updateLead(id: string, updates: Partial<Omit<Lead, 'id'>>): Promise<Lead | null> {
   const leads = await getAllLeads()
   const idx = leads.findIndex(l => l.id === id)
   if (idx < 0) return null
