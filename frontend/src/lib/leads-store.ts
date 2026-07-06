@@ -19,6 +19,8 @@ export type Lead = {
   score: number
   source_campaign: string
   assigned_to: string | null
+  custom_fields: Record<string, string>
+  ai_reasoning: string
   created_at: string
   updated_at: string
 }
@@ -32,6 +34,8 @@ export type CreateLeadInput = {
   score?: number
   source_campaign?: string
   assigned_to?: string | null
+  custom_fields?: Record<string, string>
+  ai_reasoning?: string
 }
 
 export async function getAllLeads(): Promise<Lead[]> {
@@ -52,6 +56,8 @@ export async function createLead(input: CreateLeadInput): Promise<Lead> {
     score: input.score ?? Math.floor(Math.random() * 40) + 30,
     source_campaign: input.source_campaign ?? '',
     assigned_to: input.assigned_to ?? null,
+    custom_fields: input.custom_fields ?? {},
+    ai_reasoning: input.ai_reasoning ?? '',
     created_at: now,
     updated_at: now,
   }

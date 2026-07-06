@@ -1,8 +1,18 @@
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { getAllLeads, createLead } from '@/lib/leads-store'
+import { scoreLead } from '@/lib/lead-scoring'
 
 type FieldData = { name: string; values: string[] }
+type FormQuestion = { key: string; label?: string }
+
+const STANDARD_KEYS = new Set([
+  'full_name', 'nombre_completo', 'nombre', 'name',
+  'first_name', 'primer_nombre', 'last_name', 'apellido', 'apellidos',
+  'email', 'correo_electronico', 'correo', 'e-mail',
+  'phone_number', 'telefono', 'teléfono', 'celular', 'mobile', 'phone',
+  'company_name', 'empresa', 'compania', 'company',
+])
 
 function field(data: FieldData[], ...keys: string[]): string {
   for (const key of keys) {
@@ -10,6 +20,17 @@ function field(data: FieldData[], ...keys: string[]): string {
     if (found?.values?.[0]) return found.values[0]
   }
   return ''
+}
+
+function buildCustomFields(fieldData: FieldData[], labels: Map<string, string>): Record<string, string> {
+  const result: Record<string, string> = {}
+  for (const f of fieldData) {
+    const key = f.name.toLowerCase()
+    if (STANDARD_KEYS.has(key)) continue
+    const label = labels.get(key) ?? f.name
+    result[label] = f.values?.[0] ?? ''
+  }
+  return result
 }
 
 export async function POST() {
@@ -59,11 +80,17 @@ export async function POST() {
 
   for (const [formId, fallbackName] of formIds) {
     const formInfoRes = await fetch(
-      `https://graph.facebook.com/v19.0/${formId}?fields=id,name&access_token=${token}`
+      `https://graph.facebook.com/v19.0/${formId}?fields=id,name,questions&access_token=${token}`
     )
-    const formName = formInfoRes.ok
-      ? ((await formInfoRes.json()) as { name?: string }).name ?? fallbackName
-      : fallbackName
+    let formName = fallbackName
+    const labels = new Map<string, string>()
+    if (formInfoRes.ok) {
+      const formInfo = await formInfoRes.json() as { name?: string; questions?: FormQuestion[] }
+      formName = formInfo.name ?? fallbackName
+      for (const q of (formInfo.questions ?? [])) {
+        if (q.label) labels.set(q.key.toLowerCase(), q.label)
+      }
+    }
 
     const leadsRes = await fetch(
       `https://graph.facebook.com/v19.0/${formId}/leads?` +
@@ -90,13 +117,25 @@ export async function POST() {
         ].filter(Boolean).join(' ') ||
         'Sin nombre'
 
+      const phone = field(ml.field_data, 'phone_number', 'telefono', 'teléfono', 'celular', 'mobile', 'phone')
+      const company_name = field(ml.field_data, 'company_name', 'empresa', 'compania', 'company')
+      const source_campaign = ml.campaign_name ?? formName
+      const custom_fields = buildCustomFields(ml.field_data, labels)
+
+      const { score, reasoning } = await scoreLead({
+        full_name, email, phone, company_name, source_campaign, custom_fields,
+      })
+
       await createLead({
         full_name,
         email,
-        phone: field(ml.field_data, 'phone_number', 'telefono', 'teléfono', 'celular', 'mobile', 'phone'),
-        company_name: field(ml.field_data, 'company_name', 'empresa', 'compania', 'company'),
-        source_campaign: ml.campaign_name ?? formName,
+        phone,
+        company_name,
+        source_campaign,
         status: 'new',
+        score,
+        ai_reasoning: reasoning,
+        custom_fields,
       })
 
       existingEmails.add(email.toLowerCase())

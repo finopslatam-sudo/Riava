@@ -126,6 +126,87 @@ function NewLeadModal({ onClose, onCreated }: { onClose: () => void; onCreated: 
   )
 }
 
+function LeadDetailModal({ lead, onClose }: { lead: Lead; onClose: () => void }) {
+  const s = STATUS_CONFIG[lead.status]
+  const date = new Date(lead.created_at).toLocaleString('es-CL', {
+    day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit',
+  })
+  const scoreColor = lead.score >= 70 ? '#00e564' : lead.score >= 40 ? '#fbbf24' : 'rgba(240,0,80,0.7)'
+  const customEntries = Object.entries(lead.custom_fields ?? {})
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }}
+      onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="w-full max-w-lg rounded-2xl p-6 max-h-[90vh] overflow-y-auto"
+        style={{ background: '#000a0f', border: '1px solid rgba(0,229,255,0.2)' }}>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-base font-bold" style={{ color: '#e0f7ff' }}>Detalle del lead</h2>
+          <button onClick={onClose} style={{ color: 'rgba(224,247,255,0.4)' }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+
+        <div className="flex items-center justify-between mb-5">
+          <div>
+            <p className="text-xs font-medium mb-1" style={{ color: 'rgba(0,229,255,0.5)' }}>Score IA</p>
+            <p className="text-3xl font-bold" style={{ color: scoreColor }}>{lead.score}<span className="text-sm font-medium" style={{ color: 'rgba(224,247,255,0.4)' }}>/100</span></p>
+          </div>
+          <div className="text-right">
+            <p className="text-xs font-medium mb-1" style={{ color: 'rgba(0,229,255,0.5)' }}>Campaña</p>
+            <p className="text-sm" style={{ color: '#e0f7ff' }}>{lead.source_campaign || '—'}</p>
+            <p className="text-xs mt-2" style={{ color: 'rgba(224,247,255,0.4)' }}>{date}</p>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between mb-5">
+          <div>
+            <p className="text-sm font-semibold" style={{ color: '#e0f7ff' }}>{lead.full_name}</p>
+            <p className="text-xs mt-0.5" style={{ color: 'rgba(0,229,255,0.45)' }}>{lead.company_name || 'Empresa no especificada'}</p>
+          </div>
+          <span className="text-xs rounded-lg px-2 py-1" style={{ background: s.bg, border: `1px solid ${s.border}`, color: s.color }}>
+            {s.label}
+          </span>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4 mb-5">
+          <div>
+            <p className="text-xs font-medium mb-1" style={{ color: 'rgba(0,229,255,0.5)' }}>Número de teléfono</p>
+            <p className="text-sm" style={{ color: '#e0f7ff' }}>{lead.phone || '—'}</p>
+          </div>
+          <div>
+            <p className="text-xs font-medium mb-1" style={{ color: 'rgba(0,229,255,0.5)' }}>Correo electrónico</p>
+            <p className="text-sm break-all" style={{ color: '#e0f7ff' }}>{lead.email}</p>
+          </div>
+        </div>
+
+        {lead.ai_reasoning && (
+          <div className="mb-5 p-3 rounded-xl" style={{ background: 'rgba(0,229,255,0.04)', border: '1px solid rgba(0,229,255,0.1)' }}>
+            <p className="text-xs font-semibold mb-1.5" style={{ color: 'rgba(0,229,255,0.6)' }}>Por qué se calificó así</p>
+            <p className="text-sm leading-relaxed" style={{ color: 'rgba(224,247,255,0.75)' }}>{lead.ai_reasoning}</p>
+          </div>
+        )}
+
+        {customEntries.length > 0 && (
+          <div>
+            <p className="text-xs font-semibold mb-3" style={{ color: 'rgba(0,229,255,0.6)' }}>Información del formulario</p>
+            <div className="flex flex-col gap-3">
+              {customEntries.map(([question, answer]) => (
+                <div key={question}>
+                  <p className="text-xs" style={{ color: 'rgba(224,247,255,0.45)' }}>{question}</p>
+                  <p className="text-sm mt-0.5" style={{ color: '#e0f7ff' }}>{answer || '—'}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export default function LeadsPage() {
   const [leads, setLeads] = useState<Lead[]>([])
   const [total, setTotal] = useState(0)
@@ -135,6 +216,7 @@ export default function LeadsPage() {
   const [statusFilter, setStatusFilter] = useState<LeadStatus | ''>('')
   const [page, setPage] = useState(1)
   const [showModal, setShowModal] = useState(false)
+  const [selectedLead, setSelectedLead] = useState<Lead | null>(null)
   const [syncing, setSyncing] = useState(false)
   const [syncMsg, setSyncMsg] = useState('')
   const PAGE_SIZE = 20
@@ -191,6 +273,7 @@ export default function LeadsPage() {
   return (
     <div className="p-4 lg:p-8">
       {showModal && <NewLeadModal onClose={() => setShowModal(false)} onCreated={handleCreated} />}
+      {selectedLead && <LeadDetailModal lead={selectedLead} onClose={() => setSelectedLead(null)} />}
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
@@ -314,7 +397,8 @@ export default function LeadsPage() {
               const date = new Date(lead.created_at).toLocaleDateString('es-CL', { day: '2-digit', month: 'short' })
               return (
                 <div key={lead.id}
-                  className="grid px-5 py-3.5 items-center"
+                  onClick={() => setSelectedLead(lead)}
+                  className="grid px-5 py-3.5 items-center cursor-pointer"
                   style={{
                     gridTemplateColumns: '1fr 180px 130px 100px 110px',
                     background: idx % 2 === 0 ? 'transparent' : 'rgba(0,229,255,0.02)',
@@ -326,7 +410,7 @@ export default function LeadsPage() {
                   </div>
                   <p className="text-xs truncate pr-3" style={{ color: 'rgba(224,247,255,0.45)' }}>{lead.source_campaign || '—'}</p>
                   <ScoreBadge score={lead.score} />
-                  <div className="flex justify-center">
+                  <div className="flex justify-center" onClick={e => e.stopPropagation()}>
                     <select
                       value={lead.status}
                       onChange={e => handleStatusChange(lead.id, e.target.value as LeadStatus)}

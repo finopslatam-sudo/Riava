@@ -24,6 +24,8 @@ export interface Lead {
   score: number
   source_campaign: string
   assigned_to: string | null
+  custom_fields: Record<string, string>
+  ai_reasoning: string
   created_at: string
   updated_at: string
 }
