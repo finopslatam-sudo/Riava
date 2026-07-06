@@ -17,11 +17,16 @@ export async function GET() {
   const accsRes = await fetch(
     `https://graph.facebook.com/v19.0/me/adaccounts?fields=id,name&access_token=${token}`
   )
-  if (!accsRes.ok) return NextResponse.json({ error: 'Error obteniendo cuentas' }, { status: 502 })
-  const { data: accounts } = await accsRes.json() as { data: { id: string; name: string }[] }
+  if (!accsRes.ok) {
+    const body = await accsRes.text()
+    return NextResponse.json({ error: 'Error obteniendo cuentas', status: accsRes.status, body }, { status: 502 })
+  }
+  const accsJson = await accsRes.json() as { data: { id: string; name: string }[] }
+  const accounts = accsJson.data ?? []
 
   // Collect unique form IDs from ads across all accounts
   const formIds = new Map<string, string>() // formId → formName
+  const debugAccounts: { id: string; name: string; ads_found: number; ads_error?: string }[] = []
 
   for (const acc of accounts) {
     const adsRes = await fetch(
@@ -32,10 +37,14 @@ export async function GET() {
         access_token: token,
       })
     )
-    if (!adsRes.ok) continue
+    if (!adsRes.ok) {
+      debugAccounts.push({ id: acc.id, name: acc.name, ads_found: 0, ads_error: await adsRes.text() })
+      continue
+    }
     const { data: ads } = await adsRes.json() as {
       data: { id: string; name: string; creative?: { lead_gen_form_id?: string } }[]
     }
+    debugAccounts.push({ id: acc.id, name: acc.name, ads_found: (ads ?? []).length })
     for (const ad of (ads ?? [])) {
       const fid = ad.creative?.lead_gen_form_id
       if (fid && !formIds.has(fid)) formIds.set(fid, ad.name)
@@ -70,5 +79,10 @@ export async function GET() {
   }
 
   allLeads.sort((a, b) => new Date(b.created_time).getTime() - new Date(a.created_time).getTime())
-  return NextResponse.json({ leads: allLeads, total: allLeads.length, forms_found: formIds.size })
+  return NextResponse.json({
+    leads: allLeads,
+    total: allLeads.length,
+    forms_found: formIds.size,
+    debug: { accounts_found: accounts.length, accounts: debugAccounts },
+  })
 }
