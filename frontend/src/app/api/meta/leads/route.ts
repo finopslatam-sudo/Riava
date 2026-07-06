@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
+import { getAccessiblePages } from '@/lib/meta-pages'
 
 type FieldData = { name: string; values: string[] }
 type MetaLead = {
-  id: string; created_time: string; ad_id?: string; ad_name?: string
-  adset_name?: string; campaign_id?: string; campaign_name?: string
+  id: string; created_time: string; campaign_name?: string
   form_id: string; form_name: string; field_data: FieldData[]
 }
 
@@ -13,68 +13,37 @@ export async function GET() {
   const token = cookieStore.get('meta_access_token')?.value
   if (!token) return NextResponse.json({ error: 'No conectado a Meta' }, { status: 401 })
 
-  // Get ad accounts
-  const accsRes = await fetch(
-    `https://graph.facebook.com/v19.0/me/adaccounts?fields=id,name&access_token=${token}`
-  )
-  if (!accsRes.ok) {
-    const body = await accsRes.text()
-    return NextResponse.json({ error: 'Error obteniendo cuentas', status: accsRes.status, body }, { status: 502 })
-  }
-  const accsJson = await accsRes.json() as { data: { id: string; name: string }[] }
-  const accounts = accsJson.data ?? []
+  const pages = await getAccessiblePages(token)
 
-  // Collect unique form IDs from ads across all accounts
-  const formIds = new Map<string, string>() // formId → formName
-  const debugAccounts: { id: string; name: string; ads_found: number; ads_error?: string }[] = []
+  const allLeads: MetaLead[] = []
+  const debugPages: { id: string; name: string; forms_found: number; forms_error?: string }[] = []
 
-  for (const acc of accounts) {
-    const adsRes = await fetch(
-      `https://graph.facebook.com/v19.0/${acc.id}/ads?` +
-      new URLSearchParams({
-        fields: 'id,name,creative{lead_gen_form_id}',
-        limit: '200',
-        access_token: token,
-      })
+  for (const page of pages) {
+    const formsRes = await fetch(
+      `https://graph.facebook.com/v19.0/${page.id}/leadgen_forms?` +
+      new URLSearchParams({ fields: 'id,name', access_token: page.access_token })
     )
-    if (!adsRes.ok) {
-      debugAccounts.push({ id: acc.id, name: acc.name, ads_found: 0, ads_error: await adsRes.text() })
+    if (!formsRes.ok) {
+      debugPages.push({ id: page.id, name: page.name, forms_found: 0, forms_error: await formsRes.text() })
       continue
     }
-    const { data: ads } = await adsRes.json() as {
-      data: { id: string; name: string; creative?: { lead_gen_form_id?: string } }[]
-    }
-    debugAccounts.push({ id: acc.id, name: acc.name, ads_found: (ads ?? []).length })
-    for (const ad of (ads ?? [])) {
-      const fid = ad.creative?.lead_gen_form_id
-      if (fid && !formIds.has(fid)) formIds.set(fid, ad.name)
-    }
-  }
+    const { data: forms } = await formsRes.json() as { data: { id: string; name: string }[] }
+    debugPages.push({ id: page.id, name: page.name, forms_found: (forms ?? []).length })
 
-  // Fetch leads for each form using user token (has leads_retrieval)
-  const allLeads: MetaLead[] = []
-
-  for (const [formId, adName] of formIds) {
-    // Get form name
-    const formInfoRes = await fetch(
-      `https://graph.facebook.com/v19.0/${formId}?fields=id,name&access_token=${token}`
-    )
-    const formName = formInfoRes.ok
-      ? ((await formInfoRes.json()) as { name?: string }).name ?? adName
-      : adName
-
-    const leadsRes = await fetch(
-      `https://graph.facebook.com/v19.0/${formId}/leads?` +
-      new URLSearchParams({
-        fields: 'id,created_time,ad_id,ad_name,adset_name,campaign_id,campaign_name,field_data',
-        limit: '200',
-        access_token: token,
-      })
-    )
-    if (!leadsRes.ok) continue
-    const { data } = await leadsRes.json() as { data: Omit<MetaLead, 'form_id' | 'form_name'>[] }
-    for (const lead of (data ?? [])) {
-      allLeads.push({ ...lead, form_id: formId, form_name: formName })
+    for (const form of (forms ?? [])) {
+      const leadsRes = await fetch(
+        `https://graph.facebook.com/v19.0/${form.id}/leads?` +
+        new URLSearchParams({
+          fields: 'id,created_time,campaign_name,field_data',
+          limit: '200',
+          access_token: page.access_token,
+        })
+      )
+      if (!leadsRes.ok) continue
+      const { data } = await leadsRes.json() as { data: Omit<MetaLead, 'form_id' | 'form_name'>[] }
+      for (const lead of (data ?? [])) {
+        allLeads.push({ ...lead, form_id: form.id, form_name: form.name })
+      }
     }
   }
 
@@ -82,7 +51,6 @@ export async function GET() {
   return NextResponse.json({
     leads: allLeads,
     total: allLeads.length,
-    forms_found: formIds.size,
-    debug: { accounts_found: accounts.length, accounts: debugAccounts },
+    debug: { pages_found: pages.length, pages: debugPages },
   })
 }
