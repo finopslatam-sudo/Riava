@@ -20,6 +20,9 @@ export type LeadScoreResult = {
   reasoning: string
 }
 
+export const HEURISTIC_FALLBACK_REASONING =
+  'Lead evaluado con reglas básicas de completitud de formulario (la evaluación con IA no estuvo disponible).'
+
 function heuristicFallback(input: LeadScoreInput): LeadScoreResult {
   let score = 0
   if (input.full_name) score += 25
@@ -29,7 +32,7 @@ function heuristicFallback(input: LeadScoreInput): LeadScoreResult {
   if (Object.keys(input.custom_fields).length > 0) score += 10
   return {
     score: Math.min(score, 100),
-    reasoning: 'Lead evaluado con reglas básicas de completitud de formulario (la evaluación con IA no estuvo disponible).',
+    reasoning: HEURISTIC_FALLBACK_REASONING,
   }
 }
 

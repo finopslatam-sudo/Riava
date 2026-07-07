@@ -219,6 +219,8 @@ export default function LeadsPage() {
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null)
   const [syncing, setSyncing] = useState(false)
   const [syncMsg, setSyncMsg] = useState('')
+  const [rescoring, setRescoring] = useState(false)
+  const [rescoreMsg, setRescoreMsg] = useState('')
   const PAGE_SIZE = 20
 
   const fetchLeads = useCallback(() => {
@@ -268,6 +270,28 @@ export default function LeadsPage() {
     }
   }
 
+  const handleRescore = async () => {
+    setRescoring(true)
+    setRescoreMsg('')
+    try {
+      const res = await fetch('/api/leads/rescore', { method: 'POST' })
+      const data = await res.json() as { rescored?: number; total_pending?: number; error?: string }
+      if (!res.ok) {
+        setRescoreMsg('Error al recalcular')
+      } else if ((data.total_pending ?? 0) === 0) {
+        setRescoreMsg('No hay leads pendientes de recalcular')
+      } else {
+        setRescoreMsg(`${data.rescored ?? 0} de ${data.total_pending} leads recalculados con IA`)
+        fetchLeads()
+      }
+    } catch {
+      setRescoreMsg('Error de conexión')
+    } finally {
+      setRescoring(false)
+      setTimeout(() => setRescoreMsg(''), 6000)
+    }
+  }
+
   const totalPages = Math.ceil(total / PAGE_SIZE)
 
   return (
@@ -306,6 +330,17 @@ export default function LeadsPage() {
               {syncing ? 'Sincronizando...' : 'Sincronizar Meta'}
             </button>
             <button
+              onClick={handleRescore}
+              disabled={rescoring}
+              className="px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2"
+              style={{ background: 'rgba(167,139,250,0.12)', border: '1px solid rgba(167,139,250,0.35)', color: rescoring ? 'rgba(167,139,250,0.5)' : '#a78bfa' }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+                style={{ animation: rescoring ? 'spin 1s linear infinite' : 'none' }}>
+                <path d="M12 2a10 10 0 1 0 10 10" /><path d="M12 2v5l3-3" />
+              </svg>
+              {rescoring ? 'Recalculando...' : 'Recalcular Score IA'}
+            </button>
+            <button
               onClick={() => setShowModal(true)}
               className="btn-tron px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2"
               style={{ color: '#000a0f' }}>
@@ -318,6 +353,11 @@ export default function LeadsPage() {
           {syncMsg && (
             <p className="text-xs font-medium" style={{ color: syncMsg.includes('importado') ? '#00e564' : 'rgba(0,229,255,0.6)' }}>
               {syncMsg}
+            </p>
+          )}
+          {rescoreMsg && (
+            <p className="text-xs font-medium" style={{ color: rescoreMsg.includes('recalculados') ? '#00e564' : 'rgba(167,139,250,0.7)' }}>
+              {rescoreMsg}
             </p>
           )}
         </div>
