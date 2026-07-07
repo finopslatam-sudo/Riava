@@ -12,7 +12,7 @@ async function api<T>(path: string, options?: RequestInit): Promise<T> {
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-export type LeadStatus = 'new' | 'contacted' | 'qualified' | 'proposal' | 'won' | 'lost'
+export type LeadStatus = 'new' | 'contacted' | 'agendado' | 'cotizado' | 'cotizacion_aceptada' | 'cotizacion_rechazada'
 
 export interface Lead {
   id: string

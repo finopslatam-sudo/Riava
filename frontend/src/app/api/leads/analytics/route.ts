@@ -12,7 +12,7 @@ export async function GET() {
   const total_leads = leads.length
   const new_leads_today = leads.filter(l => l.created_at.startsWith(todayStr)).length
   const leads_this_month = leads.filter(l => l.created_at.startsWith(monthStr)).length
-  const won = leads.filter(l => l.status === 'won').length
+  const won = leads.filter(l => l.status === 'cotizacion_aceptada').length
   const conversion_rate = total_leads > 0 ? (won / total_leads) * 100 : 0
   const avg_score = total_leads > 0 ? leads.reduce((a, l) => a + l.score, 0) / total_leads : 0
 

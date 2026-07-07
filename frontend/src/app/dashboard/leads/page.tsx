@@ -4,15 +4,15 @@ import { useState, useEffect, useCallback } from 'react'
 import { leadsApi, type Lead, type LeadStatus } from '@/lib/leads-api'
 
 const STATUS_CONFIG: Record<LeadStatus, { label: string; color: string; bg: string; border: string }> = {
-  new:       { label: 'Nuevo',      color: '#00e5ff',  bg: 'rgba(0,229,255,0.1)',  border: 'rgba(0,229,255,0.3)' },
-  contacted: { label: 'Contactado', color: '#a78bfa',  bg: 'rgba(167,139,250,0.1)', border: 'rgba(167,139,250,0.3)' },
-  qualified: { label: 'Calificado', color: '#fbbf24',  bg: 'rgba(251,191,36,0.1)',  border: 'rgba(251,191,36,0.3)' },
-  proposal:  { label: 'Propuesta',  color: '#fb923c',  bg: 'rgba(251,146,60,0.1)',  border: 'rgba(251,146,60,0.3)' },
-  won:       { label: 'Ganado',     color: '#00e564',  bg: 'rgba(0,229,100,0.1)',   border: 'rgba(0,229,100,0.3)' },
-  lost:      { label: 'Perdido',    color: 'rgba(240,0,80,0.7)', bg: 'rgba(240,0,80,0.08)', border: 'rgba(240,0,80,0.2)' },
+  new:                  { label: 'Nuevo',                 color: '#00e5ff',  bg: 'rgba(0,229,255,0.1)',  border: 'rgba(0,229,255,0.3)' },
+  contacted:            { label: 'Contactado',            color: '#a78bfa',  bg: 'rgba(167,139,250,0.1)', border: 'rgba(167,139,250,0.3)' },
+  agendado:             { label: 'Agendado',              color: '#38bdf8',  bg: 'rgba(56,189,248,0.1)',  border: 'rgba(56,189,248,0.3)' },
+  cotizado:             { label: 'Cotizado',               color: '#fb923c',  bg: 'rgba(251,146,60,0.1)',  border: 'rgba(251,146,60,0.3)' },
+  cotizacion_aceptada:  { label: 'Cotización Aceptada',   color: '#00e564',  bg: 'rgba(0,229,100,0.1)',   border: 'rgba(0,229,100,0.3)' },
+  cotizacion_rechazada: { label: 'Cotización Rechazada',  color: 'rgba(240,0,80,0.7)', bg: 'rgba(240,0,80,0.08)', border: 'rgba(240,0,80,0.2)' },
 }
 
-const ALL_STATUSES: LeadStatus[] = ['new', 'contacted', 'qualified', 'proposal', 'won', 'lost']
+const ALL_STATUSES: LeadStatus[] = ['new', 'contacted', 'agendado', 'cotizado', 'cotizacion_aceptada', 'cotizacion_rechazada']
 
 const QUALIFIED_THRESHOLD = 70
 
@@ -435,7 +435,7 @@ export default function LeadsPage() {
         <>
           <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(0,10,18,0.9)', border: '1px solid rgba(0,229,255,0.12)' }}>
             <div className="grid gap-x-6 px-5 py-3 text-xs font-semibold uppercase tracking-wider"
-              style={{ gridTemplateColumns: 'minmax(200px,480px) 200px 130px 140px 110px', color: 'rgba(0,229,255,0.4)', borderBottom: '1px solid rgba(0,229,255,0.08)' }}>
+              style={{ gridTemplateColumns: 'minmax(200px,440px) 180px 130px 200px 110px', color: 'rgba(0,229,255,0.4)', borderBottom: '1px solid rgba(0,229,255,0.08)' }}>
               <span>Lead</span>
               <span>Campaña</span>
               <span>Score</span>
@@ -451,7 +451,7 @@ export default function LeadsPage() {
                   onClick={() => setSelectedLead(lead)}
                   className="grid gap-x-6 px-5 py-3.5 items-center cursor-pointer"
                   style={{
-                    gridTemplateColumns: 'minmax(200px,480px) 200px 130px 140px 110px',
+                    gridTemplateColumns: 'minmax(200px,440px) 180px 130px 200px 110px',
                     background: idx % 2 === 0 ? 'transparent' : 'rgba(0,229,255,0.02)',
                     borderBottom: '1px solid rgba(0,229,255,0.05)',
                   }}>
@@ -462,12 +462,12 @@ export default function LeadsPage() {
                   <p className="text-xs truncate" style={{ color: 'rgba(224,247,255,0.45)' }}>{lead.source_campaign || '—'}</p>
                   <ScoreBadge score={lead.score} />
                   <div className="relative flex justify-center items-center" onClick={e => e.stopPropagation()}>
-                    <span className="absolute left-3 w-1.5 h-1.5 rounded-full pointer-events-none"
+                    <span className="absolute left-3 w-1.5 h-1.5 rounded-full pointer-events-none z-10"
                       style={{ background: s.color }} />
                     <select
                       value={lead.status}
                       onChange={e => handleStatusChange(lead.id, e.target.value as LeadStatus)}
-                      className="text-xs font-medium rounded-lg pl-5 pr-2 py-1.5 outline-none cursor-pointer"
+                      className="w-full text-xs font-medium rounded-lg pl-5 pr-2 py-1.5 outline-none cursor-pointer overflow-hidden text-ellipsis whitespace-nowrap"
                       style={{ background: s.bg, border: `1px solid ${s.border}`, color: s.color }}>
                       {ALL_STATUSES.map(st => (
                         <option key={st} value={st} style={{ background: '#000a0f', color: '#e0f7ff' }}>

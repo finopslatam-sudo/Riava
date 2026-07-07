@@ -4,12 +4,12 @@ import { useState, useEffect } from 'react'
 import { leadsApi, type Lead, type LeadStatus } from '@/lib/leads-api'
 
 const COLUMNS: { status: LeadStatus; label: string; color: string; border: string }[] = [
-  { status: 'new',       label: 'Nuevos',      color: '#00e5ff',  border: 'rgba(0,229,255,0.3)' },
-  { status: 'contacted', label: 'Contactados', color: '#a78bfa',  border: 'rgba(167,139,250,0.3)' },
-  { status: 'qualified', label: 'Calificados', color: '#fbbf24',  border: 'rgba(251,191,36,0.3)' },
-  { status: 'proposal',  label: 'Propuesta',   color: '#fb923c',  border: 'rgba(251,146,60,0.3)' },
-  { status: 'won',       label: 'Ganados',     color: '#00e564',  border: 'rgba(0,229,100,0.3)' },
-  { status: 'lost',      label: 'Perdidos',    color: 'rgba(240,0,80,0.7)', border: 'rgba(240,0,80,0.25)' },
+  { status: 'new',                  label: 'Nuevos',                   color: '#00e5ff',  border: 'rgba(0,229,255,0.3)' },
+  { status: 'contacted',            label: 'Contactados',              color: '#a78bfa',  border: 'rgba(167,139,250,0.3)' },
+  { status: 'agendado',             label: 'Agendados',                color: '#38bdf8',  border: 'rgba(56,189,248,0.3)' },
+  { status: 'cotizado',             label: 'Cotizados',                color: '#fb923c',  border: 'rgba(251,146,60,0.3)' },
+  { status: 'cotizacion_aceptada',  label: 'Cotización Aceptada',      color: '#00e564',  border: 'rgba(0,229,100,0.3)' },
+  { status: 'cotizacion_rechazada', label: 'Cotización Rechazada',     color: 'rgba(240,0,80,0.7)', border: 'rgba(240,0,80,0.25)' },
 ]
 
 function LeadCard({ lead, onStatusChange }: { lead: Lead; onStatusChange: (id: string, status: LeadStatus) => void }) {

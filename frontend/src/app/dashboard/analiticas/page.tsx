@@ -35,12 +35,12 @@ export default function AnaliticasPage() {
   }, [])
 
   const STATUS_LABELS: Record<string, string> = {
-    new: 'Nuevo', contacted: 'Contactado', qualified: 'Calificado',
-    proposal: 'Propuesta', won: 'Ganado', lost: 'Perdido',
+    new: 'Nuevo', contacted: 'Contactado', agendado: 'Agendado',
+    cotizado: 'Cotizado', cotizacion_aceptada: 'Cotización Aceptada', cotizacion_rechazada: 'Cotización Rechazada',
   }
   const STATUS_COLORS: Record<string, string> = {
-    new: '#00e5ff', contacted: '#a78bfa', qualified: '#fbbf24',
-    proposal: '#fb923c', won: '#00e564', lost: 'rgba(240,0,80,0.7)',
+    new: '#00e5ff', contacted: '#a78bfa', agendado: '#38bdf8',
+    cotizado: '#fb923c', cotizacion_aceptada: '#00e564', cotizacion_rechazada: 'rgba(240,0,80,0.7)',
   }
 
   return (
