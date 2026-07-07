@@ -128,7 +128,7 @@ export default function PipelinePage() {
           <p className="text-xs mt-2" style={{ color: 'rgba(224,247,255,0.3)' }}>Los leads aparecerán aquí desde Meta Ads</p>
         </div>
       ) : (
-        <div className="flex gap-4 overflow-x-auto pb-4" style={{ minHeight: 0 }}>
+        <div className="flex gap-4 overflow-x-auto pb-4" style={{ minHeight: 0, maxHeight: 'calc(100vh - 220px)' }}>
           {COLUMNS.map(col => {
             const colLeads = byStatus(col.status)
             const isOver = draggingOver === col.status

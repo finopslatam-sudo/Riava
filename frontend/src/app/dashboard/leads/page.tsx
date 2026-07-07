@@ -450,20 +450,14 @@ export default function LeadsPage() {
                   </div>
                   <p className="text-xs truncate" style={{ color: 'rgba(224,247,255,0.45)' }}>{lead.source_campaign || '—'}</p>
                   <ScoreBadge score={lead.score} />
-                  <div className="flex justify-center" onClick={e => e.stopPropagation()}>
+                  <div className="relative flex justify-center items-center" onClick={e => e.stopPropagation()}>
+                    <span className="absolute left-3 w-1.5 h-1.5 rounded-full pointer-events-none"
+                      style={{ background: s.color }} />
                     <select
                       value={lead.status}
                       onChange={e => handleStatusChange(lead.id, e.target.value as LeadStatus)}
-                      className="text-xs font-medium rounded-lg pl-2.5 pr-2 py-1.5 outline-none cursor-pointer appearance-none"
-                      style={{
-                        background: s.bg,
-                        border: `1px solid ${s.border}`,
-                        color: s.color,
-                        backgroundImage: `radial-gradient(circle, ${s.color} 3px, transparent 3px)`,
-                        backgroundRepeat: 'no-repeat',
-                        backgroundPosition: '6px center',
-                        paddingLeft: '18px',
-                      }}>
+                      className="text-xs font-medium rounded-lg pl-5 pr-2 py-1.5 outline-none cursor-pointer"
+                      style={{ background: s.bg, border: `1px solid ${s.border}`, color: s.color }}>
                       {ALL_STATUSES.map(st => (
                         <option key={st} value={st} style={{ background: '#000a0f', color: '#e0f7ff' }}>
                           {STATUS_CONFIG[st].label}
