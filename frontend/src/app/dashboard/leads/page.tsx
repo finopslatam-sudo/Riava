@@ -423,8 +423,8 @@ export default function LeadsPage() {
       ) : (
         <>
           <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(0,10,18,0.9)', border: '1px solid rgba(0,229,255,0.12)' }}>
-            <div className="grid px-5 py-3 text-xs font-semibold uppercase tracking-wider"
-              style={{ gridTemplateColumns: '1fr 180px 130px 100px 110px', color: 'rgba(0,229,255,0.4)', borderBottom: '1px solid rgba(0,229,255,0.08)' }}>
+            <div className="grid gap-x-6 px-5 py-3 text-xs font-semibold uppercase tracking-wider"
+              style={{ gridTemplateColumns: 'minmax(200px,480px) 200px 120px 140px 110px', color: 'rgba(0,229,255,0.4)', borderBottom: '1px solid rgba(0,229,255,0.08)' }}>
               <span>Lead</span>
               <span>Campaña</span>
               <span>Score</span>
@@ -438,24 +438,32 @@ export default function LeadsPage() {
               return (
                 <div key={lead.id}
                   onClick={() => setSelectedLead(lead)}
-                  className="grid px-5 py-3.5 items-center cursor-pointer"
+                  className="grid gap-x-6 px-5 py-3.5 items-center cursor-pointer"
                   style={{
-                    gridTemplateColumns: '1fr 180px 130px 100px 110px',
+                    gridTemplateColumns: 'minmax(200px,480px) 200px 120px 140px 110px',
                     background: idx % 2 === 0 ? 'transparent' : 'rgba(0,229,255,0.02)',
                     borderBottom: '1px solid rgba(0,229,255,0.05)',
                   }}>
-                  <div className="min-w-0 pr-3">
+                  <div className="min-w-0">
                     <p className="text-sm font-medium truncate" style={{ color: '#e0f7ff' }}>{lead.full_name}</p>
                     <p className="text-xs truncate mt-0.5" style={{ color: 'rgba(0,229,255,0.45)' }}>{lead.email}</p>
                   </div>
-                  <p className="text-xs truncate pr-3" style={{ color: 'rgba(224,247,255,0.45)' }}>{lead.source_campaign || '—'}</p>
+                  <p className="text-xs truncate" style={{ color: 'rgba(224,247,255,0.45)' }}>{lead.source_campaign || '—'}</p>
                   <ScoreBadge score={lead.score} />
                   <div className="flex justify-center" onClick={e => e.stopPropagation()}>
                     <select
                       value={lead.status}
                       onChange={e => handleStatusChange(lead.id, e.target.value as LeadStatus)}
-                      className="text-xs rounded-lg px-2 py-1 outline-none cursor-pointer"
-                      style={{ background: s.bg, border: `1px solid ${s.border}`, color: s.color }}>
+                      className="text-xs font-medium rounded-lg pl-2.5 pr-2 py-1.5 outline-none cursor-pointer appearance-none"
+                      style={{
+                        background: s.bg,
+                        border: `1px solid ${s.border}`,
+                        color: s.color,
+                        backgroundImage: `radial-gradient(circle, ${s.color} 3px, transparent 3px)`,
+                        backgroundRepeat: 'no-repeat',
+                        backgroundPosition: '6px center',
+                        paddingLeft: '18px',
+                      }}>
                       {ALL_STATUSES.map(st => (
                         <option key={st} value={st} style={{ background: '#000a0f', color: '#e0f7ff' }}>
                           {STATUS_CONFIG[st].label}
