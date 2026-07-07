@@ -14,14 +14,22 @@ const STATUS_CONFIG: Record<LeadStatus, { label: string; color: string; bg: stri
 
 const ALL_STATUSES: LeadStatus[] = ['new', 'contacted', 'qualified', 'proposal', 'won', 'lost']
 
+const QUALIFIED_THRESHOLD = 70
+
 function ScoreBadge({ score }: { score: number }) {
-  const color = score >= 70 ? '#00e564' : score >= 40 ? '#fbbf24' : 'rgba(240,0,80,0.7)'
+  const qualified = score >= QUALIFIED_THRESHOLD
+  const color = qualified ? '#00e564' : score >= 40 ? '#fbbf24' : 'rgba(240,0,80,0.7)'
   return (
-    <div className="flex items-center gap-1.5">
-      <div className="w-16 h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(0,229,255,0.1)' }}>
-        <div className="h-full rounded-full" style={{ width: `${score}%`, background: color }} />
+    <div className="flex flex-col gap-1">
+      <div className="flex items-center gap-1.5">
+        <div className="w-16 h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(0,229,255,0.1)' }}>
+          <div className="h-full rounded-full" style={{ width: `${score}%`, background: color }} />
+        </div>
+        <span className="text-xs font-medium" style={{ color }}>{score}</span>
       </div>
-      <span className="text-xs font-medium" style={{ color }}>{score}</span>
+      <span className="text-[10px] font-semibold uppercase tracking-normal whitespace-nowrap" style={{ color }}>
+        {qualified ? 'Calificado' : 'No calificado'}
+      </span>
     </div>
   )
 }
@@ -153,6 +161,9 @@ function LeadDetailModal({ lead, onClose }: { lead: Lead; onClose: () => void })
           <div>
             <p className="text-xs font-medium mb-1" style={{ color: 'rgba(0,229,255,0.5)' }}>Score IA</p>
             <p className="text-3xl font-bold" style={{ color: scoreColor }}>{lead.score}<span className="text-sm font-medium" style={{ color: 'rgba(224,247,255,0.4)' }}>/100</span></p>
+            <span className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: scoreColor }}>
+              {lead.score >= 70 ? 'Calificado' : 'No calificado'}
+            </span>
           </div>
           <div className="text-right">
             <p className="text-xs font-medium mb-1" style={{ color: 'rgba(0,229,255,0.5)' }}>Campaña</p>
@@ -424,7 +435,7 @@ export default function LeadsPage() {
         <>
           <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(0,10,18,0.9)', border: '1px solid rgba(0,229,255,0.12)' }}>
             <div className="grid gap-x-6 px-5 py-3 text-xs font-semibold uppercase tracking-wider"
-              style={{ gridTemplateColumns: 'minmax(200px,480px) 200px 120px 140px 110px', color: 'rgba(0,229,255,0.4)', borderBottom: '1px solid rgba(0,229,255,0.08)' }}>
+              style={{ gridTemplateColumns: 'minmax(200px,480px) 200px 130px 140px 110px', color: 'rgba(0,229,255,0.4)', borderBottom: '1px solid rgba(0,229,255,0.08)' }}>
               <span>Lead</span>
               <span>Campaña</span>
               <span>Score</span>
@@ -440,7 +451,7 @@ export default function LeadsPage() {
                   onClick={() => setSelectedLead(lead)}
                   className="grid gap-x-6 px-5 py-3.5 items-center cursor-pointer"
                   style={{
-                    gridTemplateColumns: 'minmax(200px,480px) 200px 120px 140px 110px',
+                    gridTemplateColumns: 'minmax(200px,480px) 200px 130px 140px 110px',
                     background: idx % 2 === 0 ? 'transparent' : 'rgba(0,229,255,0.02)',
                     borderBottom: '1px solid rgba(0,229,255,0.05)',
                   }}>
