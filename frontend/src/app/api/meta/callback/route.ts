@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
+import { saveMetaToken } from '@/lib/meta-token-store'
 
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl
@@ -65,6 +66,8 @@ export async function GET(req: NextRequest) {
     sameSite: 'lax',
   })
   response.cookies.delete('meta_oauth_state')
+
+  await saveMetaToken(token)
 
   return response
 }
