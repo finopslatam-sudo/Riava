@@ -100,6 +100,18 @@ const LEADS_NAV = [
   },
 ]
 
+const WHATSAPP_NAV = [
+  {
+    href: '/dashboard/whatsapp',
+    label: 'WhatsApp IA',
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 11.5a8.5 8.5 0 0 1-11.8 7.8L3 21l1.8-6.1A8.5 8.5 0 1 1 21 11.5z" />
+      </svg>
+    ),
+  },
+]
+
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, loading, logout } = useAuth()
   const router = useRouter()
@@ -184,6 +196,33 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
           <div className="divider-tron mx-3 mb-1" />
           {LEADS_NAV.map(item => {
+            const active = pathname.startsWith(item.href)
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setSidebarOpen(false)}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all"
+                style={{
+                  color: active ? '#00e5ff' : 'rgba(224,247,255,0.5)',
+                  background: active ? 'rgba(0,229,255,0.08)' : 'transparent',
+                  border: active ? '1px solid rgba(0,229,255,0.2)' : '1px solid transparent',
+                }}
+              >
+                <span style={{ color: active ? '#00e5ff' : 'rgba(0,229,255,0.4)' }}>{item.icon}</span>
+                {item.label}
+              </Link>
+            )
+          })}
+
+          {/* WhatsApp IA */}
+          <div className="mt-4 mb-1 px-3">
+            <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'rgba(0,229,255,0.35)' }}>
+              WhatsApp IA
+            </p>
+          </div>
+          <div className="divider-tron mx-3 mb-1" />
+          {WHATSAPP_NAV.map(item => {
             const active = pathname.startsWith(item.href)
             return (
               <Link

@@ -1,15 +1,5 @@
-import nodemailer from "nodemailer"
 import { NextResponse } from "next/server"
-
-const transporter = nodemailer.createTransport({
-  host: "smtp.zoho.com",
-  port: 465,
-  secure: true,
-  auth: {
-    user: process.env.ZOHO_EMAIL,
-    pass: process.env.ZOHO_PASSWORD,
-  },
-})
+import { sendEmail } from "@/lib/mailer"
 
 export async function POST(req: Request) {
   const { firstName, lastName, email, phone, service, message } = await req.json()
@@ -21,8 +11,7 @@ export async function POST(req: Request) {
   const fullName = `${firstName} ${lastName}`
 
   try {
-    await transporter.sendMail({
-      from: `"RIAVA Web" <${process.env.ZOHO_EMAIL}>`,
+    await sendEmail({
       to: "contacto@riava.cl",
       replyTo: email,
       subject: `Nuevo contacto de ${fullName} — ${service}`,

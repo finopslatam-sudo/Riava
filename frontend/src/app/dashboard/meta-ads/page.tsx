@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, Suspense } from 'react'
+import { useState, useEffect, useCallback, Suspense, FormEvent } from 'react'
 import { useSearchParams } from 'next/navigation'
 
 type AdAccount = { id: string; name: string; account_status: number }
@@ -41,6 +41,206 @@ function fmtMoney(n: string | undefined) {
   return `$${Number(n).toLocaleString('es-CL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
 
+type LeadFormOption = { page_id: string; page_name: string; form_id: string; form_name: string }
+
+const CREATE_FORM_EMPTY = {
+  ad_account_id: '',
+  form_key: '',
+  campaign_name: '',
+  daily_budget: '',
+  age_min: '18',
+  age_max: '65',
+  primary_text: '',
+  headline: '',
+}
+
+function CreateCampaignModal({
+  accounts,
+  onClose,
+  onCreated,
+}: {
+  accounts: AdAccount[]
+  onClose: () => void
+  onCreated: () => void
+}) {
+  const [forms, setForms] = useState<LeadFormOption[]>([])
+  const [loadingForms, setLoadingForms] = useState(true)
+  const [form, setForm] = useState(CREATE_FORM_EMPTY)
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+  const [result, setResult] = useState<{ manage_url: string } | null>(null)
+
+  useEffect(() => {
+    fetch('/api/meta/ads/forms')
+      .then(r => r.json())
+      .then(data => setForms(data.forms ?? []))
+      .finally(() => setLoadingForms(false))
+  }, [])
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault()
+    if (!imageFile) {
+      setError('Sube una imagen para el anuncio.')
+      return
+    }
+    const [page_id, form_id] = form.form_key.split('|')
+    if (!page_id || !form_id) {
+      setError('Selecciona un formulario de leads.')
+      return
+    }
+
+    setSaving(true)
+    setError('')
+    try {
+      const body = new FormData()
+      body.append('image', imageFile)
+      body.append('ad_account_id', form.ad_account_id)
+      body.append('page_id', page_id)
+      body.append('form_id', form_id)
+      body.append('campaign_name', form.campaign_name)
+      body.append('daily_budget', form.daily_budget)
+      body.append('age_min', form.age_min)
+      body.append('age_max', form.age_max)
+      body.append('primary_text', form.primary_text)
+      body.append('headline', form.headline)
+
+      const res = await fetch('/api/meta/ads/create', { method: 'POST', body })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? 'Error al crear la campaña')
+      setResult({ manage_url: data.manage_url })
+      onCreated()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al crear la campaña')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const inputClass = 'w-full px-3 py-2 rounded-lg text-sm bg-transparent border focus:outline-none'
+  const inputStyle = { borderColor: 'rgba(0,229,255,0.15)', color: '#e0f7ff' }
+  const labelClass = 'text-xs font-mono mb-1.5 block'
+  const labelStyle = { color: 'rgba(0,229,255,0.5)' }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,10,15,0.75)' }} onClick={onClose}>
+      <div
+        className="w-full max-w-lg rounded-2xl p-6 max-h-[90vh] overflow-y-auto"
+        style={{ background: '#0a0e18', border: '1px solid rgba(0,229,255,0.15)' }}
+        onClick={e => e.stopPropagation()}
+      >
+        {result ? (
+          <div className="text-center py-6">
+            <h2 className="text-lg font-bold mb-2" style={{ color: '#00e564' }}>Campaña creada en pausa</h2>
+            <p className="text-sm mb-6" style={{ color: 'rgba(224,247,255,0.55)' }}>
+              Revísala y actívala manualmente en Meta Ads Manager cuando estés listo.
+            </p>
+            <a
+              href={result.manage_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-tron inline-block px-5 py-2.5 rounded-lg text-sm font-semibold text-white"
+            >
+              Abrir en Meta Ads Manager →
+            </a>
+            <button onClick={onClose} className="block mx-auto mt-4 text-xs" style={{ color: 'rgba(224,247,255,0.4)' }}>
+              Cerrar
+            </button>
+          </div>
+        ) : (
+          <>
+            <h2 className="text-lg font-bold mb-1" style={{ color: '#e0f7ff' }}>Crear campaña de leads</h2>
+            <p className="text-xs mb-5" style={{ color: 'rgba(224,247,255,0.4)' }}>
+              Se crea en pausa (campaña, conjunto y anuncio) — la activas tú desde Meta Ads Manager.
+            </p>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className={labelClass} style={labelStyle}>Cuenta publicitaria</label>
+                <select required className={inputClass} style={inputStyle} value={form.ad_account_id}
+                  onChange={e => setForm({ ...form, ad_account_id: e.target.value })}>
+                  <option value="">Selecciona una cuenta</option>
+                  {accounts.map(a => (
+                    <option key={a.id} value={a.id} className="bg-[#060612]">{a.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className={labelClass} style={labelStyle}>Formulario de leads</label>
+                <select required disabled={loadingForms} className={inputClass} style={inputStyle} value={form.form_key}
+                  onChange={e => setForm({ ...form, form_key: e.target.value })}>
+                  <option value="">{loadingForms ? 'Cargando formularios...' : 'Selecciona un formulario'}</option>
+                  {forms.map(f => (
+                    <option key={`${f.page_id}|${f.form_id}`} value={`${f.page_id}|${f.form_id}`} className="bg-[#060612]">
+                      {f.page_name} — {f.form_name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className={labelClass} style={labelStyle}>Nombre de la campaña</label>
+                <input required className={inputClass} style={inputStyle} value={form.campaign_name}
+                  onChange={e => setForm({ ...form, campaign_name: e.target.value })} placeholder="Campaña Leads — Julio" />
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className={labelClass} style={labelStyle}>Presupuesto diario (CLP)</label>
+                  <input required type="number" min="1" className={inputClass} style={inputStyle} value={form.daily_budget}
+                    onChange={e => setForm({ ...form, daily_budget: e.target.value })} placeholder="5000" />
+                </div>
+                <div>
+                  <label className={labelClass} style={labelStyle}>Edad mín.</label>
+                  <input required type="number" min="18" max="65" className={inputClass} style={inputStyle} value={form.age_min}
+                    onChange={e => setForm({ ...form, age_min: e.target.value })} />
+                </div>
+                <div>
+                  <label className={labelClass} style={labelStyle}>Edad máx.</label>
+                  <input required type="number" min="18" max="65" className={inputClass} style={inputStyle} value={form.age_max}
+                    onChange={e => setForm({ ...form, age_max: e.target.value })} />
+                </div>
+              </div>
+
+              <div>
+                <label className={labelClass} style={labelStyle}>Encabezado</label>
+                <input required className={inputClass} style={inputStyle} value={form.headline}
+                  onChange={e => setForm({ ...form, headline: e.target.value })} placeholder="Crea tu página web con Riava" />
+              </div>
+
+              <div>
+                <label className={labelClass} style={labelStyle}>Texto principal</label>
+                <textarea required rows={3} className={inputClass} style={inputStyle} value={form.primary_text}
+                  onChange={e => setForm({ ...form, primary_text: e.target.value })}
+                  placeholder="Cotiza gratis tu sitio web o SaaS a medida..." />
+              </div>
+
+              <div>
+                <label className={labelClass} style={labelStyle}>Imagen del anuncio</label>
+                <input required type="file" accept="image/*" className={`${inputClass} py-1.5`} style={inputStyle}
+                  onChange={e => setImageFile(e.target.files?.[0] ?? null)} />
+              </div>
+
+              {error && <p className="text-xs" style={{ color: 'rgba(240,0,80,0.8)' }}>{error}</p>}
+
+              <div className="flex gap-3 pt-2">
+                <button type="button" onClick={onClose} className="flex-1 py-2.5 rounded-lg text-sm font-medium"
+                  style={{ border: '1px solid rgba(0,229,255,0.15)', color: 'rgba(224,247,255,0.6)' }}>
+                  Cancelar
+                </button>
+                <button type="submit" disabled={saving} className="btn-tron flex-1 py-2.5 rounded-lg text-sm font-semibold text-white disabled:opacity-60">
+                  {saving ? 'Creando...' : 'Crear campaña'}
+                </button>
+              </div>
+            </form>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
 function MetaAdsContent() {
   const searchParams = useSearchParams()
   const justConnected = searchParams.get('connected') === '1'
@@ -51,6 +251,7 @@ function MetaAdsContent() {
   const [results, setResults] = useState<AccountResult[]>([])
   const [campaignLoading, setCampaignLoading] = useState(false)
   const [disconnecting, setDisconnecting] = useState(false)
+  const [showCreate, setShowCreate] = useState(false)
 
   const fetchCampaigns = useCallback(async () => {
     setCampaignLoading(true)
@@ -105,14 +306,22 @@ function MetaAdsContent() {
           </p>
         </div>
         {connected && (
-          <button
-            onClick={handleDisconnect}
-            disabled={disconnecting}
-            className="px-4 py-2 rounded-lg text-xs font-medium transition-all"
-            style={{ color: 'rgba(240,0,255,0.6)', border: '1px solid rgba(240,0,255,0.15)' }}
-          >
-            {disconnecting ? 'Desconectando...' : 'Desconectar cuenta'}
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowCreate(true)}
+              className="btn-tron px-4 py-2 rounded-lg text-xs font-semibold text-white"
+            >
+              + Crear campaña
+            </button>
+            <button
+              onClick={handleDisconnect}
+              disabled={disconnecting}
+              className="px-4 py-2 rounded-lg text-xs font-medium transition-all"
+              style={{ color: 'rgba(240,0,255,0.6)', border: '1px solid rgba(240,0,255,0.15)' }}
+            >
+              {disconnecting ? 'Desconectando...' : 'Desconectar cuenta'}
+            </button>
+          </div>
         )}
       </div>
 
@@ -268,6 +477,14 @@ function MetaAdsContent() {
             </div>
           )}
         </div>
+      )}
+
+      {showCreate && (
+        <CreateCampaignModal
+          accounts={results.map(r => r.account)}
+          onClose={() => setShowCreate(false)}
+          onCreated={fetchCampaigns}
+        />
       )}
     </div>
   )
