@@ -57,6 +57,10 @@ function AddClientModal({ onClose, onCreated }: { onClose: () => void; onCreated
       if (!res.ok) throw new Error()
       const data = await res.json()
       onCreated(data.client)
+      if (data.webhook_override !== 'ok') {
+        setError(data.webhook_override ?? 'El cliente se guardó, pero no se pudo confirmar la configuración del webhook en Meta.')
+        return
+      }
       onClose()
     } catch {
       setError('No se pudo crear el cliente. Revisa los datos.')
