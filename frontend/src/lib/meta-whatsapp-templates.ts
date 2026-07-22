@@ -19,6 +19,21 @@ export async function getMessageTemplates(accessToken: string, wabaId: string): 
   return data ?? []
 }
 
+export async function deleteMessageTemplate(
+  accessToken: string,
+  wabaId: string,
+  input: { id: string; name: string }
+): Promise<void> {
+  const params = new URLSearchParams({ hsm_id: input.id, name: input.name, access_token: accessToken })
+  const res = await fetch(`${GRAPH_BASE}/${wabaId}/message_templates?${params.toString()}`, {
+    method: 'DELETE',
+  })
+  if (!res.ok) {
+    const data = await res.json().catch(() => null)
+    throw new Error(data?.error?.message ?? 'Error al eliminar la plantilla en Meta')
+  }
+}
+
 export async function createMessageTemplate(
   accessToken: string,
   wabaId: string,

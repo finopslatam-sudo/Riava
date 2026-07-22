@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getWaClientById } from '@/lib/wa-store'
-import { getMessageTemplates, createMessageTemplate, type TemplateCategory } from '@/lib/meta-whatsapp-templates'
+import { getMessageTemplates, createMessageTemplate, deleteMessageTemplate, type TemplateCategory } from '@/lib/meta-whatsapp-templates'
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -36,6 +36,30 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     return NextResponse.json({ template })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Error al crear la plantilla'
+    return NextResponse.json({ error: message }, { status: 500 })
+  }
+}
+
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const client = await getWaClientById(id)
+  if (!client) {
+    return NextResponse.json({ error: 'Cliente no encontrado' }, { status: 404 })
+  }
+
+  const { searchParams } = new URL(req.url)
+  const templateId = searchParams.get('template_id')
+  const templateName = searchParams.get('name')
+
+  if (!templateId || !templateName) {
+    return NextResponse.json({ error: 'Faltan template_id o name' }, { status: 400 })
+  }
+
+  try {
+    await deleteMessageTemplate(client.access_token, client.waba_id, { id: templateId, name: templateName })
+    return NextResponse.json({ status: 'ok' })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Error al eliminar la plantilla'
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }

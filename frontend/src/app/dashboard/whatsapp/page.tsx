@@ -246,6 +246,7 @@ function TemplatesPanel({ client, onClose }: { client: WaClient; onClose: () => 
   const [form, setForm] = useState(EMPTY_TEMPLATE_FORM)
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState('')
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const loadTemplates = () => {
     setLoading(true)
@@ -256,6 +257,25 @@ function TemplatesPanel({ client, onClose }: { client: WaClient; onClose: () => 
   }
 
   useEffect(loadTemplates, [client.id])
+
+  const handleDelete = async (t: MessageTemplate) => {
+    if (!confirm(`¿Eliminar la plantilla "${t.name}"? Esta acción no se puede deshacer.`)) return
+    setDeletingId(t.id)
+    setError('')
+    try {
+      const params = new URLSearchParams({ template_id: t.id, name: t.name })
+      const res = await fetch(`/api/whatsapp/clients/${client.id}/templates?${params.toString()}`, {
+        method: 'DELETE',
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? 'Error al eliminar la plantilla')
+      loadTemplates()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al eliminar la plantilla')
+    } finally {
+      setDeletingId(null)
+    }
+  }
 
   const handleCreate = async (e: FormEvent) => {
     e.preventDefault()
@@ -312,13 +332,19 @@ function TemplatesPanel({ client, onClose }: { client: WaClient; onClose: () => 
                     <p className="text-sm" style={{ color: '#e0f7ff' }}>{t.name}</p>
                     <p className="text-xs" style={{ color: 'rgba(0,229,255,0.4)' }}>{t.category} · {t.language}</p>
                   </div>
-                  <span className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full"
-                    style={{
-                      background: `${TEMPLATE_STATUS_COLOR[t.status] ?? '#6b7280'}18`,
-                      color: TEMPLATE_STATUS_COLOR[t.status] ?? '#6b7280',
-                    }}>
-                    {t.status}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full"
+                      style={{
+                        background: `${TEMPLATE_STATUS_COLOR[t.status] ?? '#6b7280'}18`,
+                        color: TEMPLATE_STATUS_COLOR[t.status] ?? '#6b7280',
+                      }}>
+                      {t.status}
+                    </span>
+                    <button onClick={() => handleDelete(t)} disabled={deletingId === t.id}
+                      className="text-xs disabled:opacity-50" style={{ color: 'rgba(240,0,80,0.7)' }}>
+                      {deletingId === t.id ? '...' : 'Eliminar'}
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
