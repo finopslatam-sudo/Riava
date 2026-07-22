@@ -89,7 +89,8 @@ export async function generateWaReply(
       stopWhen: isStepCount(5),
     })
     return result.text || FALLBACK_REPLY
-  } catch {
+  } catch (err) {
+    console.error('[wa-brain] generateWaReply failed:', err)
     return FALLBACK_REPLY
   }
 }
