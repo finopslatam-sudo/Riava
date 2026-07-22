@@ -162,9 +162,47 @@ function CreateCampaignModal({
     setSaving(true)
     setError('')
     try {
+      let video_id = ''
+      let image_hash = ''
+
+      if (mediaTab === 'video' && videoFile) {
+        const tokenRes = await fetch('/api/meta/ads/upload-token')
+        const tokenData = await tokenRes.json()
+        if (!tokenRes.ok) throw new Error(tokenData.error ?? 'No se pudo obtener autorización para subir el video')
+
+        const uploadBody = new FormData()
+        uploadBody.append('access_token', tokenData.token)
+        uploadBody.append('source', videoFile, videoFile.name)
+        const uploadRes = await fetch(`https://graph.facebook.com/v19.0/${form.ad_account_id}/advideos`, {
+          method: 'POST',
+          body: uploadBody,
+        })
+        const uploadData = await uploadRes.json()
+        if (!uploadRes.ok) throw new Error(uploadData?.error?.message ?? 'Error al subir el video a Meta')
+        video_id = uploadData.id
+      }
+
+      if (mediaTab === 'image' && imageFile) {
+        const tokenRes = await fetch('/api/meta/ads/upload-token')
+        const tokenData = await tokenRes.json()
+        if (!tokenRes.ok) throw new Error(tokenData.error ?? 'No se pudo obtener autorización para subir la imagen')
+
+        const uploadBody = new FormData()
+        uploadBody.append('access_token', tokenData.token)
+        uploadBody.append('source', imageFile, imageFile.name)
+        const uploadRes = await fetch(`https://graph.facebook.com/v19.0/${form.ad_account_id}/adimages`, {
+          method: 'POST',
+          body: uploadBody,
+        })
+        const uploadData = await uploadRes.json()
+        if (!uploadRes.ok) throw new Error(uploadData?.error?.message ?? 'Error al subir la imagen a Meta')
+        const images = uploadData.images as Record<string, { hash: string }>
+        image_hash = images[Object.keys(images)[0]].hash
+      }
+
       const body = new FormData()
-      if (mediaTab === 'image' && imageFile) body.append('image', imageFile)
-      if (mediaTab === 'video' && videoFile) body.append('video', videoFile)
+      if (image_hash) body.append('image_hash', image_hash)
+      if (video_id) body.append('video_id', video_id)
       body.append('ad_account_id', form.ad_account_id)
       body.append('page_id', page_id)
       body.append('form_id', form_id)

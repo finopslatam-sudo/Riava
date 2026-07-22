@@ -90,22 +90,6 @@ export async function uploadAdImage(token: string, accountId: string, file: File
   return images[firstKey].hash
 }
 
-export async function uploadAdVideo(token: string, accountId: string, file: File): Promise<string> {
-  const form = new FormData()
-  form.append('access_token', token)
-  form.append('source', file, file.name)
-
-  const res = await fetch(`${GRAPH_BASE}/${accountId}/advideos`, {
-    method: 'POST',
-    body: form,
-  })
-  const data = await res.json()
-  if (!res.ok) {
-    throw new Error(data?.error?.message ?? 'Error al subir el video a Meta')
-  }
-  return data.id as string
-}
-
 export async function getVideoThumbnail(token: string, videoId: string): Promise<string> {
   for (let attempt = 0; attempt < 10; attempt++) {
     const statusRes = await fetch(

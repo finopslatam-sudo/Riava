@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import {
-  uploadAdImage,
-  uploadAdVideo,
   getVideoThumbnail,
   createCampaign,
   createAdSet,
@@ -18,8 +16,8 @@ export async function POST(req: Request) {
   if (!token) return NextResponse.json({ error: 'No conectado a Meta' }, { status: 401 })
 
   const formData = await req.formData()
-  const image = formData.get('image')
-  const video = formData.get('video')
+  const image_hash = formData.get('image_hash')?.toString()
+  const video_id = formData.get('video_id')?.toString()
   const ad_account_id = formData.get('ad_account_id')?.toString()
   const page_id = formData.get('page_id')?.toString()
   const form_id = formData.get('form_id')?.toString()
@@ -34,7 +32,7 @@ export async function POST(req: Request) {
   const interest_ids = JSON.parse(formData.get('interest_ids')?.toString() ?? '[]') as string[]
 
   if (
-    (!(image instanceof File) && !(video instanceof File)) || !ad_account_id || !page_id || !form_id ||
+    (!image_hash && !video_id) || !ad_account_id || !page_id || !form_id ||
     !campaign_name || !daily_budget || !age_min || !age_max || !primary_text || !headline
   ) {
     return NextResponse.json({ error: 'Faltan campos requeridos' }, { status: 400 })
@@ -42,13 +40,11 @@ export async function POST(req: Request) {
 
   try {
     let asset: AdCreativeAsset
-    if (video instanceof File) {
-      const video_id = await uploadAdVideo(token, ad_account_id, video)
+    if (video_id) {
       const thumbnail_url = await getVideoThumbnail(token, video_id)
       asset = { type: 'video', video_id, thumbnail_url }
     } else {
-      const image_hash = await uploadAdImage(token, ad_account_id, image as File)
-      asset = { type: 'image', image_hash }
+      asset = { type: 'image', image_hash: image_hash! }
     }
 
     const campaign_id = await createCampaign(token, ad_account_id, { name: campaign_name })
