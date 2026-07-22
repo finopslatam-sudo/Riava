@@ -42,6 +42,11 @@ function fmtMoney(n: string | undefined) {
 }
 
 type LeadFormOption = { page_id: string; page_name: string; form_id: string; form_name: string }
+type RegionOption = { key: string; name: string }
+type InterestOption = { id: string; name: string; audience_size_lower_bound?: number }
+type Gender = 'all' | 'male' | 'female'
+
+const MAX_VIDEO_BYTES = 100 * 1024 * 1024 // 100MB
 
 const CREATE_FORM_EMPTY = {
   ad_account_id: '',
@@ -52,6 +57,7 @@ const CREATE_FORM_EMPTY = {
   age_max: '65',
   primary_text: '',
   headline: '',
+  gender: 'all' as Gender,
 }
 
 function CreateCampaignModal({
@@ -66,22 +72,85 @@ function CreateCampaignModal({
   const [forms, setForms] = useState<LeadFormOption[]>([])
   const [loadingForms, setLoadingForms] = useState(true)
   const [form, setForm] = useState(CREATE_FORM_EMPTY)
+  const [mediaTab, setMediaTab] = useState<'image' | 'video'>('image')
   const [imageFile, setImageFile] = useState<File | null>(null)
+  const [videoFile, setVideoFile] = useState<File | null>(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [result, setResult] = useState<{ manage_url: string } | null>(null)
+
+  // Regiones
+  const [regions, setRegions] = useState<RegionOption[]>([])
+  const [loadingRegions, setLoadingRegions] = useState(true)
+  const [selectedRegions, setSelectedRegions] = useState<string[]>([])
+
+  // Intereses
+  const [interestQuery, setInterestQuery] = useState('')
+  const [interestResults, setInterestResults] = useState<InterestOption[]>([])
+  const [selectedInterests, setSelectedInterests] = useState<InterestOption[]>([])
+  const [searchingInterests, setSearchingInterests] = useState(false)
 
   useEffect(() => {
     fetch('/api/meta/ads/forms')
       .then(r => r.json())
       .then(data => setForms(data.forms ?? []))
       .finally(() => setLoadingForms(false))
+
+    fetch('/api/meta/ads/regions')
+      .then(r => r.json())
+      .then(data => setRegions(data.regions ?? []))
+      .finally(() => setLoadingRegions(false))
   }, [])
+
+  useEffect(() => {
+    if (interestQuery.trim().length < 2) {
+      setInterestResults([])
+      return
+    }
+    setSearchingInterests(true)
+    const timeout = setTimeout(() => {
+      fetch(`/api/meta/ads/interests?q=${encodeURIComponent(interestQuery)}`)
+        .then(r => r.json())
+        .then(data => setInterestResults(data.interests ?? []))
+        .finally(() => setSearchingInterests(false))
+    }, 400)
+    return () => clearTimeout(timeout)
+  }, [interestQuery])
+
+  const toggleRegion = (key: string) => {
+    setSelectedRegions(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key])
+  }
+
+  const addInterest = (interest: InterestOption) => {
+    if (!selectedInterests.some(i => i.id === interest.id)) {
+      setSelectedInterests(prev => [...prev, interest])
+    }
+    setInterestQuery('')
+    setInterestResults([])
+  }
+
+  const removeInterest = (id: string) => {
+    setSelectedInterests(prev => prev.filter(i => i.id !== id))
+  }
+
+  const handleVideoChange = (file: File | null) => {
+    if (file && file.size > MAX_VIDEO_BYTES) {
+      setError('El video no puede superar los 100MB.')
+      setVideoFile(null)
+      return
+    }
+    setError('')
+    setVideoFile(file)
+  }
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    if (!imageFile) {
+    if (mediaTab === 'image' && !imageFile) {
       setError('Sube una imagen para el anuncio.')
+      return
+    }
+    if (mediaTab === 'video' && !videoFile) {
+      setError('Sube un video para el anuncio.')
       return
     }
     const [page_id, form_id] = form.form_key.split('|')
@@ -94,7 +163,8 @@ function CreateCampaignModal({
     setError('')
     try {
       const body = new FormData()
-      body.append('image', imageFile)
+      if (mediaTab === 'image' && imageFile) body.append('image', imageFile)
+      if (mediaTab === 'video' && videoFile) body.append('video', videoFile)
       body.append('ad_account_id', form.ad_account_id)
       body.append('page_id', page_id)
       body.append('form_id', form_id)
@@ -104,6 +174,9 @@ function CreateCampaignModal({
       body.append('age_max', form.age_max)
       body.append('primary_text', form.primary_text)
       body.append('headline', form.headline)
+      body.append('gender', form.gender)
+      body.append('region_keys', JSON.stringify(selectedRegions))
+      body.append('interest_ids', JSON.stringify(selectedInterests.map(i => i.id)))
 
       const res = await fetch('/api/meta/ads/create', { method: 'POST', body })
       const data = await res.json()
@@ -204,6 +277,72 @@ function CreateCampaignModal({
               </div>
 
               <div>
+                <label className={labelClass} style={labelStyle}>Género</label>
+                <select className={inputClass} style={inputStyle} value={form.gender}
+                  onChange={e => setForm({ ...form, gender: e.target.value as Gender })}>
+                  <option value="all" className="bg-[#060612]">Todos</option>
+                  <option value="male" className="bg-[#060612]">Hombres</option>
+                  <option value="female" className="bg-[#060612]">Mujeres</option>
+                </select>
+              </div>
+
+              <div>
+                <label className={labelClass} style={labelStyle}>
+                  Regiones {selectedRegions.length === 0 ? '(Chile completo)' : `(${selectedRegions.length} seleccionadas)`}
+                </label>
+                {loadingRegions ? (
+                  <p className="text-xs" style={{ color: 'rgba(224,247,255,0.35)' }}>Cargando regiones...</p>
+                ) : (
+                  <div className="grid grid-cols-2 gap-1.5 max-h-40 overflow-y-auto p-2 rounded-lg" style={{ border: '1px solid rgba(0,229,255,0.15)' }}>
+                    {regions.map(r => (
+                      <label key={r.key} className="flex items-center gap-1.5 text-xs cursor-pointer" style={{ color: 'rgba(224,247,255,0.7)' }}>
+                        <input type="checkbox" checked={selectedRegions.includes(r.key)}
+                          onChange={() => toggleRegion(r.key)} />
+                        {r.name}
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label className={labelClass} style={labelStyle}>Intereses (opcional)</label>
+                {selectedInterests.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mb-2">
+                    {selectedInterests.map(i => (
+                      <span key={i.id} className="flex items-center gap-1 text-xs px-2 py-1 rounded-full"
+                        style={{ background: 'rgba(0,229,255,0.08)', border: '1px solid rgba(0,229,255,0.2)', color: '#00e5ff' }}>
+                        {i.name}
+                        <button type="button" onClick={() => removeInterest(i.id)} style={{ color: 'rgba(0,229,255,0.5)' }}>✕</button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+                <div className="relative">
+                  <input className={inputClass} style={inputStyle} value={interestQuery}
+                    onChange={e => setInterestQuery(e.target.value)}
+                    placeholder="Buscar intereses (ej. emprendedores, tecnología)..." />
+                  {interestQuery.trim().length >= 2 && (
+                    <div className="absolute z-10 w-full mt-1 rounded-lg overflow-hidden max-h-40 overflow-y-auto"
+                      style={{ background: '#0a0e18', border: '1px solid rgba(0,229,255,0.2)' }}>
+                      {searchingInterests ? (
+                        <p className="text-xs px-3 py-2" style={{ color: 'rgba(224,247,255,0.35)' }}>Buscando...</p>
+                      ) : interestResults.length === 0 ? (
+                        <p className="text-xs px-3 py-2" style={{ color: 'rgba(224,247,255,0.35)' }}>Sin resultados.</p>
+                      ) : (
+                        interestResults.map(i => (
+                          <button type="button" key={i.id} onClick={() => addInterest(i)}
+                            className="w-full text-left text-xs px-3 py-2 hover:bg-white/5" style={{ color: '#e0f7ff' }}>
+                            {i.name}
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div>
                 <label className={labelClass} style={labelStyle}>Encabezado</label>
                 <input required className={inputClass} style={inputStyle} value={form.headline}
                   onChange={e => setForm({ ...form, headline: e.target.value })} placeholder="Crea tu página web con Riava" />
@@ -217,9 +356,37 @@ function CreateCampaignModal({
               </div>
 
               <div>
-                <label className={labelClass} style={labelStyle}>Imagen del anuncio</label>
-                <input required type="file" accept="image/*" className={`${inputClass} py-1.5`} style={inputStyle}
-                  onChange={e => setImageFile(e.target.files?.[0] ?? null)} />
+                <label className={labelClass} style={labelStyle}>Creativo del anuncio</label>
+                <div className="flex gap-2 mb-2">
+                  <button type="button" onClick={() => setMediaTab('image')}
+                    className="flex-1 py-1.5 rounded-lg text-xs font-medium"
+                    style={{
+                      background: mediaTab === 'image' ? 'rgba(0,229,255,0.1)' : 'transparent',
+                      border: `1px solid ${mediaTab === 'image' ? 'rgba(0,229,255,0.3)' : 'rgba(0,229,255,0.12)'}`,
+                      color: mediaTab === 'image' ? '#00e5ff' : 'rgba(224,247,255,0.5)',
+                    }}>
+                    Imagen
+                  </button>
+                  <button type="button" onClick={() => setMediaTab('video')}
+                    className="flex-1 py-1.5 rounded-lg text-xs font-medium"
+                    style={{
+                      background: mediaTab === 'video' ? 'rgba(0,229,255,0.1)' : 'transparent',
+                      border: `1px solid ${mediaTab === 'video' ? 'rgba(0,229,255,0.3)' : 'rgba(0,229,255,0.12)'}`,
+                      color: mediaTab === 'video' ? '#00e5ff' : 'rgba(224,247,255,0.5)',
+                    }}>
+                    Video
+                  </button>
+                </div>
+                {mediaTab === 'image' ? (
+                  <input type="file" accept="image/*" className={`${inputClass} py-1.5`} style={inputStyle}
+                    onChange={e => setImageFile(e.target.files?.[0] ?? null)} />
+                ) : (
+                  <>
+                    <input type="file" accept="video/*" className={`${inputClass} py-1.5`} style={inputStyle}
+                      onChange={e => handleVideoChange(e.target.files?.[0] ?? null)} />
+                    <p className="text-xs mt-1" style={{ color: 'rgba(224,247,255,0.3)' }}>Máximo 100MB.</p>
+                  </>
+                )}
               </div>
 
               {error && <p className="text-xs" style={{ color: 'rgba(240,0,80,0.8)' }}>{error}</p>}
