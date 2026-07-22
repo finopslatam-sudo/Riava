@@ -221,11 +221,158 @@ function ConversationsPanel({ client, onClose }: { client: WaClient; onClose: ()
   )
 }
 
+type MessageTemplate = { id: string; name: string; status: string; category: string; language: string }
+
+const TEMPLATE_STATUS_COLOR: Record<string, string> = {
+  APPROVED: '#00e564',
+  PENDING: '#fbbf24',
+  REJECTED: 'rgba(240,0,80,0.7)',
+}
+
+const EMPTY_TEMPLATE_FORM = {
+  name: '',
+  language: 'es',
+  category: 'UTILITY' as 'UTILITY' | 'MARKETING' | 'AUTHENTICATION',
+  bodyText: '',
+}
+
+function TemplatesPanel({ client, onClose }: { client: WaClient; onClose: () => void }) {
+  const [templates, setTemplates] = useState<MessageTemplate[]>([])
+  const [loading, setLoading] = useState(true)
+  const [form, setForm] = useState(EMPTY_TEMPLATE_FORM)
+  const [creating, setCreating] = useState(false)
+  const [error, setError] = useState('')
+
+  const loadTemplates = () => {
+    setLoading(true)
+    fetch(`/api/whatsapp/clients/${client.id}/templates`)
+      .then(r => r.json())
+      .then(data => setTemplates(data.templates ?? []))
+      .finally(() => setLoading(false))
+  }
+
+  useEffect(loadTemplates, [client.id])
+
+  const handleCreate = async (e: FormEvent) => {
+    e.preventDefault()
+    setCreating(true)
+    setError('')
+    try {
+      const res = await fetch(`/api/whatsapp/clients/${client.id}/templates`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? 'Error al crear la plantilla')
+      setForm(EMPTY_TEMPLATE_FORM)
+      loadTemplates()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al crear la plantilla')
+    } finally {
+      setCreating(false)
+    }
+  }
+
+  const inputClass = 'w-full px-3 py-2 rounded-lg text-sm bg-transparent border focus:outline-none'
+  const inputStyle = { borderColor: 'rgba(0,229,255,0.15)', color: '#e0f7ff' }
+  const labelClass = 'text-xs font-mono mb-1.5 block'
+  const labelStyle = { color: 'rgba(0,229,255,0.5)' }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,10,15,0.75)' }} onClick={onClose}>
+      <div
+        className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl p-6"
+        style={{ background: '#0a0e18', border: '1px solid rgba(0,229,255,0.15)' }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between mb-1">
+          <h2 className="text-lg font-bold" style={{ color: '#e0f7ff' }}>Plantillas — {client.business_name}</h2>
+          <button onClick={onClose} className="text-xs" style={{ color: 'rgba(224,247,255,0.4)' }}>Cerrar ✕</button>
+        </div>
+        <p className="text-xs mb-5" style={{ color: 'rgba(224,247,255,0.4)' }}>
+          Las plantillas deben ser aprobadas por Meta antes de poder usarse fuera de la ventana de 24h de conversación.
+        </p>
+
+        <div className="mb-6">
+          {loading ? (
+            <p className="text-xs" style={{ color: 'rgba(224,247,255,0.35)' }}>Cargando...</p>
+          ) : templates.length === 0 ? (
+            <p className="text-xs" style={{ color: 'rgba(224,247,255,0.35)' }}>Aún no hay plantillas creadas.</p>
+          ) : (
+            <div className="space-y-2">
+              {templates.map(t => (
+                <div key={t.id} className="flex items-center justify-between px-3 py-2 rounded-lg"
+                  style={{ background: 'rgba(0,229,255,0.04)', border: '1px solid rgba(0,229,255,0.1)' }}>
+                  <div>
+                    <p className="text-sm" style={{ color: '#e0f7ff' }}>{t.name}</p>
+                    <p className="text-xs" style={{ color: 'rgba(0,229,255,0.4)' }}>{t.category} · {t.language}</p>
+                  </div>
+                  <span className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full"
+                    style={{
+                      background: `${TEMPLATE_STATUS_COLOR[t.status] ?? '#6b7280'}18`,
+                      color: TEMPLATE_STATUS_COLOR[t.status] ?? '#6b7280',
+                    }}>
+                    {t.status}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="divider-tron mb-5" />
+
+        <h3 className="text-sm font-semibold mb-3" style={{ color: '#e0f7ff' }}>Crear nueva plantilla</h3>
+        <form onSubmit={handleCreate} className="space-y-4">
+          <div>
+            <label className={labelClass} style={labelStyle}>Nombre (minúsculas y guiones bajos)</label>
+            <input required pattern="[a-z0-9_]+" className={inputClass} style={inputStyle} value={form.name}
+              onChange={e => setForm({ ...form, name: e.target.value })} placeholder="confirmacion_cita" />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={labelClass} style={labelStyle}>Categoría</label>
+              <select className={inputClass} style={inputStyle} value={form.category}
+                onChange={e => setForm({ ...form, category: e.target.value as typeof form.category })}>
+                <option value="UTILITY" className="bg-[#060612]">Utilidad</option>
+                <option value="MARKETING" className="bg-[#060612]">Marketing</option>
+                <option value="AUTHENTICATION" className="bg-[#060612]">Autenticación</option>
+              </select>
+            </div>
+            <div>
+              <label className={labelClass} style={labelStyle}>Idioma</label>
+              <select className={inputClass} style={inputStyle} value={form.language}
+                onChange={e => setForm({ ...form, language: e.target.value })}>
+                <option value="es" className="bg-[#060612]">Español</option>
+                <option value="en_US" className="bg-[#060612]">English (US)</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label className={labelClass} style={labelStyle}>Texto del mensaje</label>
+            <textarea required rows={3} className={inputClass} style={inputStyle} value={form.bodyText}
+              onChange={e => setForm({ ...form, bodyText: e.target.value })}
+              placeholder="Hola, tu cita ha sido confirmada." />
+          </div>
+
+          {error && <p className="text-xs" style={{ color: 'rgba(240,0,80,0.8)' }}>{error}</p>}
+
+          <button type="submit" disabled={creating} className="btn-tron w-full py-2.5 rounded-lg text-sm font-semibold text-white disabled:opacity-60">
+            {creating ? 'Creando...' : 'Crear plantilla'}
+          </button>
+        </form>
+      </div>
+    </div>
+  )
+}
+
 export default function WhatsAppPage() {
   const [clients, setClients] = useState<WaClient[]>([])
   const [loading, setLoading] = useState(true)
   const [showAdd, setShowAdd] = useState(false)
   const [viewingClient, setViewingClient] = useState<WaClient | null>(null)
+  const [templatesClient, setTemplatesClient] = useState<WaClient | null>(null)
 
   useEffect(() => {
     fetch('/api/whatsapp/clients')
@@ -282,6 +429,13 @@ export default function WhatsAppPage() {
               </div>
               <p className="text-xs truncate" style={{ color: 'rgba(0,229,255,0.4)' }}>{client.phone_number_id}</p>
               <p className="text-xs mt-2" style={{ color: 'rgba(224,247,255,0.3)' }}>Tono: {client.tone}</p>
+              <button
+                onClick={e => { e.stopPropagation(); setTemplatesClient(client) }}
+                className="mt-3 text-xs font-medium px-3 py-1.5 rounded-lg"
+                style={{ border: '1px solid rgba(0,229,255,0.15)', color: 'rgba(0,229,255,0.7)' }}
+              >
+                Plantillas
+              </button>
             </div>
           ))}
         </div>
@@ -295,6 +449,9 @@ export default function WhatsAppPage() {
       )}
       {viewingClient && (
         <ConversationsPanel client={viewingClient} onClose={() => setViewingClient(null)} />
+      )}
+      {templatesClient && (
+        <TemplatesPanel client={templatesClient} onClose={() => setTemplatesClient(null)} />
       )}
     </div>
   )
