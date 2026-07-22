@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
-import { getLeadFormsForPages } from '@/lib/meta-lead-forms'
+import { getAccessiblePages } from '@/lib/meta-pages'
 
 export async function GET() {
   const cookieStore = await cookies()
   const token = cookieStore.get('meta_access_token')?.value
   if (!token) return NextResponse.json({ error: 'No conectado a Meta' }, { status: 401 })
 
-  const forms = await getLeadFormsForPages(token)
-  return NextResponse.json({ forms })
+  const pages = await getAccessiblePages(token)
+  return NextResponse.json({ pages: pages.map(p => ({ id: p.id, name: p.name })) })
 }

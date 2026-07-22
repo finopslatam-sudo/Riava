@@ -28,8 +28,14 @@ export async function POST(req: Request) {
   const primary_text = formData.get('primary_text')?.toString()
   const headline = formData.get('headline')?.toString()
   const gender = (formData.get('gender')?.toString() ?? 'all') as Gender
+  const country_code = formData.get('country_code')?.toString() ?? 'CL'
   const region_keys = JSON.parse(formData.get('region_keys')?.toString() ?? '[]') as string[]
+  const city_keys = JSON.parse(formData.get('city_keys')?.toString() ?? '[]') as string[]
   const interest_ids = JSON.parse(formData.get('interest_ids')?.toString() ?? '[]') as string[]
+  const work_position_ids = JSON.parse(formData.get('work_position_ids')?.toString() ?? '[]') as string[]
+  const work_employer_ids = JSON.parse(formData.get('work_employer_ids')?.toString() ?? '[]') as string[]
+  const industry_ids = JSON.parse(formData.get('industry_ids')?.toString() ?? '[]') as string[]
+  const behavior_ids = JSON.parse(formData.get('behavior_ids')?.toString() ?? '[]') as string[]
 
   if (
     (!image_hash && !video_id) || !ad_account_id || !page_id || !form_id ||
@@ -55,9 +61,15 @@ export async function POST(req: Request) {
       page_id,
       age_min,
       age_max,
-      region_keys,
       gender,
+      country_code,
+      region_keys,
+      city_keys,
       interest_ids,
+      work_position_ids,
+      work_employer_ids,
+      industry_ids,
+      behavior_ids,
     })
     const creative_id = await createAdCreative(token, ad_account_id, {
       name: `${campaign_name} — Creatividad`,

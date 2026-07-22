@@ -1,11 +1,14 @@
-import { getAccessiblePages } from './meta-pages'
-
 const GRAPH_BASE = 'https://graph.facebook.com/v19.0'
 
 export type AdAccount = { id: string; name: string; account_status: number }
-export type LeadFormOption = { page_id: string; page_name: string; form_id: string; form_name: string }
 export type RegionOption = { key: string; name: string }
+export type CountryOption = { key: string; name: string }
+export type CityOption = { key: string; name: string }
 export type InterestOption = { id: string; name: string; audience_size_lower_bound?: number }
+export type WorkPositionOption = { id: string; name: string }
+export type EmployerOption = { id: string; name: string }
+export type IndustryOption = { id: string; name: string }
+export type BehaviorOption = { id: string; name: string }
 export type Gender = 'all' | 'male' | 'female'
 export type AdCreativeAsset =
   | { type: 'image'; image_hash: string }
@@ -33,31 +36,13 @@ export async function getAdAccounts(token: string): Promise<AdAccount[]> {
   return data ?? []
 }
 
-export async function getLeadFormsForPages(token: string): Promise<LeadFormOption[]> {
-  const pages = await getAccessiblePages(token)
-  const options: LeadFormOption[] = []
-
-  for (const page of pages) {
-    const res = await fetch(
-      `${GRAPH_BASE}/${page.id}/leadgen_forms?` +
-      new URLSearchParams({ fields: 'id,name', access_token: page.access_token })
-    )
-    if (!res.ok) continue
-    const { data: forms } = await res.json() as { data?: { id: string; name: string }[] }
-    for (const form of (forms ?? [])) {
-      options.push({ page_id: page.id, page_name: page.name, form_id: form.id, form_name: form.name })
-    }
-  }
-  return options
-}
-
-export async function getChileRegions(token: string): Promise<RegionOption[]> {
+export async function getRegions(token: string, countryCode = 'CL'): Promise<RegionOption[]> {
   const res = await fetch(
     `${GRAPH_BASE}/search?` +
     new URLSearchParams({
       type: 'adgeolocation',
       location_types: JSON.stringify(['region']),
-      country_code: 'CL',
+      country_code: countryCode,
       limit: '30',
       access_token: token,
     })
@@ -65,6 +50,38 @@ export async function getChileRegions(token: string): Promise<RegionOption[]> {
   if (!res.ok) return []
   const { data } = await res.json() as { data?: { key: string; name: string }[] }
   return (data ?? []).map(r => ({ key: r.key, name: r.name }))
+}
+
+export async function getCountries(token: string): Promise<CountryOption[]> {
+  const res = await fetch(
+    `${GRAPH_BASE}/search?` +
+    new URLSearchParams({
+      type: 'adgeolocation',
+      location_types: JSON.stringify(['country']),
+      limit: '1000',
+      access_token: token,
+    })
+  )
+  if (!res.ok) return []
+  const { data } = await res.json() as { data?: { key: string; name: string }[] }
+  return (data ?? []).map(c => ({ key: c.key, name: c.name }))
+}
+
+export async function searchCities(token: string, countryCode: string, query: string): Promise<CityOption[]> {
+  const res = await fetch(
+    `${GRAPH_BASE}/search?` +
+    new URLSearchParams({
+      type: 'adgeolocation',
+      location_types: JSON.stringify(['city']),
+      country_code: countryCode,
+      q: query,
+      limit: '15',
+      access_token: token,
+    })
+  )
+  if (!res.ok) return []
+  const { data } = await res.json() as { data?: { key: string; name: string }[] }
+  return (data ?? []).map(c => ({ key: c.key, name: c.name }))
 }
 
 export async function searchInterests(token: string, query: string): Promise<InterestOption[]> {
@@ -79,6 +96,46 @@ export async function searchInterests(token: string, query: string): Promise<Int
   )
   if (!res.ok) return []
   const { data } = await res.json() as { data?: InterestOption[] }
+  return data ?? []
+}
+
+export async function searchWorkPositions(token: string, query: string): Promise<WorkPositionOption[]> {
+  const res = await fetch(
+    `${GRAPH_BASE}/search?` +
+    new URLSearchParams({ type: 'adworkposition', q: query, limit: '15', access_token: token })
+  )
+  if (!res.ok) return []
+  const { data } = await res.json() as { data?: WorkPositionOption[] }
+  return data ?? []
+}
+
+export async function searchEmployers(token: string, query: string): Promise<EmployerOption[]> {
+  const res = await fetch(
+    `${GRAPH_BASE}/search?` +
+    new URLSearchParams({ type: 'adworkemployer', q: query, limit: '15', access_token: token })
+  )
+  if (!res.ok) return []
+  const { data } = await res.json() as { data?: EmployerOption[] }
+  return data ?? []
+}
+
+export async function getIndustries(token: string): Promise<IndustryOption[]> {
+  const res = await fetch(
+    `${GRAPH_BASE}/search?` +
+    new URLSearchParams({ type: 'adTargetingCategory', class: 'industries', limit: '1000', access_token: token })
+  )
+  if (!res.ok) return []
+  const { data } = await res.json() as { data?: IndustryOption[] }
+  return data ?? []
+}
+
+export async function searchBehaviors(token: string, query: string): Promise<BehaviorOption[]> {
+  const res = await fetch(
+    `${GRAPH_BASE}/search?` +
+    new URLSearchParams({ type: 'adTargetingCategory', class: 'behaviors', q: query, limit: '15', access_token: token })
+  )
+  if (!res.ok) return []
+  const { data } = await res.json() as { data?: BehaviorOption[] }
   return data ?? []
 }
 
@@ -142,24 +199,44 @@ export async function createAdSet(
     page_id: string
     age_min: number
     age_max: number
-    region_keys: string[]
     gender: Gender
+    country_code: string
+    region_keys: string[]
+    city_keys: string[]
     interest_ids: string[]
+    work_position_ids: string[]
+    work_employer_ids: string[]
+    industry_ids: string[]
+    behavior_ids: string[]
   }
 ): Promise<string> {
+  const geo: Record<string, unknown> = {}
+  if (input.city_keys.length > 0) {
+    geo.cities = input.city_keys.map(key => ({ key, radius: 20, distance_unit: 'kilometer' }))
+  }
+  if (input.region_keys.length > 0) {
+    geo.regions = input.region_keys.map(key => ({ key }))
+  }
+  if (Object.keys(geo).length === 0) {
+    geo.countries = [input.country_code]
+  }
+
   const targeting: Record<string, unknown> = {
-    geo_locations: input.region_keys.length > 0
-      ? { regions: input.region_keys.map(key => ({ key })) }
-      : { countries: ['CL'] },
+    geo_locations: geo,
     age_min: input.age_min,
     age_max: input.age_max,
   }
   if (input.gender !== 'all') {
     targeting.genders = [input.gender === 'male' ? 1 : 2]
   }
-  if (input.interest_ids.length > 0) {
-    targeting.flexible_spec = [{ interests: input.interest_ids.map(id => ({ id })) }]
-  }
+
+  const flexible_spec: Record<string, { id: string }[]>[] = []
+  if (input.interest_ids.length > 0) flexible_spec.push({ interests: input.interest_ids.map(id => ({ id })) })
+  if (input.work_position_ids.length > 0) flexible_spec.push({ work_positions: input.work_position_ids.map(id => ({ id })) })
+  if (input.work_employer_ids.length > 0) flexible_spec.push({ work_employers: input.work_employer_ids.map(id => ({ id })) })
+  if (input.industry_ids.length > 0) flexible_spec.push({ industries: input.industry_ids.map(id => ({ id })) })
+  if (input.behavior_ids.length > 0) flexible_spec.push({ behaviors: input.behavior_ids.map(id => ({ id })) })
+  if (flexible_spec.length > 0) targeting.flexible_spec = flexible_spec
 
   const data = await graphPost(`${accountId}/adsets`, token, {
     name: input.name,
