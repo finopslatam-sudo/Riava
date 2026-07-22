@@ -152,6 +152,124 @@ function AddClientModal({ onClose, onCreated }: { onClose: () => void; onCreated
   )
 }
 
+function EditClientModal({
+  client,
+  onClose,
+  onUpdated,
+}: {
+  client: WaClient
+  onClose: () => void
+  onUpdated: (c: WaClient) => void
+}) {
+  const [form, setForm] = useState({
+    business_name: client.business_name,
+    tone: client.tone,
+    business_info: client.business_info,
+    system_prompt: client.system_prompt,
+    access_token: '',
+  })
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault()
+    setSaving(true)
+    setError('')
+    try {
+      const body: Record<string, string> = {
+        business_name: form.business_name,
+        tone: form.tone,
+        business_info: form.business_info,
+        system_prompt: form.system_prompt,
+      }
+      if (form.access_token.trim()) body.access_token = form.access_token.trim()
+
+      const res = await fetch(`/api/whatsapp/clients/${client.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? 'No se pudo actualizar el cliente')
+      onUpdated(data.client)
+      if (form.access_token.trim() && data.webhook_override !== 'ok') {
+        setError(data.webhook_override ?? 'Se guardó, pero no se pudo confirmar el webhook en Meta.')
+        return
+      }
+      onClose()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo actualizar el cliente')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const inputClass = 'w-full px-3 py-2 rounded-lg text-sm bg-transparent border focus:outline-none'
+  const inputStyle = { borderColor: 'rgba(0,229,255,0.15)', color: '#e0f7ff' }
+  const labelClass = 'text-xs font-mono mb-1.5 block'
+  const labelStyle = { color: 'rgba(0,229,255,0.5)' }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,10,15,0.75)' }} onClick={onClose}>
+      <div
+        className="w-full max-w-lg rounded-2xl p-6 max-h-[90vh] overflow-y-auto"
+        style={{ background: '#0a0e18', border: '1px solid rgba(0,229,255,0.15)' }}
+        onClick={e => e.stopPropagation()}
+      >
+        <h2 className="text-lg font-bold mb-1" style={{ color: '#e0f7ff' }}>Editar cliente</h2>
+        <p className="text-xs mb-5" style={{ color: 'rgba(224,247,255,0.4)' }}>
+          {client.phone_number_id} · {client.waba_id}
+        </p>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className={labelClass} style={labelStyle}>Nombre del negocio</label>
+            <input required className={inputClass} style={inputStyle} value={form.business_name}
+              onChange={e => setForm({ ...form, business_name: e.target.value })} />
+          </div>
+          <div>
+            <label className={labelClass} style={labelStyle}>Tono del agente</label>
+            <select className={inputClass} style={inputStyle} value={form.tone}
+              onChange={e => setForm({ ...form, tone: e.target.value })}>
+              <option value="profesional_y_amigable">Profesional y amigable</option>
+              <option value="vendedor_y_persuasivo">Vendedor y persuasivo</option>
+              <option value="empatico_y_calido">Empático y cálido</option>
+              <option value="formal">Formal</option>
+            </select>
+          </div>
+          <div>
+            <label className={labelClass} style={labelStyle}>Información del negocio (horario, servicios, FAQ)</label>
+            <textarea rows={4} className={inputClass} style={inputStyle} value={form.business_info}
+              onChange={e => setForm({ ...form, business_info: e.target.value })} />
+          </div>
+          <div>
+            <label className={labelClass} style={labelStyle}>Instrucciones adicionales del agente (opcional)</label>
+            <textarea rows={3} className={inputClass} style={inputStyle} value={form.system_prompt}
+              onChange={e => setForm({ ...form, system_prompt: e.target.value })} />
+          </div>
+          <div>
+            <label className={labelClass} style={labelStyle}>Access Token (déjalo vacío para no cambiarlo)</label>
+            <input type="password" className={inputClass} style={inputStyle} value={form.access_token}
+              onChange={e => setForm({ ...form, access_token: e.target.value })} placeholder="•••••••••" />
+          </div>
+
+          {error && <p className="text-xs" style={{ color: 'rgba(240,0,80,0.8)' }}>{error}</p>}
+
+          <div className="flex gap-3 pt-2">
+            <button type="button" onClick={onClose} className="flex-1 py-2.5 rounded-lg text-sm font-medium"
+              style={{ border: '1px solid rgba(0,229,255,0.15)', color: 'rgba(224,247,255,0.6)' }}>
+              Cancelar
+            </button>
+            <button type="submit" disabled={saving} className="btn-tron flex-1 py-2.5 rounded-lg text-sm font-semibold text-white disabled:opacity-60">
+              {saving ? 'Guardando...' : 'Guardar cambios'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
 function ConversationsPanel({ client, onClose }: { client: WaClient; onClose: () => void }) {
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [loading, setLoading] = useState(true)
@@ -403,6 +521,22 @@ export default function WhatsAppPage() {
   const [showAdd, setShowAdd] = useState(false)
   const [viewingClient, setViewingClient] = useState<WaClient | null>(null)
   const [templatesClient, setTemplatesClient] = useState<WaClient | null>(null)
+  const [editingClient, setEditingClient] = useState<WaClient | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+
+  const handleDeleteClient = async (client: WaClient) => {
+    if (!confirm(`¿Eliminar el cliente "${client.business_name}"? Dejará de responder mensajes automáticamente.`)) return
+    setDeletingId(client.id)
+    try {
+      const res = await fetch(`/api/whatsapp/clients/${client.id}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error()
+      setClients(prev => prev.filter(c => c.id !== client.id))
+    } catch {
+      alert('No se pudo eliminar el cliente.')
+    } finally {
+      setDeletingId(null)
+    }
+  }
 
   useEffect(() => {
     fetch('/api/whatsapp/clients')
@@ -459,13 +593,30 @@ export default function WhatsAppPage() {
               </div>
               <p className="text-xs truncate" style={{ color: 'rgba(0,229,255,0.4)' }}>{client.phone_number_id}</p>
               <p className="text-xs mt-2" style={{ color: 'rgba(224,247,255,0.3)' }}>Tono: {client.tone}</p>
-              <button
-                onClick={e => { e.stopPropagation(); setTemplatesClient(client) }}
-                className="mt-3 text-xs font-medium px-3 py-1.5 rounded-lg"
-                style={{ border: '1px solid rgba(0,229,255,0.15)', color: 'rgba(0,229,255,0.7)' }}
-              >
-                Plantillas
-              </button>
+              <div className="flex flex-wrap gap-2 mt-3">
+                <button
+                  onClick={e => { e.stopPropagation(); setTemplatesClient(client) }}
+                  className="text-xs font-medium px-3 py-1.5 rounded-lg"
+                  style={{ border: '1px solid rgba(0,229,255,0.15)', color: 'rgba(0,229,255,0.7)' }}
+                >
+                  Plantillas
+                </button>
+                <button
+                  onClick={e => { e.stopPropagation(); setEditingClient(client) }}
+                  className="text-xs font-medium px-3 py-1.5 rounded-lg"
+                  style={{ border: '1px solid rgba(0,229,255,0.15)', color: 'rgba(0,229,255,0.7)' }}
+                >
+                  Editar
+                </button>
+                <button
+                  onClick={e => { e.stopPropagation(); handleDeleteClient(client) }}
+                  disabled={deletingId === client.id}
+                  className="text-xs font-medium px-3 py-1.5 rounded-lg disabled:opacity-50"
+                  style={{ border: '1px solid rgba(240,0,80,0.2)', color: 'rgba(240,0,80,0.7)' }}
+                >
+                  {deletingId === client.id ? '...' : 'Eliminar'}
+                </button>
+              </div>
             </div>
           ))}
         </div>
@@ -482,6 +633,13 @@ export default function WhatsAppPage() {
       )}
       {templatesClient && (
         <TemplatesPanel client={templatesClient} onClose={() => setTemplatesClient(null)} />
+      )}
+      {editingClient && (
+        <EditClientModal
+          client={editingClient}
+          onClose={() => setEditingClient(null)}
+          onUpdated={updated => setClients(prev => prev.map(c => c.id === updated.id ? updated : c))}
+        />
       )}
     </div>
   )
