@@ -32,7 +32,7 @@ type MetaWebhookPayload = {
 }
 
 async function sendWhatsAppMessage(phoneNumberId: string, accessToken: string, to: string, text: string) {
-  await fetch(`https://graph.facebook.com/${GRAPH_API_VERSION}/${phoneNumberId}/messages`, {
+  const res = await fetch(`https://graph.facebook.com/${GRAPH_API_VERSION}/${phoneNumberId}/messages`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -45,6 +45,10 @@ async function sendWhatsAppMessage(phoneNumberId: string, accessToken: string, t
       text: { body: text },
     }),
   })
+  if (!res.ok) {
+    const errorBody = await res.text()
+    console.error('Error enviando mensaje de WhatsApp:', res.status, errorBody)
+  }
 }
 
 export async function POST(req: Request) {
