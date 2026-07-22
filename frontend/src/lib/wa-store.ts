@@ -115,13 +115,3 @@ export async function getConversationContacts(phoneNumberId: string): Promise<st
   const keys = await redis.keys(`${HISTORY_PREFIX}${phoneNumberId}:*`)
   return keys.map(k => k.slice(`${HISTORY_PREFIX}${phoneNumberId}:`.length))
 }
-
-const DEBUG_KEY = 'riava:wa:debug:last_webhook_call'
-
-export async function saveLastWebhookCall(body: unknown): Promise<void> {
-  await redis.set(DEBUG_KEY, { received_at: new Date().toISOString(), body })
-}
-
-export async function getLastWebhookCall(): Promise<unknown> {
-  return await redis.get(DEBUG_KEY)
-}

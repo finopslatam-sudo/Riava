@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getClientByPhoneNumberId, getHistory, appendHistory, saveLastWebhookCall } from '@/lib/wa-store'
+import { getClientByPhoneNumberId, getHistory, appendHistory } from '@/lib/wa-store'
 import { generateWaReply } from '@/lib/wa-brain'
 
 const GRAPH_API_VERSION = 'v21.0'
@@ -53,7 +53,6 @@ async function sendWhatsAppMessage(phoneNumberId: string, accessToken: string, t
 
 export async function POST(req: Request) {
   const body: MetaWebhookPayload = await req.json()
-  await saveLastWebhookCall(body)
 
   for (const entry of body.entry ?? []) {
     for (const change of entry.changes ?? []) {
