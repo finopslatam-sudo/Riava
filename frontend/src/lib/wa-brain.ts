@@ -47,11 +47,7 @@ const bookAppointmentTool = tool({
   },
 })
 
-export async function generateWaReply(
-  client: WaClient,
-  history: WaMessage[],
-  message: string
-): Promise<string> {
+async function buildAndRun(client: WaClient, history: WaMessage[], message: string) {
   const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Santiago' })
 
   const systemPrompt = [
@@ -78,19 +74,39 @@ export async function generateWaReply(
     { role: 'user' as const, content: message },
   ]
 
+  const result = await generateText({
+    model: 'anthropic/claude-sonnet-5',
+    system: systemPrompt,
+    messages,
+    tools: client.enable_scheduling
+      ? { getAvailableSlots: getAvailableSlotsTool, bookAppointment: bookAppointmentTool }
+      : undefined,
+    stopWhen: isStepCount(5),
+  })
+  return result.text || FALLBACK_REPLY
+}
+
+export async function generateWaReply(
+  client: WaClient,
+  history: WaMessage[],
+  message: string
+): Promise<string> {
   try {
-    const result = await generateText({
-      model: 'anthropic/claude-sonnet-5',
-      system: systemPrompt,
-      messages,
-      tools: client.enable_scheduling
-        ? { getAvailableSlots: getAvailableSlotsTool, bookAppointment: bookAppointmentTool }
-        : undefined,
-      stopWhen: isStepCount(5),
-    })
-    return result.text || FALLBACK_REPLY
+    return await buildAndRun(client, history, message)
   } catch (err) {
     console.error('[wa-brain] generateWaReply failed:', err)
     return FALLBACK_REPLY
+  }
+}
+
+export async function generateWaReplyDebug(
+  client: WaClient,
+  history: WaMessage[],
+  message: string
+): Promise<{ ok: true; text: string } | { ok: false; error: string }> {
+  try {
+    return { ok: true, text: await buildAndRun(client, history, message) }
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? `${err.name}: ${err.message}` : String(err) }
   }
 }
