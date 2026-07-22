@@ -24,7 +24,7 @@ async function overrideWabaWebhook(accessToken: string, wabaId: string): Promise
 
 export async function POST(req: Request) {
   const body = await req.json()
-  const { business_name, phone_number_id, waba_id, access_token, system_prompt, tone, business_info } = body
+  const { business_name, phone_number_id, waba_id, access_token, system_prompt, tone, business_info, enable_scheduling } = body
 
   if (!business_name || !phone_number_id || !waba_id || !access_token) {
     return NextResponse.json({ error: 'Faltan campos requeridos' }, { status: 400 })
@@ -38,6 +38,7 @@ export async function POST(req: Request) {
     system_prompt,
     tone,
     business_info,
+    enable_scheduling,
   })
 
   const overrideOk = await overrideWabaWebhook(access_token, waba_id)

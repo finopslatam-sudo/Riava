@@ -22,6 +22,7 @@ export type WaClient = {
   tone: string
   business_info: string
   status: WaClientStatus
+  enable_scheduling: boolean
   created_at: string
 }
 
@@ -34,6 +35,7 @@ export type CreateWaClientInput = {
   tone?: string
   business_info?: string
   status?: WaClientStatus
+  enable_scheduling?: boolean
 }
 
 export type WaMessage = {
@@ -69,6 +71,7 @@ export async function createWaClient(input: CreateWaClientInput): Promise<WaClie
     tone: input.tone ?? 'profesional_y_amigable',
     business_info: input.business_info ?? '',
     status: input.status ?? 'connected',
+    enable_scheduling: input.enable_scheduling ?? false,
     created_at: new Date().toISOString(),
   }
   await redis.set(CLIENTS_KEY, [client, ...clients])

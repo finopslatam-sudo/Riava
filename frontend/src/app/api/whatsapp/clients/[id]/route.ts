@@ -25,15 +25,19 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   }
 
   const body = await req.json()
-  const { access_token, business_name, system_prompt, tone, business_info } = body as {
+  const { access_token, business_name, system_prompt, tone, business_info, enable_scheduling } = body as {
     access_token?: string
     business_name?: string
     system_prompt?: string
     tone?: string
     business_info?: string
+    enable_scheduling?: boolean
   }
 
-  if (!access_token && !business_name && system_prompt === undefined && !tone && business_info === undefined) {
+  if (
+    !access_token && !business_name && system_prompt === undefined && !tone &&
+    business_info === undefined && enable_scheduling === undefined
+  ) {
     return NextResponse.json({ error: 'No hay campos para actualizar' }, { status: 400 })
   }
 
@@ -42,6 +46,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   if (system_prompt !== undefined) updates.system_prompt = system_prompt
   if (tone) updates.tone = tone
   if (business_info !== undefined) updates.business_info = business_info
+  if (enable_scheduling !== undefined) updates.enable_scheduling = enable_scheduling
 
   let webhookOverride: string | undefined
   if (access_token) {
