@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
+import { deleteMetaToken } from '@/lib/meta-token-store'
 
 export async function GET() {
   const cookieStore = await cookies()
@@ -10,5 +11,6 @@ export async function GET() {
 export async function DELETE() {
   const cookieStore = await cookies()
   cookieStore.delete('meta_access_token')
+  await deleteMetaToken()
   return NextResponse.json({ ok: true })
 }
