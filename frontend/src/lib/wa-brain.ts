@@ -99,14 +99,3 @@ export async function generateWaReply(
   }
 }
 
-export async function generateWaReplyDebug(
-  client: WaClient,
-  history: WaMessage[],
-  message: string
-): Promise<{ ok: true; text: string } | { ok: false; error: string }> {
-  try {
-    return { ok: true, text: await buildAndRun(client, history, message) }
-  } catch (err) {
-    return { ok: false, error: err instanceof Error ? `${err.name}: ${err.message}` : String(err) }
-  }
-}
