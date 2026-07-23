@@ -13,6 +13,7 @@ type WaClient = {
   business_info: string
   status: 'pending' | 'connected' | 'error'
   enable_scheduling: boolean
+  enable_quotes: boolean
   created_at: string
 }
 
@@ -39,6 +40,7 @@ const EMPTY_FORM = {
   business_info: '',
   system_prompt: '',
   enable_scheduling: false,
+  enable_quotes: false,
 }
 
 function AddClientModal({ onClose, onCreated }: { onClose: () => void; onCreated: (c: WaClient) => void }) {
@@ -141,6 +143,11 @@ function AddClientModal({ onClose, onCreated }: { onClose: () => void; onCreated
               onChange={e => setForm({ ...form, enable_scheduling: e.target.checked })} />
             <span>Permitir que el agente consulte el calendario de Riava y agende reuniones automáticamente. Actívalo <b>solo</b> para tu propio número — no para números de clientes futuros, ya que hoy comparten el mismo calendario.</span>
           </label>
+          <label className="flex items-start gap-2 text-xs cursor-pointer" style={{ color: 'rgba(224,247,255,0.7)' }}>
+            <input type="checkbox" className="mt-0.5" checked={form.enable_quotes}
+              onChange={e => setForm({ ...form, enable_quotes: e.target.checked })} />
+            <span>Permitir que el agente arme y envíe cotizaciones usando el catálogo de <b>Servicios</b> y las envíe por correo cuando el cliente lo pida.</span>
+          </label>
 
           {error && <p className="text-xs" style={{ color: 'rgba(240,0,80,0.8)' }}>{error}</p>}
 
@@ -175,6 +182,7 @@ function EditClientModal({
     system_prompt: client.system_prompt,
     access_token: '',
     enable_scheduling: client.enable_scheduling,
+    enable_quotes: client.enable_quotes,
   })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -190,6 +198,7 @@ function EditClientModal({
         business_info: form.business_info,
         system_prompt: form.system_prompt,
         enable_scheduling: form.enable_scheduling,
+        enable_quotes: form.enable_quotes,
       }
       if (form.access_token.trim()) body.access_token = form.access_token.trim()
 
@@ -260,6 +269,11 @@ function EditClientModal({
             <input type="checkbox" className="mt-0.5" checked={form.enable_scheduling}
               onChange={e => setForm({ ...form, enable_scheduling: e.target.checked })} />
             <span>Permitir que el agente consulte el calendario de Riava y agende reuniones automáticamente. Actívalo <b>solo</b> para tu propio número.</span>
+          </label>
+          <label className="flex items-start gap-2 text-xs cursor-pointer" style={{ color: 'rgba(224,247,255,0.7)' }}>
+            <input type="checkbox" className="mt-0.5" checked={form.enable_quotes}
+              onChange={e => setForm({ ...form, enable_quotes: e.target.checked })} />
+            <span>Permitir que el agente arme y envíe cotizaciones usando el catálogo de <b>Servicios</b> y las envíe por correo cuando el cliente lo pida.</span>
           </label>
           <div>
             <label className={labelClass} style={labelStyle}>Access Token (déjalo vacío para no cambiarlo)</label>

@@ -33,6 +33,16 @@ const NAV = [
     ),
   },
   {
+    href: '/dashboard/servicios',
+    label: 'Servicios',
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M20.59 13.41 13.42 20.58a2 2 0 0 1-2.83 0L2.59 12.58a2 2 0 0 1 0-2.83l7.17-7.17a2 2 0 0 1 2.83 0l7.99 7.99a2 2 0 0 1 0 2.83Z" />
+        <circle cx="8.5" cy="8.5" r="1.5" />
+      </svg>
+    ),
+  },
+  {
     href: '/dashboard/cuenta',
     label: 'Mi Cuenta',
     icon: (
