@@ -6,6 +6,62 @@ import { sendEmail } from '@/lib/mailer'
 type FieldData = { name: string; values: string[] }
 type FormQuestion = { key: string; label?: string }
 
+const AGENDAR_URL = 'https://www.riava.cl/agendar'
+const WHATSAPP_NUMBER = '56965090121'
+
+function buildWelcomeEmail(fullName: string): string {
+  const firstName = fullName.split(' ')[0] || fullName
+  const whatsappText = encodeURIComponent(`Hola, soy ${fullName} y llené el formulario en la web de RIAVA System.`)
+  const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${whatsappText}`
+
+  return `<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f0f4f8;font-family:Arial,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" bgcolor="#f0f4f8">
+  <tr><td align="center" style="padding:24px 12px;">
+    <table width="560" cellpadding="0" cellspacing="0" style="border-radius:10px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.12);">
+      <tr><td style="background:#000a0f;padding:28px 36px;">
+        <img src="https://riava.cl/logocolor.png" alt="RIAVA System SpA" height="42" style="display:block;">
+      </td></tr>
+      <tr><td style="background:#ffffff;padding:32px 36px;">
+        <p style="margin:0 0 16px;font-size:16px;color:#111827;">¡Hola ${firstName}! 👋</p>
+        <p style="margin:0 0 16px;font-size:14px;color:#374151;line-height:1.7;">
+          Gracias por contactar a <strong>RIAVA System</strong> y por tomarte el tiempo de llenar el formulario en nuestra página web.
+          Ya recibimos tu información y uno de nuestros especialistas la va a revisar.
+        </p>
+        <p style="margin:0 0 24px;font-size:14px;color:#374151;line-height:1.7;">
+          Mientras tanto, te dejamos dos formas de avanzar más rápido:
+        </p>
+        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
+          <tr><td style="padding:14px 18px;background:#f9fafb;border-radius:8px;border-left:3px solid #00e5ff;">
+            <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#111827;">📅 Agenda una reunión</p>
+            <p style="margin:0 0 10px;font-size:13px;color:#6b7280;">Elige el horario que más te acomode y conversemos sobre tu proyecto.</p>
+            <a href="${AGENDAR_URL}" style="display:inline-block;background:#00e5ff;color:#000a0f;text-decoration:none;font-size:13px;font-weight:700;padding:10px 18px;border-radius:6px;">Agendar ahora</a>
+          </td></tr>
+        </table>
+        <table width="100%" cellpadding="0" cellspacing="0">
+          <tr><td style="padding:14px 18px;background:#f9fafb;border-radius:8px;border-left:3px solid #25d366;">
+            <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#111827;">💬 Escríbenos por WhatsApp</p>
+            <p style="margin:0 0 10px;font-size:13px;color:#6b7280;">Si prefieres conversar directo, empecemos ahora mismo.</p>
+            <a href="${whatsappUrl}" style="display:inline-block;background:#25d366;color:#ffffff;text-decoration:none;font-size:13px;font-weight:700;padding:10px 18px;border-radius:6px;">Abrir WhatsApp</a>
+          </td></tr>
+        </table>
+        <p style="margin:24px 0 0;font-size:12px;color:#9ca3af;">
+          Si no llenaste este formulario, puedes ignorar este correo.
+        </p>
+      </td></tr>
+      <tr><td style="background:#f9fafb;padding:20px 36px;border-top:1px solid #e5e7eb;">
+        <p style="margin:0;font-size:13px;font-weight:700;color:#111827;">RIAVA System SpA</p>
+        <p style="margin:3px 0 0;font-size:12px;color:#6b7280;">contacto@riava.cl · www.riava.cl</p>
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>`
+}
+
 const STANDARD_KEYS = new Set([
   'full_name', 'nombre_completo', 'nombre', 'name',
   'first_name', 'primer_nombre', 'last_name', 'apellido', 'apellidos',
@@ -126,6 +182,12 @@ export async function runLeadsImport(token: string): Promise<LeadsImportResult> 
 
         existingByEmail.set(email.toLowerCase(), lead)
         imported++
+
+        sendEmail({
+          to: email,
+          subject: `Gracias por contactar a RIAVA System, ${full_name.split(' ')[0]}`,
+          html: buildWelcomeEmail(full_name),
+        }).catch(() => {})
 
         sendEmail({
           to: 'contacto@riava.cl',
