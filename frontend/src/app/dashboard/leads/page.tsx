@@ -134,6 +134,93 @@ function NewLeadModal({ onClose, onCreated }: { onClose: () => void; onCreated: 
   )
 }
 
+type WaTemplate = { id: string; name: string; status: string; category: string; language: string }
+type WaClientBrief = { id: string; phone_number_id: string; enable_scheduling: boolean }
+
+function StartWhatsAppBusinessConvo({ lead }: { lead: Lead }) {
+  const [client, setClient] = useState<WaClientBrief | null>(null)
+  const [templates, setTemplates] = useState<WaTemplate[]>([])
+  const [selectedTemplate, setSelectedTemplate] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [sending, setSending] = useState(false)
+  const [result, setResult] = useState<{ ok: boolean; message: string } | null>(null)
+
+  useEffect(() => {
+    fetch('/api/whatsapp/clients')
+      .then(r => r.json())
+      .then(async data => {
+        const businessClient: WaClientBrief | undefined = (data.clients ?? []).find((c: WaClientBrief) => c.enable_scheduling)
+        if (!businessClient) return
+        setClient(businessClient)
+        const tRes = await fetch(`/api/whatsapp/clients/${businessClient.id}/templates`)
+        const tData = await tRes.json()
+        const approved = ((tData.templates ?? []) as WaTemplate[]).filter(t => t.status === 'APPROVED')
+        setTemplates(approved)
+        if (approved.length > 0) setSelectedTemplate(approved[0].name)
+      })
+      .finally(() => setLoading(false))
+  }, [])
+
+  const handleSend = async () => {
+    if (!client || !lead.phone || !selectedTemplate) return
+    setSending(true)
+    setResult(null)
+    try {
+      const template = templates.find(t => t.name === selectedTemplate)
+      const res = await fetch(`/api/whatsapp/clients/${client.id}/send-template`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to: lead.phone, templateName: selectedTemplate, language: template?.language ?? 'es' }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? 'No se pudo enviar el mensaje')
+      setResult({ ok: true, message: 'Mensaje enviado desde el WhatsApp Business.' })
+    } catch (err) {
+      setResult({ ok: false, message: err instanceof Error ? err.message : 'No se pudo enviar el mensaje' })
+    } finally {
+      setSending(false)
+    }
+  }
+
+  if (loading) return null
+  if (!lead.phone) return null
+  if (!client) {
+    return (
+      <p className="text-xs mb-5" style={{ color: 'rgba(224,247,255,0.4)' }}>
+        No hay un número de WhatsApp Business propio conectado (activa &quot;consultar calendario&quot; en un cliente de WhatsApp IA para marcarlo como tu número).
+      </p>
+    )
+  }
+  if (templates.length === 0) {
+    return (
+      <p className="text-xs mb-5" style={{ color: 'rgba(224,247,255,0.4)' }}>
+        No tienes plantillas aprobadas por Meta todavía. Crea una en <b>WhatsApp IA → Plantillas</b> y espera su aprobación para poder iniciar conversaciones desde tu número de negocio.
+      </p>
+    )
+  }
+
+  return (
+    <div className="mb-5 p-3 rounded-xl" style={{ background: 'rgba(37,211,102,0.05)', border: '1px solid rgba(37,211,102,0.2)' }}>
+      <p className="text-xs font-semibold mb-2" style={{ color: '#25d366' }}>Iniciar conversación desde tu WhatsApp Business</p>
+      <div className="flex gap-2">
+        <select value={selectedTemplate} onChange={e => setSelectedTemplate(e.target.value)}
+          className="flex-1 px-2 py-1.5 rounded-lg text-xs bg-transparent border"
+          style={{ borderColor: 'rgba(0,229,255,0.15)', color: '#e0f7ff' }}>
+          {templates.map(t => <option key={t.id} value={t.name} className="bg-[#000a0f]">{t.name}</option>)}
+        </select>
+        <button onClick={handleSend} disabled={sending}
+          className="text-xs font-semibold px-3 py-1.5 rounded-lg disabled:opacity-50"
+          style={{ background: '#25d366', color: '#000a0f' }}>
+          {sending ? 'Enviando...' : 'Enviar'}
+        </button>
+      </div>
+      {result && (
+        <p className="text-xs mt-2" style={{ color: result.ok ? '#00e564' : 'rgba(240,0,80,0.8)' }}>{result.message}</p>
+      )}
+    </div>
+  )
+}
+
 function LeadDetailModal({ lead, onClose }: { lead: Lead; onClose: () => void }) {
   const s = STATUS_CONFIG[lead.status]
   const date = new Date(lead.created_at).toLocaleString('es-CL', {
@@ -205,6 +292,8 @@ function LeadDetailModal({ lead, onClose }: { lead: Lead; onClose: () => void })
             <p className="text-sm break-all" style={{ color: '#e0f7ff' }}>{lead.email}</p>
           </div>
         </div>
+
+        <StartWhatsAppBusinessConvo lead={lead} />
 
         {lead.ai_reasoning && (
           <div className="mb-5 p-3 rounded-xl" style={{ background: 'rgba(0,229,255,0.04)', border: '1px solid rgba(0,229,255,0.1)' }}>
