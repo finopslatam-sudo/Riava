@@ -182,20 +182,14 @@ export async function generateWaReply(
   try {
     return await buildAndRun(client, history, message)
   } catch (err) {
-    console.error('[wa-brain] generateWaReply failed:', err)
-    return FALLBACK_REPLY
+    console.error('[wa-brain] generateWaReply failed, retrying once:', err)
   }
-}
-
-export async function generateWaReplyDebug(
-  client: WaClient,
-  history: WaMessage[],
-  message: string
-): Promise<{ ok: true; text: string } | { ok: false; error: string }> {
   try {
-    return { ok: true, text: await buildAndRun(client, history, message) }
+    await new Promise(r => setTimeout(r, 1500))
+    return await buildAndRun(client, history, message)
   } catch (err) {
-    return { ok: false, error: err instanceof Error ? `${err.name}: ${err.stack ?? err.message}` : String(err) }
+    console.error('[wa-brain] generateWaReply retry failed:', err)
+    return FALLBACK_REPLY
   }
 }
 
