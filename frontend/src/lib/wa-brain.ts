@@ -146,9 +146,11 @@ async function buildAndRun(client: WaClient, history: WaMessage[], message: stri
           'Catálogo de servicios disponible para cotizar (usa exactamente estos ids, nombres y precios, nunca inventes otros):',
           catalogText || '(sin servicios cargados en el catálogo todavía)',
           'Si la persona pide una cotización, conversa qué ítems del catálogo le interesan, y antes de usar createQuote necesitas su nombre completo y correo electrónico. Confirma con la persona el detalle antes de enviarla.',
+          'La cotización SOLO se puede enviar por correo electrónico usando la herramienta createQuote. No puedes generar ni enviar archivos PDF, imágenes, ni ningún adjunto directamente por WhatsApp — no existe esa capacidad. Si te piden la cotización "por este medio", "por WhatsApp" o en PDF dentro del chat, explica amablemente que solo la puedes enviar por correo electrónico y pide el email.',
           'Solo confirma que la cotización fue enviada después de que createQuote devuelva éxito. Si falla, informa el error.',
         ].join('\n')
       : '',
+    'REGLA CRÍTICA: nunca inventes ni simules el resultado de una herramienta (horarios, ids de horario, confirmaciones de cita, cotizaciones, códigos, archivos, links). Si necesitas datos que solo puede darte una herramienta, llama la herramienta correspondiente; si no tienes una herramienta para lo que te piden, dilo explícitamente en vez de fabricar una respuesta que parezca real.',
     'Responde siempre en español, de forma concisa y útil. No inventes información que no te hayan dado.',
   ]
     .filter(Boolean)
@@ -190,18 +192,6 @@ export async function generateWaReply(
   } catch (err) {
     console.error('[wa-brain] generateWaReply retry failed:', err)
     return FALLBACK_REPLY
-  }
-}
-
-export async function generateWaReplyDebug(
-  client: WaClient,
-  history: WaMessage[],
-  message: string
-): Promise<{ ok: true; text: string } | { ok: false; error: string }> {
-  try {
-    return { ok: true, text: await buildAndRun(client, history, message) }
-  } catch (err) {
-    return { ok: false, error: err instanceof Error ? `${err.name}: ${err.stack ?? err.message}` : String(err) }
   }
 }
 
