@@ -416,6 +416,7 @@ export default function AgendarPage() {
                         <div>
                           <label className="text-xs mb-1 block tracking-wide" style={{ color: 'rgba(0,229,255,0.6)' }}>Nombre *</label>
                           <input required value={form.name} onChange={e => handleFieldChange('name', e.target.value)} placeholder="Ricardo"
+                            spellCheck lang="es"
                             className="w-full rounded-lg px-3 py-2 text-sm outline-none" style={inputStyle}
                             onFocus={e => { e.currentTarget.style.border = '1px solid rgba(0,229,255,0.5)' }}
                             onBlur={e => { e.currentTarget.style.border = '1px solid rgba(0,229,255,0.2)' }} />
@@ -423,6 +424,7 @@ export default function AgendarPage() {
                         <div>
                           <label className="text-xs mb-1 block tracking-wide" style={{ color: 'rgba(0,229,255,0.6)' }}>Apellido *</label>
                           <input required value={form.lastName} onChange={e => handleFieldChange('lastName', e.target.value)} placeholder="García"
+                            spellCheck lang="es"
                             className="w-full rounded-lg px-3 py-2 text-sm outline-none" style={inputStyle}
                             onFocus={e => { e.currentTarget.style.border = '1px solid rgba(0,229,255,0.5)' }}
                             onBlur={e => { e.currentTarget.style.border = '1px solid rgba(0,229,255,0.2)' }} />
@@ -432,6 +434,7 @@ export default function AgendarPage() {
                       <div>
                         <label className="text-xs mb-1 block tracking-wide" style={{ color: 'rgba(0,229,255,0.6)' }}>Empresa</label>
                         <input value={form.company} onChange={e => handleFieldChange('company', e.target.value)} placeholder="Tu empresa"
+                          spellCheck lang="es"
                           className="w-full rounded-lg px-3 py-2 text-sm outline-none" style={inputStyle}
                           onFocus={e => { e.currentTarget.style.border = '1px solid rgba(0,229,255,0.5)' }}
                           onBlur={e => { e.currentTarget.style.border = '1px solid rgba(0,229,255,0.2)' }} />
