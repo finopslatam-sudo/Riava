@@ -1,12 +1,9 @@
 import { getAllLeads, updateLead } from '@/lib/leads-store'
+import { getAutomation } from '@/lib/automations-store'
 import { sendEmail } from '@/lib/mailer'
 
 const AGENDAR_URL = 'https://www.riava.cl/agendar'
 const WHATSAPP_NUMBER = '56965090121'
-
-const FOLLOW_UP_INTERVAL_DAYS = 2
-const FOLLOW_UP_PERIOD_DAYS = 30
-const MAX_FOLLOW_UPS = Math.floor(FOLLOW_UP_PERIOD_DAYS / FOLLOW_UP_INTERVAL_DAYS)
 
 function daysBetween(a: Date, b: Date): number {
   return (b.getTime() - a.getTime()) / (1000 * 60 * 60 * 24)
@@ -63,6 +60,13 @@ function buildFollowUpEmail(fullName: string): string {
 export type FollowUpResult = { sent: number; skipped: number; checked: number }
 
 export async function runLeadsFollowUp(): Promise<FollowUpResult> {
+  const automation = await getAutomation('lead_followup')
+  if (!automation.enabled) return { sent: 0, skipped: 0, checked: 0 }
+
+  const intervalDays = automation.config.interval_days
+  const periodDays = automation.config.period_days
+  const maxFollowUps = Math.floor(periodDays / intervalDays)
+
   const leads = await getAllLeads()
   const now = new Date()
 
@@ -76,9 +80,9 @@ export async function runLeadsFollowUp(): Promise<FollowUpResult> {
     checked++
 
     const followUpCount = lead.follow_up_count ?? 0
-    if (followUpCount >= MAX_FOLLOW_UPS) { skipped++; continue }
-    if (daysBetween(new Date(lead.first_contact_at), now) > FOLLOW_UP_PERIOD_DAYS) { skipped++; continue }
-    if (daysBetween(new Date(lead.last_contact_at), now) < FOLLOW_UP_INTERVAL_DAYS) { skipped++; continue }
+    if (followUpCount >= maxFollowUps) { skipped++; continue }
+    if (daysBetween(new Date(lead.first_contact_at), now) > periodDays) { skipped++; continue }
+    if (daysBetween(new Date(lead.last_contact_at), now) < intervalDays) { skipped++; continue }
 
     try {
       await sendEmail({

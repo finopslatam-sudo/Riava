@@ -30,6 +30,7 @@ export type Appointment = {
   service: string
   meetLink: string
   createdAt: string
+  reminderSent?: boolean
 }
 
 export async function getSlots(): Promise<TimeSlot[]> {

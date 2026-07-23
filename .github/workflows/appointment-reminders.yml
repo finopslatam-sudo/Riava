@@ -1,0 +1,22 @@
+name: Appointment Reminders
+
+on:
+  schedule:
+    - cron: '20 * * * *'
+  workflow_dispatch: {}
+
+jobs:
+  remind:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger appointment reminders
+        run: |
+          http_code=$(curl -s -o response.json -w "%{http_code}" -X GET "https://www.riava.cl/api/cron/appointment-reminders" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}")
+          echo "HTTP status: $http_code"
+          echo "Response body:"
+          cat response.json
+          if [ "$http_code" -ge 400 ]; then
+            echo "::error::Appointment reminders failed with HTTP $http_code"
+            exit 1
+          fi
