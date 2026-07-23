@@ -76,7 +76,7 @@ async function buildAndRun(client: WaClient, history: WaMessage[], message: stri
   ]
 
   const result = await generateText({
-    model: groq('moonshotai/kimi-k2-instruct-0905'),
+    model: groq('openai/gpt-oss-120b'),
     system: systemPrompt,
     messages,
     tools: client.enable_scheduling
