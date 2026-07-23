@@ -185,7 +185,20 @@ function LeadDetailModal({ lead, onClose }: { lead: Lead; onClose: () => void })
         <div className="grid grid-cols-2 gap-4 mb-5">
           <div>
             <p className="text-xs font-medium mb-1" style={{ color: 'rgba(0,229,255,0.5)' }}>Número de teléfono</p>
-            <p className="text-sm" style={{ color: '#e0f7ff' }}>{lead.phone || '—'}</p>
+            {lead.phone ? (
+              <a
+                href={`https://wa.me/${lead.phone.replace(/[^\d]/g, '')}?text=${encodeURIComponent(`Hola ${lead.full_name.split(' ')[0]}, te contacto de RIAVA System.`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm inline-flex items-center gap-1.5 hover:underline"
+                style={{ color: '#25d366' }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.1-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.4-.7-1.7-.8-.2-.1-.4-.1-.6.1-.2.2-.6.8-.8 1-.1.2-.3.2-.5.1-.2-.1-1-.4-2-1.2-.7-.6-1.2-1.4-1.4-1.6-.1-.2 0-.4.1-.5.1-.1.2-.3.4-.4.1-.1.2-.2.2-.4.1-.1 0-.3 0-.4 0-.1-.6-1.4-.8-1.9-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.4.1-.6.3-.2.2-.8.8-.8 1.9s.8 2.2.9 2.4c.1.2 1.6 2.4 3.8 3.4.5.2.9.4 1.3.5.5.2 1 .1 1.4.1.4-.1 1.4-.6 1.6-1.1.2-.5.2-.9.1-1Z" /></svg>
+                {lead.phone}
+              </a>
+            ) : (
+              <p className="text-sm" style={{ color: '#e0f7ff' }}>—</p>
+            )}
           </div>
           <div>
             <p className="text-xs font-medium mb-1" style={{ color: 'rgba(0,229,255,0.5)' }}>Correo electrónico</p>
