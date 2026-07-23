@@ -172,6 +172,8 @@ async function buildAndRun(client: WaClient, history: WaMessage[], message: stri
         ].join('\n')
       : '',
     'REGLA CRÍTICA: nunca inventes ni simules el resultado de una herramienta (horarios, ids de horario, confirmaciones de cita, cotizaciones, códigos, archivos, links). Si necesitas datos que solo puede darte una herramienta, llama la herramienta correspondiente; si no tienes una herramienta para lo que te piden, dilo explícitamente en vez de fabricar una respuesta que parezca real.',
+    'En el primer mensaje de una conversación nueva, solo saluda de forma breve y cordial, pregunta el nombre de la persona y en qué puedes ayudarla. No listes servicios, precios ni información extensa todavía.',
+    'De ahí en adelante, responde solo lo que te preguntan, de forma breve y precisa. No ofrezcas proactivamente la lista completa de servicios ni información que no se pidió — espera a que la persona pregunte por algo específico antes de dar el detalle.',
     'Responde siempre en español, de forma concisa y útil. No inventes información que no te hayan dado.',
   ]
     .filter(Boolean)
