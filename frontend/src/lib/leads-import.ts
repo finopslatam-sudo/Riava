@@ -9,7 +9,7 @@ type FormQuestion = { key: string; label?: string }
 const AGENDAR_URL = 'https://www.riava.cl/agendar'
 const WHATSAPP_NUMBER = '56965090121'
 
-function buildWelcomeEmail(fullName: string): string {
+export function buildWelcomeEmail(fullName: string): string {
   const firstName = fullName.split(' ')[0] || fullName
   const whatsappText = encodeURIComponent(`Hola, soy ${fullName} y llené el formulario en la web de RIAVA System.`)
   const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${whatsappText}`
