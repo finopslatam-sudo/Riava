@@ -1,0 +1,22 @@
+name: Follow Up Leads
+
+on:
+  schedule:
+    - cron: '0 15 * * *'
+  workflow_dispatch: {}
+
+jobs:
+  follow-up:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger lead follow-up
+        run: |
+          http_code=$(curl -s -o response.json -w "%{http_code}" -X GET "https://www.riava.cl/api/cron/follow-up-leads" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}")
+          echo "HTTP status: $http_code"
+          echo "Response body:"
+          cat response.json
+          if [ "$http_code" -ge 400 ]; then
+            echo "::error::Lead follow-up failed with HTTP $http_code"
+            exit 1
+          fi

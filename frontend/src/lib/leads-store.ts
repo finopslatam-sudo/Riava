@@ -23,6 +23,9 @@ export type Lead = {
   ai_reasoning: string
   created_at: string
   updated_at: string
+  first_contact_at?: string
+  last_contact_at?: string
+  follow_up_count?: number
 }
 
 export type CreateLeadInput = {

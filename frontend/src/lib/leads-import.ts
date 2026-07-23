@@ -188,6 +188,8 @@ export async function runLeadsImport(token: string): Promise<LeadsImportResult> 
           subject: `Gracias por contactar a RIAVA System, ${full_name.split(' ')[0]}`,
           html: buildWelcomeEmail(full_name),
         }).catch(() => {})
+        const contactedAt = new Date().toISOString()
+        await updateLead(lead.id, { first_contact_at: contactedAt, last_contact_at: contactedAt, follow_up_count: 0 })
 
         sendEmail({
           to: 'contacto@riava.cl',
