@@ -176,34 +176,23 @@ async function buildAndRun(client: WaClient, history: WaMessage[], message: stri
   return result.text || FALLBACK_REPLY
 }
 
+const RETRY_DELAYS_MS = [1500, 4000, 8000]
+
 export async function generateWaReply(
   client: WaClient,
   history: WaMessage[],
   message: string
 ): Promise<string> {
-  try {
-    return await buildAndRun(client, history, message)
-  } catch (err) {
-    console.error('[wa-brain] generateWaReply failed, retrying once:', err)
+  for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt++) {
+    try {
+      return await buildAndRun(client, history, message)
+    } catch (err) {
+      console.error(`[wa-brain] generateWaReply failed (attempt ${attempt + 1}/${RETRY_DELAYS_MS.length + 1}):`, err)
+      if (attempt < RETRY_DELAYS_MS.length) {
+        await new Promise(r => setTimeout(r, RETRY_DELAYS_MS[attempt]))
+      }
+    }
   }
-  try {
-    await new Promise(r => setTimeout(r, 1500))
-    return await buildAndRun(client, history, message)
-  } catch (err) {
-    console.error('[wa-brain] generateWaReply retry failed:', err)
-    return FALLBACK_REPLY
-  }
-}
-
-export async function generateWaReplyDebug(
-  client: WaClient,
-  history: WaMessage[],
-  message: string
-): Promise<{ ok: true; text: string } | { ok: false; error: string }> {
-  try {
-    return { ok: true, text: await buildAndRun(client, history, message) }
-  } catch (err) {
-    return { ok: false, error: err instanceof Error ? `${err.name}: ${err.stack ?? err.message}` : String(err) }
-  }
+  return FALLBACK_REPLY
 }
 
