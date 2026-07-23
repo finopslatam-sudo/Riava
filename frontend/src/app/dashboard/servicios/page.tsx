@@ -106,15 +106,15 @@ function ServiceModal({
             </div>
             <div className="space-y-2">
               {items.map(item => (
-                <div key={item.id} className="flex gap-2">
-                  <input className={inputClass} style={inputStyle} value={item.name}
+                <div key={item.id} className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 6.5rem 1.75rem' }}>
+                  <input className={`${inputClass} min-w-0`} style={inputStyle} value={item.name}
                     onChange={e => updateItem(item.id, 'name', e.target.value)}
                     placeholder="Ej: Landing page 1 sección" />
-                  <input type="number" min={0} className={`${inputClass} w-32 shrink-0`} style={inputStyle} value={item.price}
+                  <input type="number" min={0} className={`${inputClass} min-w-0`} style={inputStyle} value={item.price}
                     onChange={e => updateItem(item.id, 'price', e.target.value)}
                     placeholder="Precio" />
                   <button type="button" onClick={() => removeItem(item.id)}
-                    className="shrink-0 px-2.5 rounded-lg text-xs"
+                    className="h-full rounded-lg text-xs"
                     style={{ border: '1px solid rgba(240,0,80,0.2)', color: 'rgba(240,0,80,0.7)' }}>
                     ✕
                   </button>
