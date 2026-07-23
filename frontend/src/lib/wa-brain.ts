@@ -1,4 +1,5 @@
 import { generateText, tool, isStepCount } from 'ai'
+import { groq } from '@ai-sdk/groq'
 import { z } from 'zod'
 import type { WaClient, WaMessage } from './wa-store'
 import { BOOKING_SERVICES } from './constants'
@@ -75,7 +76,7 @@ async function buildAndRun(client: WaClient, history: WaMessage[], message: stri
   ]
 
   const result = await generateText({
-    model: 'anthropic/claude-sonnet-5',
+    model: groq('llama-3.3-70b-versatile'),
     system: systemPrompt,
     messages,
     tools: client.enable_scheduling

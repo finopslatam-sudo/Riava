@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@ai-sdk/groq": "^4.0.13",
     "@splinetool/react-spline": "^4.1.0",
     "@splinetool/runtime": "^1.12.85",
     "@upstash/redis": "^1.38.0",
