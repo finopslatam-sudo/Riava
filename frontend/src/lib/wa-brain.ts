@@ -1,9 +1,15 @@
 import { generateText, tool, isStepCount } from 'ai'
 import { groq } from '@ai-sdk/groq'
 import { z } from 'zod'
+import { Redis } from '@upstash/redis'
 import type { WaClient, WaMessage } from './wa-store'
 import { BOOKING_SERVICES } from './constants'
 import { getAllServices } from './services-store'
+
+const redis = new Redis({
+  url: process.env.KV_REST_API_URL!,
+  token: process.env.KV_REST_API_TOKEN!,
+})
 
 const FALLBACK_REPLY =
   'Gracias por tu mensaje. En este momento tenemos un problema técnico, en breve te responderemos.'
@@ -75,6 +81,16 @@ const createQuoteTool = tool({
     }
     const resolvedItems = items as { id: string; description: string; qty: number; unitPrice: number }[]
 
+    const dedupeKey = `riava:wa:quote-sent:${clientEmail.toLowerCase()}`
+    const lockAcquired = await redis.set(dedupeKey, '1', { nx: true, ex: 180 })
+    if (!lockAcquired) {
+      return {
+        success: false,
+        alreadySent: true,
+        error: 'Ya se envió una cotización a este correo hace instantes. No la reenvíes de nuevo — pregúntale a la persona si le llegó.',
+      }
+    }
+
     const subtotal = resolvedItems.reduce((sum, i) => sum + i.qty * i.unitPrice, 0)
     const ivaAmount = Math.round(subtotal * 0.19)
     const total = subtotal + ivaAmount
@@ -108,7 +124,10 @@ const createQuoteTool = tool({
         attachTerminos: true,
       }),
     })
-    if (!res.ok) return { success: false, error: 'No se pudo enviar la cotización' }
+    if (!res.ok) {
+      await redis.del(dedupeKey)
+      return { success: false, error: 'No se pudo enviar la cotización' }
+    }
     return { success: true, quoteNum, total }
   },
 })
@@ -147,7 +166,9 @@ async function buildAndRun(client: WaClient, history: WaMessage[], message: stri
           catalogText || '(sin servicios cargados en el catálogo todavía)',
           'Si la persona pide una cotización, conversa qué ítems del catálogo le interesan, y antes de usar createQuote necesitas su nombre completo y correo electrónico. Confirma con la persona el detalle antes de enviarla.',
           'La cotización SOLO se puede enviar por correo electrónico usando la herramienta createQuote. No puedes generar ni enviar archivos PDF, imágenes, ni ningún adjunto directamente por WhatsApp — no existe esa capacidad. Si te piden la cotización "por este medio", "por WhatsApp" o en PDF dentro del chat, explica amablemente que solo la puedes enviar por correo electrónico y pide el email.',
+          'Llama createQuote como máximo UNA VEZ por solicitud de cotización. Si ya la enviaste en esta conversación (o la herramienta te dice que ya se envió recientemente), NO la vuelvas a enviar — solo responde con normalidad.',
           'Solo confirma que la cotización fue enviada después de que createQuote devuelva éxito. Si falla, informa el error.',
+          'Después de confirmar el envío, pregunta a la persona si le llegó la cotización a su correo. Cuando responda (llegó o no), agradece y pregúntale si desea agendar una videollamada con un experto de RIAVA para asesorarlo. Si dice que sí y el agendamiento está disponible, sigue el flujo normal de agendamiento.',
         ].join('\n')
       : '',
     'REGLA CRÍTICA: nunca inventes ni simules el resultado de una herramienta (horarios, ids de horario, confirmaciones de cita, cotizaciones, códigos, archivos, links). Si necesitas datos que solo puede darte una herramienta, llama la herramienta correspondiente; si no tienes una herramienta para lo que te piden, dilo explícitamente en vez de fabricar una respuesta que parezca real.',
