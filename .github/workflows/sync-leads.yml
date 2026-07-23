@@ -11,5 +11,12 @@ jobs:
     steps:
       - name: Trigger lead sync
         run: |
-          curl -sf -X GET "https://www.riava.cl/api/cron/sync-leads" \
-            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
+          http_code=$(curl -s -o response.json -w "%{http_code}" -X GET "https://www.riava.cl/api/cron/sync-leads" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}")
+          echo "HTTP status: $http_code"
+          echo "Response body:"
+          cat response.json
+          if [ "$http_code" -ge 400 ]; then
+            echo "::error::Lead sync failed with HTTP $http_code"
+            exit 1
+          fi
