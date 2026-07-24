@@ -97,14 +97,7 @@ export function ComingSoon({ service, icon }: ComingSoonProps) {
           }}
         >
           Página en{" "}
-          <span
-            style={{
-              background: "linear-gradient(90deg, #00E5FF, #8b5cf6)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-            }}
-          >
+          <span style={{ color: "#fff" }}>
             construcción
           </span>
         </h1>

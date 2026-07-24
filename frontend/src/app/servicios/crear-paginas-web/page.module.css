@@ -87,10 +87,7 @@
 }
 
 .textGradient {
-  background: linear-gradient(90deg, #00E5FF, #8b5cf6);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #fff;
 }
 
 .subtitle {

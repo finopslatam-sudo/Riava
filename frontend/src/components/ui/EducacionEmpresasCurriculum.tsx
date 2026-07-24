@@ -318,7 +318,7 @@ export function EducacionEmpresasCurriculum() {
             </span>
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
               De cero a{" "}
-              <span style={{ background: "linear-gradient(90deg, #a855f7, #f000ff)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+              <span style={{ color: "#fff" }}>
                 experto en IA
               </span>
             </h2>
@@ -379,7 +379,7 @@ export function EducacionEmpresasCurriculum() {
           >
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
               Curriculum por{" "}
-              <span style={{ background: "linear-gradient(90deg, #00e5ff, #a855f7)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+              <span style={{ color: "#fff" }}>
                 herramienta de IA
               </span>
             </h2>
@@ -547,7 +547,7 @@ export function EducacionEmpresasCurriculum() {
           >
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
               Especialización{" "}
-              <span style={{ background: "linear-gradient(90deg, #f000ff, #a855f7)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+              <span style={{ color: "#fff" }}>
                 por área y rol
               </span>
             </h2>
@@ -621,7 +621,7 @@ export function EducacionEmpresasCurriculum() {
           >
             <h2 className="text-3xl font-bold text-white mb-4">
               Formatos de{" "}
-              <span style={{ background: "linear-gradient(90deg, #00e5ff, #a855f7)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+              <span style={{ color: "#fff" }}>
                 capacitación
               </span>
             </h2>

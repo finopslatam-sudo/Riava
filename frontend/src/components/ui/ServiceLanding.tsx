@@ -48,10 +48,7 @@ export interface ServiceLandingProps {
 const fadeUp = { hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0 } }
 
 const gradientText: React.CSSProperties = {
-  background: "linear-gradient(90deg, #00E5FF, #8b5cf6)",
-  WebkitBackgroundClip: "text",
-  WebkitTextFillColor: "transparent",
-  backgroundClip: "text",
+  color: "#fff",
 }
 
 export function ServiceLanding({

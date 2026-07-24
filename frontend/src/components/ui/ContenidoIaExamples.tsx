@@ -131,12 +131,7 @@ export function ContenidoIaExamples() {
             lineHeight: 1.15,
           }}>
             Creamos imágenes y videos comerciales{" "}
-            <span style={{
-              background: "linear-gradient(90deg, #f000ff, #8b5cf6)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-            }}>
+            <span style={{ color: "#fff" }}>
               que venden
             </span>
           </h2>
