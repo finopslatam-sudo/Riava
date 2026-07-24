@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, FormEvent } from 'react'
+import { useState, useEffect, useRef, FormEvent } from 'react'
 
 type WaClient = {
   id: string
@@ -302,6 +302,7 @@ function ConversationsPanel({ client, onClose }: { client: WaClient; onClose: ()
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [loading, setLoading] = useState(true)
   const [selected, setSelected] = useState<string | null>(null)
+  const threadEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     fetch(`/api/whatsapp/clients/${client.id}/conversations`)
@@ -311,6 +312,10 @@ function ConversationsPanel({ client, onClose }: { client: WaClient; onClose: ()
   }, [client.id])
 
   const active = conversations.find(c => c.contact === selected)
+
+  useEffect(() => {
+    threadEndRef.current?.scrollIntoView({ block: 'end' })
+  }, [active])
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,10,15,0.75)' }} onClick={onClose}>
@@ -364,6 +369,7 @@ function ConversationsPanel({ client, onClose }: { client: WaClient; onClose: ()
                 </div>
               </div>
             ))}
+            <div ref={threadEndRef} />
           </div>
         </div>
       </div>

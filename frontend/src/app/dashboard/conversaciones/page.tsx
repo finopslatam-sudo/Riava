@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 
 type WaMessage = { role: 'user' | 'assistant'; content: string; timestamp: string }
 
@@ -52,6 +52,11 @@ export default function ConversacionesPage() {
   const [replyText, setReplyText] = useState('')
   const [sendingReply, setSendingReply] = useState(false)
   const [sendError, setSendError] = useState('')
+  const threadEndRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    threadEndRef.current?.scrollIntoView({ block: 'end' })
+  }, [thread])
 
   const loadConversations = useCallback(() => {
     fetch('/api/whatsapp/conversations')
@@ -328,6 +333,7 @@ export default function ConversacionesPage() {
                     </div>
                   ))
                 )}
+                <div ref={threadEndRef} />
               </div>
               <div className="p-3" style={{ borderTop: '1px solid rgba(0,229,255,0.1)' }}>
                 {sendError && (
