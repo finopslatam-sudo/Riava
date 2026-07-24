@@ -33,8 +33,8 @@ export function Booking() {
           <p className="text-xs tracking-widest uppercase font-semibold mb-4" style={{ color: 'rgba(0,229,255,0.5)' }}>
             Reuniones · Google Meet
           </p>
-          <h2 className="text-3xl lg:text-4xl font-bold mb-4" style={{ color: '#e0f7ff' }}>
-            Agenda una <span style={{ color: '#00e5ff' }}>reunión</span> con nosotros
+          <h2 className="text-3xl lg:text-4xl font-bold mb-4" style={{ color: '#fff' }}>
+            Agenda una reunión con nosotros
           </h2>
           <p className="text-base max-w-xl mx-auto" style={{ color: 'rgba(224,247,255,0.5)', lineHeight: 1.7 }}>
             Elige el horario que más te acomode. Recibirás un correo de confirmación con el enlace de Google Meet automáticamente.

@@ -45,7 +45,7 @@ export function SplineShowcase() {
             </span>
             <h2 className="mb-5 text-4xl font-black tracking-tight text-white sm:text-5xl md:text-6xl">
               Make the website feel as advanced as the{" "}
-              <span className="text-tron">systems you build</span>
+              <span className="text-white">systems you build</span>
             </h2>
             <p className="mx-auto max-w-2xl text-lg font-light leading-relaxed text-[#7ab8c8]">
               This section turns RIAVA&apos;s positioning into something tangible:

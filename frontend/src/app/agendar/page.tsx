@@ -287,8 +287,8 @@ export default function AgendarPage() {
       <main className="relative z-10 max-w-6xl mx-auto px-4 py-10">
         <div className="text-center mb-10">
           <p className="text-xs tracking-widest uppercase font-semibold mb-3" style={{ color: 'rgba(0,229,255,0.5)' }}>RIAVA System SpA</p>
-          <h1 className="text-3xl lg:text-4xl font-bold mb-3" style={{ color: '#e0f7ff' }}>
-            Agenda una <span className="text-tron">reunión</span>
+          <h1 className="text-3xl lg:text-4xl font-bold mb-3" style={{ color: '#fff' }}>
+            Agenda una reunión
           </h1>
           <p className="text-sm max-w-xl mx-auto" style={{ color: 'rgba(224,247,255,0.5)' }}>
             Elige un día disponible, selecciona tu horario y completa el formulario.

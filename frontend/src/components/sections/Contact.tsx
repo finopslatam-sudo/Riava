@@ -167,7 +167,7 @@ export function Contact() {
                       <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                     </svg>
                   </div>
-                  <h3 className="text-tron text-2xl font-black mb-2">¡Mensaje enviado!</h3>
+                  <h3 className="text-white text-2xl font-black mb-2">¡Mensaje enviado!</h3>
                   <p className="text-[#64748b] font-mono text-sm">Te responderemos dentro de 24 horas.</p>
                   <button
                     onClick={() => setStatus("idle")}
