@@ -137,3 +137,20 @@ export async function markConversationRead(phoneNumberId: string, customerPhone:
   map[lastReadMapKey(phoneNumberId, customerPhone)] = new Date().toISOString()
   await redis.set(LAST_READ_KEY, map)
 }
+
+const CONTACT_NAMES_KEY = 'riava:wa:contactnames'
+
+export async function getContactNamesMap(): Promise<Record<string, string>> {
+  return (await redis.get<Record<string, string>>(CONTACT_NAMES_KEY)) ?? {}
+}
+
+export async function setContactName(phoneNumberId: string, customerPhone: string, name: string): Promise<void> {
+  const map = await getContactNamesMap()
+  const key = lastReadMapKey(phoneNumberId, customerPhone)
+  if (name.trim()) {
+    map[key] = name.trim()
+  } else {
+    delete map[key]
+  }
+  await redis.set(CONTACT_NAMES_KEY, map)
+}

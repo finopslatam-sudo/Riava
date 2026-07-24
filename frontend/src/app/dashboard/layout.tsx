@@ -196,7 +196,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 px-3 py-2 flex flex-col gap-1 overflow-y-auto">
+        <nav className="dash-nav-scroll flex-1 px-3 py-2 flex flex-col gap-1 overflow-y-auto">
           {NAV.map(item => {
             const active = pathname === item.href
             return (
@@ -350,6 +350,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {children}
         </main>
       </div>
+
+      <style>{`
+        .dash-nav-scroll { scrollbar-width: thin; scrollbar-color: rgba(0,229,255,0.3) transparent; }
+        .dash-nav-scroll::-webkit-scrollbar { width: 6px; }
+        .dash-nav-scroll::-webkit-scrollbar-track { background: transparent; }
+        .dash-nav-scroll::-webkit-scrollbar-thumb { background: rgba(0,229,255,0.25); border-radius: 3px; }
+        .dash-nav-scroll::-webkit-scrollbar-thumb:hover { background: rgba(0,229,255,0.45); }
+      `}</style>
     </div>
   )
 }
