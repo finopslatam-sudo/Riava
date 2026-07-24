@@ -49,6 +49,9 @@ export default function ConversacionesPage() {
   const [editingName, setEditingName] = useState(false)
   const [nameDraft, setNameDraft] = useState('')
   const [savingName, setSavingName] = useState(false)
+  const [replyText, setReplyText] = useState('')
+  const [sendingReply, setSendingReply] = useState(false)
+  const [sendError, setSendError] = useState('')
 
   const loadConversations = useCallback(() => {
     fetch('/api/whatsapp/conversations')
@@ -81,6 +84,8 @@ export default function ConversacionesPage() {
   const openConversation = async (c: ConversationSummary) => {
     setSelected({ clientId: c.clientId, contact: c.contact })
     setEditingName(false)
+    setReplyText('')
+    setSendError('')
     setThreadLoading(true)
     try {
       const [historyRes] = await Promise.all([
@@ -122,6 +127,36 @@ export default function ConversacionesPage() {
       setEditingName(false)
     } finally {
       setSavingName(false)
+    }
+  }
+
+  const sendReply = async () => {
+    if (!selected || !replyText.trim() || sendingReply) return
+    const text = replyText.trim()
+    setSendingReply(true)
+    setSendError('')
+    try {
+      const res = await fetch(`/api/whatsapp/conversations/${selected.clientId}/${encodeURIComponent(selected.contact)}/send`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? 'No se pudo enviar el mensaje')
+      const now = new Date().toISOString()
+      setThread(prev => [...prev, { role: 'assistant', content: text, timestamp: now }])
+      setConversations(prev =>
+        prev.map(x =>
+          x.clientId === selected.clientId && x.contact === selected.contact
+            ? { ...x, lastMessage: { role: 'assistant', content: text, timestamp: now } }
+            : x
+        )
+      )
+      setReplyText('')
+    } catch (err) {
+      setSendError(err instanceof Error ? err.message : 'No se pudo enviar el mensaje')
+    } finally {
+      setSendingReply(false)
     }
   }
 
@@ -287,6 +322,29 @@ export default function ConversacionesPage() {
                     </div>
                   ))
                 )}
+              </div>
+              <div className="p-3" style={{ borderTop: '1px solid rgba(0,229,255,0.1)' }}>
+                {sendError && (
+                  <p className="text-xs mb-2" style={{ color: 'rgba(240,0,80,0.8)' }}>{sendError}</p>
+                )}
+                <div className="flex items-end gap-2">
+                  <textarea
+                    value={replyText}
+                    onChange={e => setReplyText(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendReply() } }}
+                    placeholder="Escribe un mensaje manual (se envía desde tu número de negocio)..."
+                    rows={2}
+                    className="flex-1 px-3 py-2 rounded-lg text-sm bg-transparent border focus:outline-none resize-none"
+                    style={{ borderColor: 'rgba(0,229,255,0.15)', color: '#e0f7ff' }}
+                  />
+                  <button
+                    onClick={sendReply}
+                    disabled={sendingReply || !replyText.trim()}
+                    className="btn-tron shrink-0 px-4 py-2.5 rounded-lg text-xs font-semibold text-white disabled:opacity-50"
+                  >
+                    {sendingReply ? '...' : 'Enviar'}
+                  </button>
+                </div>
               </div>
             </>
           )}

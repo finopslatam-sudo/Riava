@@ -82,12 +82,12 @@ const createQuoteTool = tool({
     const resolvedItems = items as { id: string; description: string; qty: number; unitPrice: number }[]
 
     const dedupeKey = `riava:wa:quote-sent:${clientEmail.toLowerCase()}`
-    const lockAcquired = await redis.set(dedupeKey, '1', { nx: true, ex: 180 })
+    const lockAcquired = await redis.set(dedupeKey, '1', { nx: true, ex: 21600 })
     if (!lockAcquired) {
       return {
         success: false,
         alreadySent: true,
-        error: 'Ya se envió una cotización a este correo hace instantes. No la reenvíes de nuevo — pregúntale a la persona si le llegó.',
+        error: 'Ya se envió una cotización a este correo en esta conversación. No la reenvíes de nuevo salvo que la persona pida explícitamente una cotización nueva o distinta — en ese caso, respóndele con normalidad sin usar esta herramienta.',
       }
     }
 
@@ -167,6 +167,7 @@ async function buildAndRun(client: WaClient, history: WaMessage[], message: stri
           'Si la persona pide una cotización, conversa qué ítems del catálogo le interesan, y antes de usar createQuote necesitas su nombre completo y correo electrónico. Confirma con la persona el detalle antes de enviarla.',
           'La cotización SOLO se puede enviar por correo electrónico usando la herramienta createQuote. No puedes generar ni enviar archivos PDF, imágenes, ni ningún adjunto directamente por WhatsApp — no existe esa capacidad. Si te piden la cotización "por este medio", "por WhatsApp" o en PDF dentro del chat, explica amablemente que solo la puedes enviar por correo electrónico y pide el email.',
           'Llama createQuote como máximo UNA VEZ por solicitud de cotización. Si ya la enviaste en esta conversación (o la herramienta te dice que ya se envió recientemente), NO la vuelvas a enviar — solo responde con normalidad.',
+          'Mensajes cortos de cortesía como "gracias", "ok", "listo", "perfecto", "dale" NUNCA son una nueva solicitud de cotización — no llames createQuote en respuesta a ese tipo de mensajes, aunque antes hayas hablado de precios o servicios. Solo llama createQuote cuando la persona pida explícitamente una cotización con ítems específicos.',
           'Solo confirma que la cotización fue enviada después de que createQuote devuelva éxito. Si falla, informa el error.',
           'Después de confirmar el envío, pregunta a la persona si le llegó la cotización a su correo. Cuando responda (llegó o no), agradece y pregúntale si desea agendar una videollamada con un experto de RIAVA para asesorarlo. Si dice que sí y el agendamiento está disponible, sigue el flujo normal de agendamiento.',
         ].join('\n')
