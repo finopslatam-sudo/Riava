@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { leadsCampaignsApi, type Campaign } from '@/lib/leads-api'
 import { CreateCampaignModal, type AdAccount } from '../meta-ads/CreateCampaignModal'
+import { EditCampaignModal } from './EditCampaignModal'
 
 const STATUS_COLORS: Record<Campaign['status'], { bg: string; border: string; text: string; label: string }> = {
   ACTIVE: { bg: 'rgba(0,229,100,0.1)', border: 'rgba(0,229,100,0.3)', text: '#00e564', label: 'Activa' },
@@ -36,6 +37,7 @@ export default function CampanasPage() {
   const [metaConnected, setMetaConnected] = useState(false)
   const [accounts, setAccounts] = useState<AdAccount[]>([])
   const [showCreate, setShowCreate] = useState(false)
+  const [editingCampaignId, setEditingCampaignId] = useState<string | null>(null)
 
   useEffect(() => {
     leadsCampaignsApi.list()
@@ -152,13 +154,14 @@ export default function CampanasPage() {
         <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(0,10,18,0.9)', border: '1px solid rgba(0,229,255,0.12)' }}>
           {/* Table header */}
           <div className="grid px-5 py-3 text-xs font-semibold uppercase tracking-wider"
-            style={{ gridTemplateColumns: '1fr 100px 110px 90px 80px 80px', color: 'rgba(0,229,255,0.4)', borderBottom: '1px solid rgba(0,229,255,0.08)' }}>
+            style={{ gridTemplateColumns: '1fr 100px 110px 90px 80px 80px 70px', color: 'rgba(0,229,255,0.4)', borderBottom: '1px solid rgba(0,229,255,0.08)' }}>
             <span>Campaña</span>
             <span>Estado</span>
             <span className="text-right">Gasto</span>
             <span className="text-right">Leads</span>
             <span className="text-right">CPL</span>
             <span className="text-right">CTR</span>
+            <span></span>
           </div>
 
           {campaigns.map((c, idx) => {
@@ -168,7 +171,7 @@ export default function CampanasPage() {
               <div key={c.id}
                 className="grid px-5 py-4 items-center transition-all"
                 style={{
-                  gridTemplateColumns: '1fr 100px 110px 90px 80px 80px',
+                  gridTemplateColumns: '1fr 100px 110px 90px 80px 80px 70px',
                   background: idx % 2 === 0 ? 'transparent' : 'rgba(0,229,255,0.02)',
                   borderBottom: '1px solid rgba(0,229,255,0.06)',
                 }}>
@@ -185,6 +188,13 @@ export default function CampanasPage() {
                 <span className="text-sm text-right font-bold" style={{ color: '#00e5ff' }}>{fmt(c.leads_count)}</span>
                 <span className="text-sm text-right" style={{ color: 'rgba(224,247,255,0.7)' }}>{fmtCurrency(c.cpl)}</span>
                 <span className="text-sm text-right" style={{ color: 'rgba(224,247,255,0.5)' }}>{ctr}%</span>
+                <span className="text-right">
+                  <button onClick={() => setEditingCampaignId(c.id)}
+                    className="text-xs font-medium px-2 py-1 rounded-lg"
+                    style={{ border: '1px solid rgba(0,229,255,0.15)', color: 'rgba(0,229,255,0.7)' }}>
+                    Editar
+                  </button>
+                </span>
               </div>
             )
           })}
@@ -196,6 +206,14 @@ export default function CampanasPage() {
           accounts={accounts}
           onClose={() => setShowCreate(false)}
           onCreated={() => { setShowCreate(false); leadsCampaignsApi.list().then(setCampaigns).catch(() => {}) }}
+        />
+      )}
+
+      {editingCampaignId && (
+        <EditCampaignModal
+          campaignId={editingCampaignId}
+          onClose={() => setEditingCampaignId(null)}
+          onSaved={() => leadsCampaignsApi.list().then(setCampaigns).catch(() => {})}
         />
       )}
     </div>

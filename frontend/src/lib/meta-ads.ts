@@ -251,6 +251,115 @@ export async function createAdSet(
   return data.id as string
 }
 
+export type AdSetDetail = {
+  id: string
+  name: string
+  status: string
+  daily_budget?: string
+  age_min?: number
+  age_max?: number
+  genders?: number[]
+  geo_locations?: {
+    countries?: string[]
+    regions?: { key: string; name?: string }[]
+    cities?: { key: string; name?: string; radius?: number; distance_unit?: string }[]
+  }
+  flexible_spec?: Record<string, { id: string; name?: string }[]>[]
+}
+
+export async function getCampaignAdSet(token: string, campaignId: string): Promise<AdSetDetail | null> {
+  const res = await fetch(
+    `${GRAPH_BASE}/${campaignId}/adsets?fields=id,name,status,daily_budget,targeting&access_token=${token}`
+  )
+  if (!res.ok) return null
+  const { data } = await res.json() as {
+    data?: { id: string; name: string; status: string; daily_budget?: string; targeting?: Record<string, unknown> }[]
+  }
+  const first = data?.[0]
+  if (!first) return null
+  const targeting = (first.targeting ?? {}) as AdSetDetail
+  return {
+    id: first.id,
+    name: first.name,
+    status: first.status,
+    daily_budget: first.daily_budget,
+    age_min: targeting.age_min,
+    age_max: targeting.age_max,
+    genders: targeting.genders,
+    geo_locations: targeting.geo_locations,
+    flexible_spec: targeting.flexible_spec,
+  }
+}
+
+export async function updateCampaign(
+  token: string,
+  campaignId: string,
+  input: { name?: string; status?: 'ACTIVE' | 'PAUSED' }
+): Promise<void> {
+  const body: Record<string, unknown> = {}
+  if (input.name !== undefined) body.name = input.name
+  if (input.status !== undefined) body.status = input.status
+  if (Object.keys(body).length === 0) return
+  await graphPost(`${campaignId}`, token, body)
+}
+
+export async function updateAdSet(
+  token: string,
+  adsetId: string,
+  input: {
+    name?: string
+    status?: 'ACTIVE' | 'PAUSED'
+    daily_budget?: number
+    age_min?: number
+    age_max?: number
+    gender?: Gender
+    country_code?: string
+    region_keys?: string[]
+    city_keys?: string[]
+    interest_ids?: string[]
+    preserveFlexibleSpec?: Record<string, { id: string }[]>[]
+  }
+): Promise<void> {
+  const body: Record<string, unknown> = {}
+  if (input.name !== undefined) body.name = input.name
+  if (input.status !== undefined) body.status = input.status
+  if (input.daily_budget !== undefined) body.daily_budget = input.daily_budget
+
+  const targetingChanged =
+    input.age_min !== undefined || input.age_max !== undefined || input.gender !== undefined ||
+    input.country_code !== undefined || input.region_keys !== undefined ||
+    input.city_keys !== undefined || input.interest_ids !== undefined
+
+  if (targetingChanged) {
+    const geo: Record<string, unknown> = {}
+    if (input.city_keys && input.city_keys.length > 0) {
+      geo.cities = input.city_keys.map(key => ({ key, radius: 20, distance_unit: 'kilometer' }))
+    }
+    if (input.region_keys && input.region_keys.length > 0) {
+      geo.regions = input.region_keys.map(key => ({ key }))
+    }
+    if (Object.keys(geo).length === 0) {
+      geo.countries = [input.country_code ?? 'CL']
+    }
+
+    const targeting: Record<string, unknown> = { geo_locations: geo }
+    if (input.age_min !== undefined) targeting.age_min = input.age_min
+    if (input.age_max !== undefined) targeting.age_max = input.age_max
+    if (input.gender && input.gender !== 'all') targeting.genders = [input.gender === 'male' ? 1 : 2]
+
+    const flexible_spec = [...(input.preserveFlexibleSpec ?? [])]
+    if (input.interest_ids && input.interest_ids.length > 0) {
+      flexible_spec.push({ interests: input.interest_ids.map(id => ({ id })) })
+    }
+    if (flexible_spec.length > 0) targeting.flexible_spec = flexible_spec
+
+    body.targeting = targeting
+  }
+
+  if (Object.keys(body).length === 0) return
+  await graphPost(`${adsetId}`, token, body)
+}
+
 export async function createAdCreative(
   token: string,
   accountId: string,
