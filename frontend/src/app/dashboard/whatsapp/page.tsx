@@ -351,13 +351,13 @@ function ConversationsPanel({ client, onClose }: { client: WaClient; onClose: ()
           </div>
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
             {active?.history.map((m, i) => (
-              <div key={i} className={`flex ${m.role === 'user' ? 'justify-start' : 'justify-end'}`}>
+              <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div
                   className="max-w-[75%] rounded-xl px-3 py-2 text-sm"
                   style={{
-                    background: m.role === 'user' ? 'rgba(0,229,255,0.06)' : 'rgba(0,229,100,0.08)',
+                    background: m.role === 'user' ? 'rgba(0,229,100,0.08)' : 'rgba(0,229,255,0.06)',
                     color: '#e0f7ff',
-                    border: `1px solid ${m.role === 'user' ? 'rgba(0,229,255,0.15)' : 'rgba(0,229,100,0.2)'}`,
+                    border: `1px solid ${m.role === 'user' ? 'rgba(0,229,100,0.2)' : 'rgba(0,229,255,0.15)'}`,
                   }}
                 >
                   {m.content}
