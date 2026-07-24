@@ -245,17 +245,22 @@ export default function PipelinePage() {
           <p className="text-xs mt-2" style={{ color: 'rgba(224,247,255,0.3)' }}>Prueba con otro mes o rango, o limpia el filtro</p>
         </div>
       ) : (
-        <div className="flex gap-1.5 overflow-x-auto pb-4" style={{ minHeight: 0, maxHeight: 'calc(100vh - 220px)' }}>
+        <div
+          className="grid gap-1.5 overflow-x-auto pb-4"
+          style={{
+            gridTemplateColumns: `repeat(${COLUMNS.length}, minmax(120px, 1fr))`,
+            minHeight: 0,
+            maxHeight: 'calc(100vh - 220px)',
+          }}
+        >
           {COLUMNS.map(col => {
             const colLeads = byStatus(col.status)
             const isOver = draggingOver === col.status
             return (
               <div
                 key={col.status}
-                className="flex flex-col rounded-xl overflow-hidden transition-all"
+                className="flex flex-col rounded-xl overflow-hidden transition-all min-w-0"
                 style={{
-                  width: 148,
-                  flex: '0 0 148px',
                   background: isOver ? 'rgba(0,229,255,0.04)' : 'rgba(0,10,18,0.6)',
                   border: `1px solid ${isOver ? col.border : 'rgba(0,229,255,0.1)'}`,
                 }}
