@@ -8,6 +8,7 @@ export const BOOKING_SERVICES = [
   'Desarrollo SaaS',
   'Software a medida',
   'Creación de imágenes y videos',
+  'Talento TI Especializado',
 ] as const
 
 export type BookingService = (typeof BOOKING_SERVICES)[number]
@@ -115,6 +116,18 @@ export const SERVICES = [
     highlight: false,
     tags: ["Capacitación", "IA Generativa", "Equipos", "Certificación"],
     image: "/services/automatizacion.png",
+  },
+  {
+    id: "talento-ti",
+    title: "Talento TI Especializado",
+    description:
+      "Encuentra el talento técnico que tu empresa necesita: desarrolladores, QA, DevOps y perfiles fullstack, seleccionados y listos para integrarse a tu equipo.",
+    icon: "👨‍💻",
+    cta: null,
+    href: "/servicios/talento-ti-especializado",
+    highlight: false,
+    tags: ["Desarrollo", "QA", "DevOps", "Fullstack", "Staffing"],
+    image: "/services/software_medida.png",
   },
 ]
 
