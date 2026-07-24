@@ -84,13 +84,28 @@ const TIMEZONE_CITY_LABEL: Record<string, string> = {
   'America/Caracas': 'Venezuela',
 }
 
+// Offset (en ms) entre UTC y timeZone para un instante dado, calculado sin depender
+// de la zona horaria local del navegador/servidor (evita el bug de usar `new Date(string)`
+// para parsear una hora "pared", que JS interpreta silenciosamente como hora local).
+function getTimeZoneOffsetMillis(date: Date, timeZone: string): number {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone, hourCycle: 'h23',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+  }).formatToParts(date).reduce((acc, p) => {
+    if (p.type !== 'literal') acc[p.type] = p.value
+    return acc
+  }, {} as Record<string, string>)
+  const asUTC = Date.UTC(+parts.year, +parts.month - 1, +parts.day, +parts.hour, +parts.minute, +parts.second)
+  return asUTC - date.getTime()
+}
+
 // Convierte una hora "pared" (ej. 10:00) que corresponde a hora de Chile a la fecha/hora real,
 // para luego poder mostrarla en la zona horaria del visitante.
 function chileSlotToInstant(dateStr: string, timeStr: string): Date {
-  const asUTC = new Date(`${dateStr}T${timeStr}:00Z`)
-  const inChile = new Date(asUTC.toLocaleString('en-US', { timeZone: 'America/Santiago' }))
-  const offset = asUTC.getTime() - inChile.getTime()
-  return new Date(asUTC.getTime() + offset)
+  const naiveUTC = new Date(`${dateStr}T${timeStr}:00Z`)
+  const chileOffsetMillis = getTimeZoneOffsetMillis(naiveUTC, 'America/Santiago')
+  return new Date(naiveUTC.getTime() - chileOffsetMillis)
 }
 
 function formatVisitorTime(dateStr: string, timeStr: string): string {
