@@ -121,3 +121,19 @@ export async function getConversationContacts(phoneNumberId: string): Promise<st
   const keys = await redis.keys(`${HISTORY_PREFIX}${phoneNumberId}:*`)
   return keys.map(k => k.slice(`${HISTORY_PREFIX}${phoneNumberId}:`.length))
 }
+
+const LAST_READ_KEY = 'riava:wa:lastread'
+
+function lastReadMapKey(phoneNumberId: string, customerPhone: string): string {
+  return `${phoneNumberId}:${customerPhone}`
+}
+
+export async function getLastReadMap(): Promise<Record<string, string>> {
+  return (await redis.get<Record<string, string>>(LAST_READ_KEY)) ?? {}
+}
+
+export async function markConversationRead(phoneNumberId: string, customerPhone: string): Promise<void> {
+  const map = await getLastReadMap()
+  map[lastReadMapKey(phoneNumberId, customerPhone)] = new Date().toISOString()
+  await redis.set(LAST_READ_KEY, map)
+}
