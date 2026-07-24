@@ -13,6 +13,27 @@ const COLUMNS: { status: LeadStatus; label: string; color: string; border: strin
   { status: 'cotizacion_rechazada', label: 'Cotización Rechazada',     color: 'rgba(240,0,80,0.7)', border: 'rgba(240,0,80,0.25)' },
 ]
 
+const MONTHS_ES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+
+function monthOptions(count: number): { value: string; label: string }[] {
+  const now = new Date()
+  const options: { value: string; label: string }[] = []
+  for (let i = 0; i < count; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+    const value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+    options.push({ value, label: `${MONTHS_ES[d.getMonth()]} ${d.getFullYear()}` })
+  }
+  return options
+}
+
+function monthToRange(yyyymm: string): { from: string; to: string } {
+  const [y, m] = yyyymm.split('-').map(Number)
+  const from = `${yyyymm}-01`
+  const lastDay = new Date(y, m, 0).getDate()
+  const to = `${yyyymm}-${String(lastDay).padStart(2, '0')}`
+  return { from, to }
+}
+
 function LeadCard({ lead, onStatusChange }: { lead: Lead; onStatusChange: (id: string, status: LeadStatus) => void }) {
   const date = new Date(lead.created_at).toLocaleDateString('es-CL', { day: '2-digit', month: 'short' })
   const scoreColor = lead.score >= 70 ? '#00e564' : lead.score >= 40 ? '#fbbf24' : 'rgba(240,0,80,0.7)'
@@ -48,12 +69,49 @@ export default function PipelinePage() {
   const [error, setError] = useState('')
   const [draggingOver, setDraggingOver] = useState<LeadStatus | null>(null)
 
+  const [monthSelect, setMonthSelect] = useState('')
+  const [fromDraft, setFromDraft] = useState('')
+  const [toDraft, setToDraft] = useState('')
+  const [appliedFrom, setAppliedFrom] = useState('')
+  const [appliedTo, setAppliedTo] = useState('')
+
   useEffect(() => {
     leadsApi.list({ size: 200 })
       .then(data => setLeads(data.items))
       .catch(() => setError('No se pudo conectar al backend.'))
       .finally(() => setLoading(false))
   }, [])
+
+  const handleMonthSelect = (value: string) => {
+    setMonthSelect(value)
+    if (!value) return
+    const { from, to } = monthToRange(value)
+    setFromDraft(from)
+    setToDraft(to)
+    setAppliedFrom(from)
+    setAppliedTo(to)
+  }
+
+  const applyDateFilter = () => {
+    setMonthSelect('')
+    setAppliedFrom(fromDraft)
+    setAppliedTo(toDraft)
+  }
+
+  const clearDateFilter = () => {
+    setMonthSelect('')
+    setFromDraft('')
+    setToDraft('')
+    setAppliedFrom('')
+    setAppliedTo('')
+  }
+
+  const visibleLeads = leads.filter(l => {
+    const d = l.created_at.slice(0, 10)
+    if (appliedFrom && d < appliedFrom) return false
+    if (appliedTo && d > appliedTo) return false
+    return true
+  })
 
   const handleDrop = async (e: React.DragEvent, targetStatus: LeadStatus) => {
     e.preventDefault()
@@ -74,7 +132,7 @@ export default function PipelinePage() {
     }
   }
 
-  const byStatus = (status: LeadStatus) => leads.filter(l => l.status === status)
+  const byStatus = (status: LeadStatus) => visibleLeads.filter(l => l.status === status)
 
   if (loading) {
     return (
@@ -117,6 +175,59 @@ export default function PipelinePage() {
         </a>
       </div>
 
+      {/* Filtro de fecha */}
+      <div className="flex flex-wrap items-end gap-3 mb-4 shrink-0">
+        <div>
+          <label className="text-xs font-mono mb-1.5 block" style={{ color: 'rgba(0,229,255,0.5)' }}>Mes</label>
+          <select
+            value={monthSelect}
+            onChange={e => handleMonthSelect(e.target.value)}
+            className="px-3 py-2 rounded-lg text-sm bg-transparent border focus:outline-none"
+            style={{ borderColor: 'rgba(0,229,255,0.15)', color: '#e0f7ff' }}
+          >
+            <option value="" className="bg-[#000a0f]">Selecciona un mes...</option>
+            {monthOptions(12).map(m => (
+              <option key={m.value} value={m.value} className="bg-[#000a0f]">{m.label}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="text-xs font-mono mb-1.5 block" style={{ color: 'rgba(0,229,255,0.5)' }}>Desde</label>
+          <input
+            type="date"
+            value={fromDraft}
+            onChange={e => setFromDraft(e.target.value)}
+            className="px-3 py-2 rounded-lg text-sm bg-transparent border focus:outline-none"
+            style={{ borderColor: 'rgba(0,229,255,0.15)', color: '#e0f7ff' }}
+          />
+        </div>
+        <div>
+          <label className="text-xs font-mono mb-1.5 block" style={{ color: 'rgba(0,229,255,0.5)' }}>Hasta</label>
+          <input
+            type="date"
+            value={toDraft}
+            onChange={e => setToDraft(e.target.value)}
+            className="px-3 py-2 rounded-lg text-sm bg-transparent border focus:outline-none"
+            style={{ borderColor: 'rgba(0,229,255,0.15)', color: '#e0f7ff' }}
+          />
+        </div>
+        <button
+          onClick={applyDateFilter}
+          className="btn-tron px-4 py-2 rounded-lg text-sm font-semibold text-white"
+        >
+          Filtrar
+        </button>
+        {(appliedFrom || appliedTo) && (
+          <button
+            onClick={clearDateFilter}
+            className="px-3 py-2 rounded-lg text-xs font-medium"
+            style={{ color: 'rgba(224,247,255,0.5)' }}
+          >
+            Limpiar filtro
+          </button>
+        )}
+      </div>
+
       {leads.length === 0 ? (
         <div className="max-w-lg mx-auto text-center py-16">
           <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
@@ -127,6 +238,11 @@ export default function PipelinePage() {
           </div>
           <p className="text-sm font-medium" style={{ color: 'rgba(224,247,255,0.5)' }}>Pipeline vacío</p>
           <p className="text-xs mt-2" style={{ color: 'rgba(224,247,255,0.3)' }}>Los leads aparecerán aquí desde Meta Ads</p>
+        </div>
+      ) : visibleLeads.length === 0 ? (
+        <div className="max-w-lg mx-auto text-center py-16">
+          <p className="text-sm font-medium" style={{ color: 'rgba(224,247,255,0.5)' }}>Sin leads en ese rango de fechas</p>
+          <p className="text-xs mt-2" style={{ color: 'rgba(224,247,255,0.3)' }}>Prueba con otro mes o rango, o limpia el filtro</p>
         </div>
       ) : (
         <div className="flex gap-3 overflow-x-auto pb-4" style={{ minHeight: 0, maxHeight: 'calc(100vh - 220px)' }}>
