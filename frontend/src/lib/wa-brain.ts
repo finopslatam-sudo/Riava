@@ -12,7 +12,7 @@ const redis = new Redis({
 })
 
 const FALLBACK_REPLY =
-  'Gracias por tu mensaje. En este momento tenemos un problema técnico, en breve te responderemos.'
+  'Gracias por tu mensaje 🥶 Se me congeló el cerebro un instante (cosas de robot). Intenta de nuevo en un par de minutos, ¡prometo estar más despierto!'
 
 const SITE_BASE = 'https://www.riava.cl'
 
