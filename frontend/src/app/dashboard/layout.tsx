@@ -217,14 +217,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             )
           })}
 
-          {/* Riava Leads */}
+          {/* WhatsApp IA */}
           <div className="mt-4 mb-1 px-3">
             <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'rgba(0,229,255,0.35)' }}>
-              Riava Leads
+              WhatsApp IA
             </p>
           </div>
           <div className="divider-tron mx-3 mb-1" />
-          {LEADS_NAV.map(item => {
+          {WHATSAPP_NAV.map(item => {
             const active = pathname.startsWith(item.href)
             return (
               <Link
@@ -244,14 +244,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             )
           })}
 
-          {/* WhatsApp IA */}
+          {/* Riava Leads */}
           <div className="mt-4 mb-1 px-3">
             <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'rgba(0,229,255,0.35)' }}>
-              WhatsApp IA
+              Riava Leads
             </p>
           </div>
           <div className="divider-tron mx-3 mb-1" />
-          {WHATSAPP_NAV.map(item => {
+          {LEADS_NAV.map(item => {
             const active = pathname.startsWith(item.href)
             return (
               <Link
