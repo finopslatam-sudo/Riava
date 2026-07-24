@@ -170,11 +170,14 @@ export default function ConversacionesPage() {
       </div>
 
       <div
-        className="rounded-2xl overflow-hidden flex flex-col lg:flex-row"
-        style={{ background: '#0a0e18', border: '1px solid rgba(0,229,255,0.15)', height: '75vh', minHeight: 480 }}
+        className="rounded-2xl overflow-hidden flex flex-row"
+        style={{ background: '#0a0e18', border: '1px solid rgba(0,229,255,0.15)', height: 'calc(100vh - 180px)', minHeight: 480 }}
       >
         {/* List */}
-        <div className="w-full lg:w-80 shrink-0 flex flex-col" style={{ borderRight: '1px solid rgba(0,229,255,0.1)' }}>
+        <div
+          className={`w-full lg:w-80 shrink-0 flex-col ${selected ? 'hidden lg:flex' : 'flex'}`}
+          style={{ borderRight: '1px solid rgba(0,229,255,0.1)' }}
+        >
           <div className="flex p-2 gap-1 overflow-x-auto" style={{ borderBottom: '1px solid rgba(0,229,255,0.1)' }}>
             {FILTERS.map(f => (
               <button
@@ -244,7 +247,7 @@ export default function ConversacionesPage() {
         </div>
 
         {/* Thread */}
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className={`flex-1 flex-col min-w-0 ${selected ? 'flex' : 'hidden lg:flex'}`}>
           {!selected ? (
             <div className="flex-1 flex items-center justify-center">
               <p className="text-sm" style={{ color: 'rgba(224,247,255,0.35)' }}>Selecciona una conversación</p>
@@ -252,7 +255,10 @@ export default function ConversacionesPage() {
           ) : (
             <>
               <div className="flex items-center justify-between p-4 gap-3" style={{ borderBottom: '1px solid rgba(0,229,255,0.1)' }}>
-                <div className="min-w-0">
+                <div className="flex items-center gap-2 min-w-0">
+                  <button onClick={() => setSelected(null)} className="lg:hidden shrink-0" style={{ color: 'rgba(0,229,255,0.6)' }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
+                  </button>
                   {editingName ? (
                     <div className="flex items-center gap-2">
                       <input
