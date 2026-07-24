@@ -152,18 +152,6 @@ export function Hero() {
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-7xl items-center px-4 pb-20 pt-28 sm:px-6 lg:px-8">
         <div className="grid w-full items-center gap-10 lg:grid-cols-[0.92fr_1.08fr] lg:gap-4">
           <div className="order-2 lg:order-1">
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="mb-8 inline-flex items-center gap-2.5 rounded-full badge-tron px-4 py-1.5"
-            >
-              <span className="h-1.5 w-1.5 rounded-full bg-[#00e5ff] animate-pulse" />
-              <span className="text-xs font-mono tracking-widest uppercase">
-                Soluciones SaaS, cloud y automatización
-              </span>
-            </motion.div>
-
             <motion.h1
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}

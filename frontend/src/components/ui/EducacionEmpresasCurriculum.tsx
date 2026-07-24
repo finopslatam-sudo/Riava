@@ -310,12 +310,6 @@ export function EducacionEmpresasCurriculum() {
             initial="hidden" whileInView="visible" viewport={{ once: true }}
             variants={fadeUp} transition={{ duration: 0.6 }}
           >
-            <span
-              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-mono tracking-widest uppercase mb-5"
-              style={{ border: `1px solid ${ACCENT}40`, color: ACCENT, background: `${ACCENT}12` }}
-            >
-              Ruta de aprendizaje
-            </span>
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
               De cero a{" "}
               <span style={{ color: "#fff" }}>

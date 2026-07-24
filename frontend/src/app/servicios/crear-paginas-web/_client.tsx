@@ -93,7 +93,6 @@ export function CrearPaginasWebClient() {
             variants={fadeUp}
             transition={{ duration: 0.8 }}
           >
-            <span className={s.badge}>Agencia de Desarrollo Web Premium</span>
             <h1 className={s.mainTitle}>
               Creamos páginas web que{" "}
               <br />

@@ -64,9 +64,6 @@ export function Services() {
 
         {/* Section label */}
         <div className="flex items-center gap-3 mb-8 px-2">
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full badge-tron text-xs font-mono tracking-widest uppercase">
-            Servicios
-          </span>
           <div className="h-px flex-1 max-w-16" style={{ background: `linear-gradient(to right, ${accent}, transparent)` }} />
         </div>
 

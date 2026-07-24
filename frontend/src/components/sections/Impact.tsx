@@ -46,9 +46,6 @@ export function Impact() {
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <FadeIn>
           <div className="text-center mb-16">
-            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full badge-tron text-xs font-mono tracking-widest uppercase mb-6">
-              Impacto
-            </span>
             <h2 className="text-4xl sm:text-5xl md:text-6xl font-black text-white tracking-tight mb-4">
               Resultados reales para{" "}
               <span className="text-white">negocios reales</span>

@@ -68,12 +68,6 @@ export function ServiceLanding({
             initial="hidden" animate="visible" variants={fadeUp}
             transition={{ duration: 0.8 }}
           >
-            <span
-              className={s.badge}
-              style={{ borderColor: `${accentColor}50`, color: accentColor, background: `${accentColor}14` }}
-            >
-              {badge}
-            </span>
             <h1 className={s.mainTitle}>
               {titleBefore}{" "}
               <span style={gradientText}>{titleHighlight}</span>
