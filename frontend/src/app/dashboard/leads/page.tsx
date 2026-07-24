@@ -134,7 +134,7 @@ function NewLeadModal({ onClose, onCreated }: { onClose: () => void; onCreated: 
   )
 }
 
-type WaTemplate = { id: string; name: string; status: string; category: string; language: string }
+type WaTemplate = { id: string; name: string; status: string; category: string; language: string; bodyText: string }
 type WaClientBrief = { id: string; phone_number_id: string; enable_scheduling: boolean }
 
 function StartWhatsAppBusinessConvo({ lead }: { lead: Lead }) {
@@ -170,7 +170,12 @@ function StartWhatsAppBusinessConvo({ lead }: { lead: Lead }) {
       const res = await fetch(`/api/whatsapp/clients/${client.id}/send-template`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ to: lead.phone, templateName: selectedTemplate, language: template?.language ?? 'es' }),
+        body: JSON.stringify({
+          to: lead.phone,
+          templateName: selectedTemplate,
+          language: template?.language ?? 'es',
+          previewText: template?.bodyText,
+        }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? 'No se pudo enviar el mensaje')

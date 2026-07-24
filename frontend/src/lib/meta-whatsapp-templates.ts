@@ -2,21 +2,40 @@ const GRAPH_BASE = 'https://graph.facebook.com/v19.0'
 
 export type TemplateCategory = 'UTILITY' | 'MARKETING' | 'AUTHENTICATION'
 
+type TemplateComponent = { type: string; text?: string }
+
+type RawMessageTemplate = {
+  id: string
+  name: string
+  status: string
+  category: string
+  language: string
+  components?: TemplateComponent[]
+}
+
 export type MessageTemplate = {
   id: string
   name: string
   status: string
   category: string
   language: string
+  bodyText: string
 }
 
 export async function getMessageTemplates(accessToken: string, wabaId: string): Promise<MessageTemplate[]> {
   const res = await fetch(
-    `${GRAPH_BASE}/${wabaId}/message_templates?fields=id,name,status,category,language&access_token=${accessToken}`
+    `${GRAPH_BASE}/${wabaId}/message_templates?fields=id,name,status,category,language,components&access_token=${accessToken}`
   )
   if (!res.ok) return []
-  const { data } = await res.json() as { data?: MessageTemplate[] }
-  return data ?? []
+  const { data } = await res.json() as { data?: RawMessageTemplate[] }
+  return (data ?? []).map(t => ({
+    id: t.id,
+    name: t.name,
+    status: t.status,
+    category: t.category,
+    language: t.language,
+    bodyText: t.components?.find(c => c.type === 'BODY')?.text ?? '',
+  }))
 }
 
 export async function deleteMessageTemplate(
