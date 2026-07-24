@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { leadsCampaignsApi, type Campaign } from '@/lib/leads-api'
+import { CreateCampaignModal, type AdAccount } from '../meta-ads/CreateCampaignModal'
 
 const STATUS_COLORS: Record<Campaign['status'], { bg: string; border: string; text: string; label: string }> = {
   ACTIVE: { bg: 'rgba(0,229,100,0.1)', border: 'rgba(0,229,100,0.3)', text: '#00e564', label: 'Activa' },
@@ -32,6 +33,9 @@ export default function CampanasPage() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [metaConnected, setMetaConnected] = useState(false)
+  const [accounts, setAccounts] = useState<AdAccount[]>([])
+  const [showCreate, setShowCreate] = useState(false)
 
   useEffect(() => {
     leadsCampaignsApi.list()
@@ -39,6 +43,20 @@ export default function CampanasPage() {
       .catch(() => setError('No se pudo conectar al backend. Asegúrate de que el servidor está activo.'))
       .finally(() => setLoading(false))
   }, [])
+
+  const loadAccounts = useCallback(() => {
+    fetch('/api/meta/status')
+      .then(r => r.json() as Promise<{ connected: boolean }>)
+      .then(({ connected }) => {
+        setMetaConnected(connected)
+        if (!connected) return
+        fetch('/api/meta/ads/accounts')
+          .then(r => r.json())
+          .then(data => setAccounts(data.accounts ?? []))
+      })
+  }, [])
+
+  useEffect(() => { loadAccounts() }, [loadAccounts])
 
   const active = campaigns.filter(c => c.status === 'ACTIVE')
   const totalSpend = campaigns.reduce((a, c) => a + c.spend, 0)
@@ -54,17 +72,35 @@ export default function CampanasPage() {
             Campañas sincronizadas desde Meta Ads
           </p>
         </div>
-        <button
-          className="px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2"
-          style={{ background: 'rgba(0,229,255,0.06)', border: '1px solid rgba(0,229,255,0.2)', color: '#00e5ff' }}
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <polyline points="1 4 1 10 7 10" />
-            <path d="M3.51 15a9 9 0 1 0 .49-3.69" />
-          </svg>
-          Sincronizar
-        </button>
+        <div className="flex items-center gap-3">
+          {metaConnected && (
+            <button
+              onClick={() => setShowCreate(true)}
+              className="btn-tron px-4 py-2 rounded-lg text-xs font-semibold text-white"
+            >
+              + Crear campaña
+            </button>
+          )}
+          <button
+            className="px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2"
+            style={{ background: 'rgba(0,229,255,0.06)', border: '1px solid rgba(0,229,255,0.2)', color: '#00e5ff' }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polyline points="1 4 1 10 7 10" />
+              <path d="M3.51 15a9 9 0 1 0 .49-3.69" />
+            </svg>
+            Sincronizar
+          </button>
+        </div>
       </div>
+
+      {!metaConnected && (
+        <div className="mb-6 px-4 py-3 rounded-xl text-sm flex items-center justify-between gap-3 flex-wrap"
+          style={{ background: 'rgba(0,229,255,0.05)', border: '1px solid rgba(0,229,255,0.15)', color: 'rgba(224,247,255,0.6)' }}>
+          <span>Conecta tu cuenta de Meta para poder crear campañas nuevas desde aquí.</span>
+          <a href="/dashboard/meta-ads" className="text-xs font-medium" style={{ color: '#00e5ff' }}>Conectar Meta Ads →</a>
+        </div>
+      )}
 
       {/* Stats */}
       {campaigns.length > 0 ? (
@@ -153,6 +189,14 @@ export default function CampanasPage() {
             )
           })}
         </div>
+      )}
+
+      {showCreate && (
+        <CreateCampaignModal
+          accounts={accounts}
+          onClose={() => setShowCreate(false)}
+          onCreated={() => { setShowCreate(false); leadsCampaignsApi.list().then(setCampaigns).catch(() => {}) }}
+        />
       )}
     </div>
   )

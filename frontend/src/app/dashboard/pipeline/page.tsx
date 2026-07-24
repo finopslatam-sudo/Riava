@@ -6,6 +6,7 @@ import { leadsApi, type Lead, type LeadStatus } from '@/lib/leads-api'
 const COLUMNS: { status: LeadStatus; label: string; color: string; border: string }[] = [
   { status: 'new',                  label: 'Nuevos',                   color: '#00e5ff',  border: 'rgba(0,229,255,0.3)' },
   { status: 'contacted',            label: 'Contactados',              color: '#a78bfa',  border: 'rgba(167,139,250,0.3)' },
+  { status: 'sin_respuesta',        label: 'Sin respuesta',            color: '#fbbf24',  border: 'rgba(251,191,36,0.3)' },
   { status: 'agendado',             label: 'Agendados',                color: '#38bdf8',  border: 'rgba(56,189,248,0.3)' },
   { status: 'cotizado',             label: 'Cotizados',                color: '#fb923c',  border: 'rgba(251,146,60,0.3)' },
   { status: 'cotizacion_aceptada',  label: 'Cotización Aceptada',      color: '#00e564',  border: 'rgba(0,229,100,0.3)' },
@@ -100,7 +101,7 @@ export default function PipelinePage() {
     <div className="p-4 lg:p-8 flex flex-col h-full">
       <div className="flex items-center justify-between mb-6 shrink-0">
         <div>
-          <h1 className="text-2xl font-bold" style={{ color: '#e0f7ff' }}>Pipeline</h1>
+          <h1 className="text-2xl font-bold" style={{ color: '#e0f7ff' }}>CRM</h1>
           <p className="text-sm mt-1" style={{ color: 'rgba(0,229,255,0.5)' }}>
             Arrastra los leads entre columnas para actualizar su estado
           </p>
@@ -128,16 +129,16 @@ export default function PipelinePage() {
           <p className="text-xs mt-2" style={{ color: 'rgba(224,247,255,0.3)' }}>Los leads aparecerán aquí desde Meta Ads</p>
         </div>
       ) : (
-        <div className="flex gap-4 overflow-x-auto pb-4" style={{ minHeight: 0, maxHeight: 'calc(100vh - 220px)' }}>
+        <div className="flex gap-3 overflow-x-auto pb-4" style={{ minHeight: 0, maxHeight: 'calc(100vh - 220px)' }}>
           {COLUMNS.map(col => {
             const colLeads = byStatus(col.status)
             const isOver = draggingOver === col.status
             return (
               <div
                 key={col.status}
-                className="flex flex-col rounded-2xl overflow-hidden shrink-0 transition-all"
+                className="flex flex-col rounded-2xl overflow-hidden flex-1 transition-all"
                 style={{
-                  width: 260,
+                  minWidth: 190,
                   background: isOver ? 'rgba(0,229,255,0.04)' : 'rgba(0,10,18,0.6)',
                   border: `1px solid ${isOver ? col.border : 'rgba(0,229,255,0.1)'}`,
                 }}
@@ -146,15 +147,15 @@ export default function PipelinePage() {
                 onDrop={e => handleDrop(e, col.status)}
               >
                 {/* Column header */}
-                <div className="px-4 py-3 flex items-center justify-between shrink-0"
+                <div className="px-3 py-3 flex items-center justify-between gap-1.5 shrink-0"
                   style={{ borderBottom: `1px solid ${col.border}`, background: `rgba(0,10,18,0.8)` }}>
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full" style={{ background: col.color }} />
-                    <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: col.color }}>
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <div className="w-2 h-2 rounded-full shrink-0" style={{ background: col.color }} />
+                    <span className="text-[10px] font-semibold uppercase tracking-wide truncate" style={{ color: col.color }} title={col.label}>
                       {col.label}
                     </span>
                   </div>
-                  <span className="text-xs font-bold px-2 py-0.5 rounded-full"
+                  <span className="text-xs font-bold px-2 py-0.5 rounded-full shrink-0"
                     style={{ background: `${col.color}18`, color: col.color }}>
                     {colLeads.length}
                   </span>

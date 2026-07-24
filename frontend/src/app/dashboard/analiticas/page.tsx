@@ -35,11 +35,11 @@ export default function AnaliticasPage() {
   }, [])
 
   const STATUS_LABELS: Record<string, string> = {
-    new: 'Nuevo', contacted: 'Contactado', agendado: 'Agendado',
+    new: 'Nuevo', contacted: 'Contactado', sin_respuesta: 'Sin respuesta', agendado: 'Agendado',
     cotizado: 'Cotizado', cotizacion_aceptada: 'Cotización Aceptada', cotizacion_rechazada: 'Cotización Rechazada',
   }
   const STATUS_COLORS: Record<string, string> = {
-    new: '#00e5ff', contacted: '#a78bfa', agendado: '#38bdf8',
+    new: '#00e5ff', contacted: '#a78bfa', sin_respuesta: '#fbbf24', agendado: '#38bdf8',
     cotizado: '#fb923c', cotizacion_aceptada: '#00e564', cotizacion_rechazada: 'rgba(240,0,80,0.7)',
   }
 

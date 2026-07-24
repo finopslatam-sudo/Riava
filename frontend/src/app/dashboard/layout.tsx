@@ -98,7 +98,7 @@ const LEADS_NAV = [
   },
   {
     href: '/dashboard/pipeline',
-    label: 'Pipeline',
+    label: 'CRM',
     icon: (
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <rect x="3" y="3" width="5" height="18" rx="1" />
@@ -179,7 +179,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 z-30 h-full flex flex-col transition-transform duration-300 lg:translate-x-0 lg:relative lg:z-auto ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
+        className={`fixed top-0 left-0 z-30 h-screen flex flex-col transition-transform duration-300 lg:translate-x-0 lg:sticky lg:z-auto ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
         style={{
           width: 240,
           background: 'rgba(0,10,15,0.97)',

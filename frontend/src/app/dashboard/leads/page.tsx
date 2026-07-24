@@ -6,13 +6,14 @@ import { leadsApi, type Lead, type LeadStatus } from '@/lib/leads-api'
 const STATUS_CONFIG: Record<LeadStatus, { label: string; color: string; bg: string; border: string }> = {
   new:                  { label: 'Nuevo',                 color: '#00e5ff',  bg: 'rgba(0,229,255,0.1)',  border: 'rgba(0,229,255,0.3)' },
   contacted:            { label: 'Contactado',            color: '#a78bfa',  bg: 'rgba(167,139,250,0.1)', border: 'rgba(167,139,250,0.3)' },
+  sin_respuesta:        { label: 'Sin respuesta',         color: '#fbbf24',  bg: 'rgba(251,191,36,0.1)',  border: 'rgba(251,191,36,0.3)' },
   agendado:             { label: 'Agendado',              color: '#38bdf8',  bg: 'rgba(56,189,248,0.1)',  border: 'rgba(56,189,248,0.3)' },
   cotizado:             { label: 'Cotizado',               color: '#fb923c',  bg: 'rgba(251,146,60,0.1)',  border: 'rgba(251,146,60,0.3)' },
   cotizacion_aceptada:  { label: 'Cotización Aceptada',   color: '#00e564',  bg: 'rgba(0,229,100,0.1)',   border: 'rgba(0,229,100,0.3)' },
   cotizacion_rechazada: { label: 'Cotización Rechazada',  color: 'rgba(240,0,80,0.7)', bg: 'rgba(240,0,80,0.08)', border: 'rgba(240,0,80,0.2)' },
 }
 
-const ALL_STATUSES: LeadStatus[] = ['new', 'contacted', 'agendado', 'cotizado', 'cotizacion_aceptada', 'cotizacion_rechazada']
+const ALL_STATUSES: LeadStatus[] = ['new', 'contacted', 'sin_respuesta', 'agendado', 'cotizado', 'cotizacion_aceptada', 'cotizacion_rechazada']
 
 const QUALIFIED_THRESHOLD = 70
 

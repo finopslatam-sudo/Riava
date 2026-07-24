@@ -7,7 +7,7 @@ const redis = new Redis({
 })
 const KEY = 'riava:leads'
 
-export type LeadStatus = 'new' | 'contacted' | 'agendado' | 'cotizado' | 'cotizacion_aceptada' | 'cotizacion_rechazada'
+export type LeadStatus = 'new' | 'contacted' | 'sin_respuesta' | 'agendado' | 'cotizado' | 'cotizacion_aceptada' | 'cotizacion_rechazada'
 
 export type Lead = {
   id: string
