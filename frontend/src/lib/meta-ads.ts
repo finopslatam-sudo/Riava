@@ -291,10 +291,12 @@ export async function getCampaignAdSet(token: string, campaignId: string): Promi
   }
 }
 
+export type CampaignStatus = 'ACTIVE' | 'PAUSED' | 'ARCHIVED' | 'DELETED'
+
 export async function updateCampaign(
   token: string,
   campaignId: string,
-  input: { name?: string; status?: 'ACTIVE' | 'PAUSED' }
+  input: { name?: string; status?: CampaignStatus }
 ): Promise<void> {
   const body: Record<string, unknown> = {}
   if (input.name !== undefined) body.name = input.name

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
-import { getCampaignAdSet, updateCampaign, updateAdSet, type Gender } from '@/lib/meta-ads'
+import { getCampaignAdSet, updateCampaign, updateAdSet, type Gender, type CampaignStatus } from '@/lib/meta-ads'
 
 const GRAPH_BASE = 'https://graph.facebook.com/v19.0'
 
@@ -30,7 +30,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
   const body = await req.json() as {
     name?: string
-    status?: 'ACTIVE' | 'PAUSED'
+    status?: CampaignStatus
     daily_budget?: number
     age_min?: number
     age_max?: number

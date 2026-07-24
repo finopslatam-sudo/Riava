@@ -41,6 +41,8 @@ export function EditCampaignModal({
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
   const [saved, setSaved] = useState(false)
+  const [archiving, setArchiving] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   const [name, setName] = useState('')
   const [status, setStatus] = useState<'ACTIVE' | 'PAUSED'>('PAUSED')
@@ -147,6 +149,39 @@ export function EditCampaignModal({
     } finally {
       setSaving(false)
     }
+  }
+
+  const setCampaignStatus = async (newStatus: 'ARCHIVED' | 'DELETED') => {
+    setSaveError('')
+    setSaved(false)
+    const setLoadingFlag = newStatus === 'ARCHIVED' ? setArchiving : setDeleting
+    setLoadingFlag(true)
+    try {
+      const res = await fetch(`/api/meta/campaigns/${campaignId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? 'Error al actualizar la campaña')
+      onSaved()
+      onClose()
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : 'Error al actualizar la campaña')
+    } finally {
+      setLoadingFlag(false)
+    }
+  }
+
+  const handleArchive = () => {
+    if (!confirm('¿Archivar esta campaña? Dejará de estar activa y no gastará más, pero queda guardada y se puede reactivar después.')) return
+    setCampaignStatus('ARCHIVED')
+  }
+
+  const handleDelete = () => {
+    if (!confirm('¿Eliminar esta campaña de forma DEFINITIVA? Meta no permite deshacer esta acción — la campaña desaparecerá para siempre.')) return
+    if (!confirm('Confirma una vez más: esto es permanente. ¿Eliminar de todas formas?')) return
+    setCampaignStatus('DELETED')
   }
 
   return (
@@ -262,6 +297,21 @@ export function EditCampaignModal({
               <button type="button" onClick={handleSave} disabled={saving}
                 className="btn-tron flex-1 py-2.5 rounded-lg text-sm font-semibold text-white disabled:opacity-60">
                 {saving ? 'Guardando...' : 'Guardar cambios'}
+              </button>
+            </div>
+
+            <div className="divider-tron" />
+            <p className="text-xs font-semibold" style={{ color: '#e0f7ff' }}>Zona de riesgo</p>
+            <div className="flex gap-3">
+              <button type="button" onClick={handleArchive} disabled={archiving || deleting}
+                className="flex-1 py-2.5 rounded-lg text-xs font-semibold disabled:opacity-60"
+                style={{ border: '1px solid rgba(251,191,36,0.3)', color: '#fbbf24' }}>
+                {archiving ? 'Archivando...' : 'Archivar campaña'}
+              </button>
+              <button type="button" onClick={handleDelete} disabled={archiving || deleting}
+                className="flex-1 py-2.5 rounded-lg text-xs font-semibold disabled:opacity-60"
+                style={{ border: '1px solid rgba(240,0,80,0.3)', color: 'rgba(240,0,80,0.85)' }}>
+                {deleting ? 'Eliminando...' : 'Eliminar definitivamente'}
               </button>
             </div>
           </div>
