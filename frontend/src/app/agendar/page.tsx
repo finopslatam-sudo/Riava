@@ -28,6 +28,48 @@ function dayLongName(dateStr: string) {
   return DAYS_ES_LONG[dow === 0 ? 6 : dow - 1]
 }
 
+const VISITOR_TIMEZONE = typeof Intl !== 'undefined' ? Intl.DateTimeFormat().resolvedOptions().timeZone : 'America/Santiago'
+
+const TIMEZONE_CITY_LABEL: Record<string, string> = {
+  'America/Santiago': 'Chile',
+  'America/Lima': 'Perú',
+  'America/Argentina/Buenos_Aires': 'Argentina',
+  'America/Argentina/Cordoba': 'Argentina',
+  'America/Argentina/Mendoza': 'Argentina',
+}
+
+// Convierte una hora "pared" (ej. 10:00) que corresponde a hora de Chile a la fecha/hora real,
+// para luego poder mostrarla en la zona horaria del visitante.
+function chileSlotToInstant(dateStr: string, timeStr: string): Date {
+  const asUTC = new Date(`${dateStr}T${timeStr}:00Z`)
+  const inChile = new Date(asUTC.toLocaleString('en-US', { timeZone: 'America/Santiago' }))
+  const offset = asUTC.getTime() - inChile.getTime()
+  return new Date(asUTC.getTime() + offset)
+}
+
+function formatVisitorTime(dateStr: string, timeStr: string): string {
+  return chileSlotToInstant(dateStr, timeStr).toLocaleTimeString('es-CL', {
+    hour: '2-digit', minute: '2-digit', hour12: false, timeZone: VISITOR_TIMEZONE,
+  })
+}
+
+function formatVisitorDayLongName(dateStr: string, timeStr: string): string {
+  const dow = chileSlotToInstant(dateStr, timeStr).toLocaleDateString('en-US', { timeZone: VISITOR_TIMEZONE, weekday: 'long' })
+  const map: Record<string, string> = {
+    Monday: 'Lunes', Tuesday: 'Martes', Wednesday: 'Miércoles', Thursday: 'Jueves',
+    Friday: 'Viernes', Saturday: 'Sábado', Sunday: 'Domingo',
+  }
+  return map[dow] ?? dow
+}
+
+function formatVisitorDate(dateStr: string, timeStr: string): string {
+  const instant = chileSlotToInstant(dateStr, timeStr)
+  const day = instant.toLocaleDateString('en-US', { timeZone: VISITOR_TIMEZONE, day: 'numeric' })
+  const monthIdx = parseInt(instant.toLocaleDateString('en-US', { timeZone: VISITOR_TIMEZONE, month: 'numeric' }), 10) - 1
+  const year = instant.toLocaleDateString('en-US', { timeZone: VISITOR_TIMEZONE, year: 'numeric' })
+  return `${day} de ${MONTHS_ES_LONG[monthIdx]} de ${year}`
+}
+
 const HOLIDAYS_FIXED = new Set(['01-01','05-01','05-21','07-16','08-15','09-18','09-19','10-31','11-01','12-08','12-25'])
 const HOLIDAYS_VARIABLE: Record<number, string[]> = {
   2025: ['2025-04-18','2025-04-19','2025-06-20','2025-10-13'],
@@ -204,8 +246,11 @@ export default function AgendarPage() {
               <p className="text-sm mb-5" style={{ color: 'rgba(224,247,255,0.6)' }}>Te enviamos un correo de confirmación con todos los detalles.</p>
               <div className="rounded-xl p-4 mb-5 text-left" style={{ background: 'rgba(0,20,30,0.7)', border: '1px solid rgba(0,229,255,0.1)' }}>
                 <p className="text-xs font-semibold tracking-widest uppercase mb-3" style={{ color: 'rgba(0,229,255,0.5)' }}>Detalles</p>
-                <p className="text-sm" style={{ color: '#e0f7ff' }}>📅 {fmtDate(bookedAppt.date)}</p>
-                <p className="text-sm mt-1" style={{ color: '#e0f7ff' }}>🕐 {bookedAppt.startTime} – {bookedAppt.endTime}</p>
+                <p className="text-sm" style={{ color: '#e0f7ff' }}>📅 {formatVisitorDayLongName(bookedAppt.date, bookedAppt.startTime)}, {formatVisitorDate(bookedAppt.date, bookedAppt.startTime)}</p>
+                <p className="text-sm mt-1" style={{ color: '#e0f7ff' }}>🕐 {formatVisitorTime(bookedAppt.date, bookedAppt.startTime)} – {formatVisitorTime(bookedAppt.date, bookedAppt.endTime)}</p>
+                <p className="text-xs mt-1" style={{ color: 'rgba(224,247,255,0.4)' }}>
+                  Hora de Chile: {bookedAppt.startTime} – {bookedAppt.endTime}
+                </p>
               </div>
               {bookedAppt.meetLink && (
                 <a href={bookedAppt.meetLink} target="_blank" rel="noopener noreferrer"
@@ -353,6 +398,11 @@ export default function AgendarPage() {
                         <div>
                           <p className="text-xs font-semibold tracking-widest uppercase mb-0.5" style={{ color: 'rgba(0,229,255,0.5)' }}>Horarios disponibles</p>
                           <p className="text-sm font-bold" style={{ color: '#00e5ff' }}>{dayLongName(selectedDay)}, {fmtDate(selectedDay)}</p>
+                          {VISITOR_TIMEZONE !== 'America/Santiago' && (
+                            <p className="text-xs mt-1" style={{ color: 'rgba(224,247,255,0.4)' }}>
+                              Mostrado en tu hora local{TIMEZONE_CITY_LABEL[VISITOR_TIMEZONE] ? ` (${TIMEZONE_CITY_LABEL[VISITOR_TIMEZONE]})` : ` (${VISITOR_TIMEZONE})`}
+                            </p>
+                          )}
                         </div>
                         <button onClick={() => { setSelectedDay(null); setSelectedSlot(null) }}
                           style={{ color: 'rgba(0,229,255,0.4)' }}
@@ -373,7 +423,7 @@ export default function AgendarPage() {
                         <div key={slot.id}
                           className="w-full rounded-xl px-4 py-3 text-sm font-medium flex items-center justify-between"
                           style={{ background: 'rgba(255,60,60,0.05)', border: '1px solid rgba(255,60,60,0.2)', cursor: 'default' }}>
-                          <span style={{ color: 'rgba(224,247,255,0.35)' }}>{slot.startTime} – {slot.endTime}</span>
+                          <span style={{ color: 'rgba(224,247,255,0.35)' }}>{formatVisitorTime(slot.date, slot.startTime)} – {formatVisitorTime(slot.date, slot.endTime)}</span>
                           <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,60,60,0.15)', color: '#ff5555', border: '1px solid rgba(255,60,60,0.3)' }}>
                             No disponible
                           </span>
@@ -385,7 +435,7 @@ export default function AgendarPage() {
                           style={{ background: 'rgba(0,229,255,0.06)', border: '1px solid rgba(0,229,255,0.15)', color: 'rgba(0,229,255,0.8)' }}
                           onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,229,255,0.12)'; e.currentTarget.style.borderColor = 'rgba(0,229,255,0.35)'; e.currentTarget.style.color = '#00e5ff' }}
                           onMouseLeave={e => { e.currentTarget.style.background = 'rgba(0,229,255,0.06)'; e.currentTarget.style.borderColor = 'rgba(0,229,255,0.15)'; e.currentTarget.style.color = 'rgba(0,229,255,0.8)' }}>
-                          <span>{slot.startTime} – {slot.endTime}</span>
+                          <span>{formatVisitorTime(slot.date, slot.startTime)} – {formatVisitorTime(slot.date, slot.endTime)}</span>
                           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
                         </button>
                       ))}
@@ -400,8 +450,13 @@ export default function AgendarPage() {
                       <div className="flex items-start justify-between">
                         <div>
                           <p className="text-xs font-semibold tracking-widest uppercase mb-1" style={{ color: 'rgba(0,229,255,0.5)' }}>Horario seleccionado</p>
-                          <p className="text-sm font-bold" style={{ color: '#00e5ff' }}>{dayLongName(selectedSlot.date)}, {fmtDate(selectedSlot.date)}</p>
-                          <p className="text-sm" style={{ color: 'rgba(0,229,255,0.7)' }}>{selectedSlot.startTime} – {selectedSlot.endTime}</p>
+                          <p className="text-sm font-bold" style={{ color: '#00e5ff' }}>{formatVisitorDayLongName(selectedSlot.date, selectedSlot.startTime)}, {formatVisitorDate(selectedSlot.date, selectedSlot.startTime)}</p>
+                          <p className="text-sm" style={{ color: 'rgba(0,229,255,0.7)' }}>{formatVisitorTime(selectedSlot.date, selectedSlot.startTime)} – {formatVisitorTime(selectedSlot.date, selectedSlot.endTime)}</p>
+                          {VISITOR_TIMEZONE !== 'America/Santiago' && (
+                            <p className="text-xs mt-0.5" style={{ color: 'rgba(224,247,255,0.35)' }}>
+                              Hora de Chile: {selectedSlot.startTime} – {selectedSlot.endTime}
+                            </p>
+                          )}
                         </div>
                         <button onClick={() => setSelectedSlot(null)} style={{ color: 'rgba(0,229,255,0.4)', marginTop: 2 }}
                           onMouseEnter={e => { e.currentTarget.style.color = '#00e5ff' }}
