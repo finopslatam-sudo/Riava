@@ -252,9 +252,10 @@ export default function PipelinePage() {
             return (
               <div
                 key={col.status}
-                className="flex flex-col rounded-xl overflow-hidden flex-1 transition-all"
+                className="flex flex-col rounded-xl overflow-hidden transition-all"
                 style={{
-                  minWidth: 132,
+                  width: 148,
+                  flex: '0 0 148px',
                   background: isOver ? 'rgba(0,229,255,0.04)' : 'rgba(0,10,18,0.6)',
                   border: `1px solid ${isOver ? col.border : 'rgba(0,229,255,0.1)'}`,
                 }}
