@@ -78,6 +78,28 @@ export async function sendTemplateMessage(
   }
 }
 
+export async function sendTextMessage(
+  accessToken: string,
+  phoneNumberId: string,
+  input: { to: string; text: string }
+): Promise<void> {
+  const res = await fetch(`${GRAPH_BASE}/${phoneNumberId}/messages`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      messaging_product: 'whatsapp',
+      to: input.to,
+      type: 'text',
+      text: { body: input.text },
+      access_token: accessToken,
+    }),
+  })
+  if (!res.ok) {
+    const data = await res.json().catch(() => null)
+    throw new Error(data?.error?.message ?? 'Error al enviar el mensaje por WhatsApp')
+  }
+}
+
 export async function createMessageTemplate(
   accessToken: string,
   wabaId: string,
