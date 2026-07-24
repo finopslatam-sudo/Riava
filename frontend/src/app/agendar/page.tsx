@@ -31,11 +31,57 @@ function dayLongName(dateStr: string) {
 const VISITOR_TIMEZONE = typeof Intl !== 'undefined' ? Intl.DateTimeFormat().resolvedOptions().timeZone : 'America/Santiago'
 
 const TIMEZONE_CITY_LABEL: Record<string, string> = {
+  // Chile
   'America/Santiago': 'Chile',
-  'America/Lima': 'Perú',
+  'Pacific/Easter': 'Chile (Isla de Pascua)',
+  // Argentina
   'America/Argentina/Buenos_Aires': 'Argentina',
   'America/Argentina/Cordoba': 'Argentina',
+  'America/Argentina/Salta': 'Argentina',
+  'America/Argentina/Jujuy': 'Argentina',
+  'America/Argentina/Tucuman': 'Argentina',
+  'America/Argentina/Catamarca': 'Argentina',
+  'America/Argentina/La_Rioja': 'Argentina',
+  'America/Argentina/San_Juan': 'Argentina',
   'America/Argentina/Mendoza': 'Argentina',
+  'America/Argentina/San_Luis': 'Argentina',
+  'America/Argentina/Rio_Gallegos': 'Argentina',
+  'America/Argentina/Ushuaia': 'Argentina',
+  // Perú
+  'America/Lima': 'Perú',
+  // Bolivia
+  'America/La_Paz': 'Bolivia',
+  // Brasil
+  'America/Sao_Paulo': 'Brasil',
+  'America/Bahia': 'Brasil',
+  'America/Fortaleza': 'Brasil',
+  'America/Recife': 'Brasil',
+  'America/Araguaina': 'Brasil',
+  'America/Maceio': 'Brasil',
+  'America/Belem': 'Brasil',
+  'America/Manaus': 'Brasil',
+  'America/Cuiaba': 'Brasil',
+  'America/Campo_Grande': 'Brasil',
+  'America/Porto_Velho': 'Brasil',
+  'America/Boa_Vista': 'Brasil',
+  'America/Rio_Branco': 'Brasil',
+  'America/Eirunepe': 'Brasil',
+  'America/Noronha': 'Brasil',
+  // Colombia
+  'America/Bogota': 'Colombia',
+  // Ecuador
+  'America/Guayaquil': 'Ecuador',
+  'Pacific/Galapagos': 'Ecuador (Galápagos)',
+  // Guyana
+  'America/Guyana': 'Guyana',
+  // Paraguay
+  'America/Asuncion': 'Paraguay',
+  // Surinam
+  'America/Paramaribo': 'Surinam',
+  // Uruguay
+  'America/Montevideo': 'Uruguay',
+  // Venezuela
+  'America/Caracas': 'Venezuela',
 }
 
 // Convierte una hora "pared" (ej. 10:00) que corresponde a hora de Chile a la fecha/hora real,
