@@ -40,24 +40,24 @@ function LeadCard({ lead, onStatusChange }: { lead: Lead; onStatusChange: (id: s
 
   return (
     <div
-      className="rounded-xl px-4 py-3 cursor-grab active:cursor-grabbing"
+      className="rounded-lg px-2.5 py-2 cursor-grab active:cursor-grabbing"
       style={{ background: 'rgba(0,10,18,0.95)', border: '1px solid rgba(0,229,255,0.1)' }}
       draggable
       onDragStart={e => e.dataTransfer.setData('lead_id', lead.id)}
     >
-      <p className="text-sm font-medium truncate" style={{ color: '#e0f7ff' }}>{lead.full_name}</p>
-      <p className="text-xs mt-0.5 truncate" style={{ color: 'rgba(0,229,255,0.45)' }}>{lead.email}</p>
+      <p className="text-xs font-medium truncate" style={{ color: '#e0f7ff' }}>{lead.full_name}</p>
+      <p className="text-[10px] mt-0.5 truncate" style={{ color: 'rgba(0,229,255,0.45)' }}>{lead.email}</p>
       {lead.source_campaign ? (
-        <p className="text-xs mt-1.5 truncate" style={{ color: 'rgba(224,247,255,0.3)' }}>{lead.source_campaign}</p>
+        <p className="text-[10px] mt-1 truncate" style={{ color: 'rgba(224,247,255,0.3)' }}>{lead.source_campaign}</p>
       ) : null}
-      <div className="flex items-center justify-between mt-2.5">
-        <div className="flex items-center gap-1.5">
-          <div className="w-12 h-1 rounded-full overflow-hidden" style={{ background: 'rgba(0,229,255,0.1)' }}>
+      <div className="flex items-center justify-between mt-1.5">
+        <div className="flex items-center gap-1">
+          <div className="w-8 h-1 rounded-full overflow-hidden" style={{ background: 'rgba(0,229,255,0.1)' }}>
             <div className="h-full rounded-full" style={{ width: `${lead.score}%`, background: scoreColor }} />
           </div>
-          <span className="text-xs font-bold" style={{ color: scoreColor }}>{lead.score}</span>
+          <span className="text-[10px] font-bold" style={{ color: scoreColor }}>{lead.score}</span>
         </div>
-        <span className="text-xs" style={{ color: 'rgba(224,247,255,0.25)' }}>{date}</span>
+        <span className="text-[10px]" style={{ color: 'rgba(224,247,255,0.25)' }}>{date}</span>
       </div>
     </div>
   )
@@ -245,16 +245,16 @@ export default function PipelinePage() {
           <p className="text-xs mt-2" style={{ color: 'rgba(224,247,255,0.3)' }}>Prueba con otro mes o rango, o limpia el filtro</p>
         </div>
       ) : (
-        <div className="flex gap-3 overflow-x-auto pb-4" style={{ minHeight: 0, maxHeight: 'calc(100vh - 220px)' }}>
+        <div className="flex gap-1.5 overflow-x-auto pb-4" style={{ minHeight: 0, maxHeight: 'calc(100vh - 220px)' }}>
           {COLUMNS.map(col => {
             const colLeads = byStatus(col.status)
             const isOver = draggingOver === col.status
             return (
               <div
                 key={col.status}
-                className="flex flex-col rounded-2xl overflow-hidden flex-1 transition-all"
+                className="flex flex-col rounded-xl overflow-hidden flex-1 transition-all"
                 style={{
-                  minWidth: 190,
+                  minWidth: 132,
                   background: isOver ? 'rgba(0,229,255,0.04)' : 'rgba(0,10,18,0.6)',
                   border: `1px solid ${isOver ? col.border : 'rgba(0,229,255,0.1)'}`,
                 }}
@@ -263,22 +263,22 @@ export default function PipelinePage() {
                 onDrop={e => handleDrop(e, col.status)}
               >
                 {/* Column header */}
-                <div className="px-3 py-3 flex items-center justify-between gap-1.5 shrink-0"
+                <div className="px-2 py-2 flex flex-col gap-1 shrink-0"
                   style={{ borderBottom: `1px solid ${col.border}`, background: `rgba(0,10,18,0.8)` }}>
                   <div className="flex items-center gap-1.5 min-w-0">
                     <div className="w-2 h-2 rounded-full shrink-0" style={{ background: col.color }} />
-                    <span className="text-[10px] font-semibold uppercase tracking-wide truncate" style={{ color: col.color }} title={col.label}>
+                    <span className="text-[9px] font-semibold uppercase tracking-wide truncate" style={{ color: col.color }} title={col.label}>
                       {col.label}
                     </span>
                   </div>
-                  <span className="text-xs font-bold px-2 py-0.5 rounded-full shrink-0"
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full w-fit"
                     style={{ background: `${col.color}18`, color: col.color }}>
                     {colLeads.length}
                   </span>
                 </div>
 
                 {/* Cards */}
-                <div className="flex flex-col gap-2 p-3 overflow-y-auto flex-1" style={{ minHeight: 120 }}>
+                <div className="flex flex-col gap-1.5 p-1.5 overflow-y-auto flex-1" style={{ minHeight: 120 }}>
                   {colLeads.length === 0 ? (
                     <div className="flex items-center justify-center h-16 rounded-xl border-2 border-dashed"
                       style={{ borderColor: isOver ? col.border : 'rgba(0,229,255,0.08)', color: 'rgba(0,229,255,0.2)' }}>
