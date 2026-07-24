@@ -14,6 +14,7 @@ const SERVICE_LINKS = [
   { label: "FinOps Cloud AWS", href: "/servicios/finops-cloud-aws", icon: "💰" },
   { label: "Contenido IA", href: "/servicios/contenido-ia", icon: "🎬" },
   { label: "Educación Empresas IA", href: "/servicios/educacion-empresas", icon: "🎓" },
+  { label: "Talento TI Especializado", href: "/servicios/talento-ti-especializado", icon: "👨‍💻" },
 ]
 
 export function Navbar() {
