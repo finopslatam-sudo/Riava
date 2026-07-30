@@ -3,6 +3,7 @@ import nodemailer from 'nodemailer'
 import { getSlots, saveSlots, getAppointments, saveAppointments, type Appointment } from '@/lib/data-store'
 import { createMeetEvent } from '@/lib/google-meet'
 import { BOOKING_SERVICES } from '@/lib/constants'
+import { isChileWallTimePast } from '@/lib/chile-time'
 
 const transporter = nodemailer.createTransport({
   host: 'smtp.zoho.com',
@@ -213,6 +214,9 @@ export async function POST(req: NextRequest) {
   const slot = slots.find(s => s.id === slotId)
   if (!slot) return NextResponse.json({ error: 'Horario no encontrado' }, { status: 404 })
   if (slot.booked) return NextResponse.json({ error: 'Este horario ya fue reservado' }, { status: 409 })
+  if (isChileWallTimePast(slot.date, slot.startTime)) {
+    return NextResponse.json({ error: 'Este horario ya pasó' }, { status: 409 })
+  }
 
   let slot2 = null
   if (slotId2) {

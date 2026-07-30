@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import { RiavaLogo } from '@/components/ui/RiavaLogo'
 import { BOOKING_SERVICES } from '@/lib/constants'
+import { chileWallTimeToInstant, isChileWallTimePast } from '@/lib/chile-time'
 
 type Slot = { id: string; date: string; startTime: string; endTime: string; booked: boolean; blocked?: boolean }
 type FormState = { name: string; lastName: string; company: string; email: string; phone: string; service: string }
@@ -84,29 +85,10 @@ const TIMEZONE_CITY_LABEL: Record<string, string> = {
   'America/Caracas': 'Venezuela',
 }
 
-// Offset (en ms) entre UTC y timeZone para un instante dado, calculado sin depender
-// de la zona horaria local del navegador/servidor (evita el bug de usar `new Date(string)`
-// para parsear una hora "pared", que JS interpreta silenciosamente como hora local).
-function getTimeZoneOffsetMillis(date: Date, timeZone: string): number {
-  const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone, hourCycle: 'h23',
-    year: 'numeric', month: '2-digit', day: '2-digit',
-    hour: '2-digit', minute: '2-digit', second: '2-digit',
-  }).formatToParts(date).reduce((acc, p) => {
-    if (p.type !== 'literal') acc[p.type] = p.value
-    return acc
-  }, {} as Record<string, string>)
-  const asUTC = Date.UTC(+parts.year, +parts.month - 1, +parts.day, +parts.hour, +parts.minute, +parts.second)
-  return asUTC - date.getTime()
-}
-
 // Convierte una hora "pared" (ej. 10:00) que corresponde a hora de Chile a la fecha/hora real,
 // para luego poder mostrarla en la zona horaria del visitante.
-function chileSlotToInstant(dateStr: string, timeStr: string): Date {
-  const naiveUTC = new Date(`${dateStr}T${timeStr}:00Z`)
-  const chileOffsetMillis = getTimeZoneOffsetMillis(naiveUTC, 'America/Santiago')
-  return new Date(naiveUTC.getTime() - chileOffsetMillis)
-}
+const chileSlotToInstant = chileWallTimeToInstant
+const isSlotPast = isChileWallTimePast
 
 function formatVisitorTime(dateStr: string, timeStr: string): string {
   return chileSlotToInstant(dateStr, timeStr).toLocaleTimeString('es-CL', {
@@ -185,7 +167,7 @@ export default function AgendarPage() {
   }
 
   const slotsForDay   = (date: string) => slots.filter(s => s.date === date).sort((a, b) => a.startTime.localeCompare(b.startTime))
-  const hasAvailable  = (date: string) => slots.some(s => s.date === date && !s.booked && !s.blocked)
+  const hasAvailable  = (date: string) => slots.some(s => s.date === date && !s.booked && !s.blocked && !isSlotPast(s.date, s.startTime))
 
   const handleFieldChange = (field: keyof FormState, value: string) => setForm(prev => ({ ...prev, [field]: value }))
 
@@ -476,17 +458,17 @@ export default function AgendarPage() {
                     <div className="p-4 flex flex-col gap-2">
                       {loadingSlots ? (
                         <div className="py-8 text-center text-sm" style={{ color: 'rgba(0,229,255,0.4)' }}>Cargando...</div>
-                      ) : daySlots.length === 0 || daySlots.every(s => s.booked || s.blocked) ? (
+                      ) : daySlots.length === 0 || daySlots.every(s => s.booked || s.blocked || isSlotPast(s.date, s.startTime)) ? (
                         <div className="py-8 text-center">
                           <p className="text-sm" style={{ color: 'rgba(224,247,255,0.35)' }}>Sin horarios disponibles para este día</p>
                         </div>
-                      ) : daySlots.map(slot => (slot.booked || slot.blocked) ? (
+                      ) : daySlots.map(slot => (slot.booked || slot.blocked || isSlotPast(slot.date, slot.startTime)) ? (
                         <div key={slot.id}
                           className="w-full rounded-xl px-4 py-3 text-sm font-medium flex items-center justify-between"
                           style={{ background: 'rgba(255,60,60,0.05)', border: '1px solid rgba(255,60,60,0.2)', cursor: 'default' }}>
                           <span style={{ color: 'rgba(224,247,255,0.35)' }}>{formatVisitorTime(slot.date, slot.startTime)} – {formatVisitorTime(slot.date, slot.endTime)}</span>
                           <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,60,60,0.15)', color: '#ff5555', border: '1px solid rgba(255,60,60,0.3)' }}>
-                            No disponible
+                            {slot.booked || slot.blocked ? 'No disponible' : 'Horario ya pasó'}
                           </span>
                         </div>
                       ) : (

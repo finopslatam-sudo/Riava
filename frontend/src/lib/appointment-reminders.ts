@@ -1,6 +1,7 @@
 import { getAppointments, saveAppointments } from '@/lib/data-store'
 import { getAutomation } from '@/lib/automations-store'
 import { sendEmail } from '@/lib/mailer'
+import { chileWallTimeToInstant } from '@/lib/chile-time'
 
 function buildReminderEmail(name: string, date: string, startTime: string, meetLink: string): string {
   const formattedDate = new Date(`${date}T00:00:00`).toLocaleDateString('es-CL', {
@@ -62,7 +63,7 @@ export async function runAppointmentReminders(): Promise<ReminderResult> {
     if (appt.reminderSent) continue
     checked++
 
-    const start = new Date(`${appt.date}T${appt.startTime}:00-04:00`)
+    const start = chileWallTimeToInstant(appt.date, appt.startTime)
     const hoursUntil = (start.getTime() - now.getTime()) / (1000 * 60 * 60)
     if (hoursUntil > hoursBefore || hoursUntil < 0) continue
 
