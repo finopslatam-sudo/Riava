@@ -36,6 +36,42 @@ export async function getAdAccounts(token: string): Promise<AdAccount[]> {
   return data ?? []
 }
 
+export type CampaignWithInsights = {
+  id: string
+  name: string
+  status: string
+  objective: string
+  insights?: {
+    data: { impressions?: string; clicks?: string; spend?: string; reach?: string; cpm?: string; cpc?: string }[]
+  }
+}
+
+export type CampaignsByAccount = {
+  account: AdAccount
+  campaigns: CampaignWithInsights[]
+}
+
+export async function getCampaignsWithInsights(token: string): Promise<CampaignsByAccount[]> {
+  const adAccounts = await getAdAccounts(token)
+  if (adAccounts.length === 0) return []
+
+  return Promise.all(
+    adAccounts.map(async (account) => {
+      const res = await fetch(
+        `${GRAPH_BASE}/${account.id}/campaigns?` +
+        new URLSearchParams({
+          fields: 'id,name,status,objective,insights{impressions,clicks,spend,reach,cpm,cpc}',
+          date_preset: 'last_30d',
+          access_token: token,
+        })
+      )
+      if (!res.ok) return { account, campaigns: [] }
+      const { data } = await res.json() as { data: CampaignWithInsights[] }
+      return { account, campaigns: data ?? [] }
+    })
+  )
+}
+
 export async function getRegions(token: string, countryCode = 'CL'): Promise<RegionOption[]> {
   const res = await fetch(
     `${GRAPH_BASE}/search?` +
